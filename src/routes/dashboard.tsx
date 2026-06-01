@@ -75,10 +75,10 @@ function Dashboard() {
         {stats.map((s) => (
           <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary"><s.icon className="h-5 w-5" /></span>
+              <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.tone === "success" ? "bg-success/15 text-success" : "bg-primary-soft text-primary"}`}><s.icon className="h-5 w-5" /></span>
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-4 text-3xl font-bold">{s.value}</p>
+            <p className={`mt-4 text-3xl font-bold ${s.tone === "success" ? "text-success" : ""}`}>{s.value}</p>
             <p className="text-sm text-muted-foreground">{s.label}</p>
             <p className="mt-2 text-xs text-muted-foreground">{s.hint}</p>
           </div>
