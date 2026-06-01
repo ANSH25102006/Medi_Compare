@@ -43,11 +43,13 @@ function Dashboard() {
   const upcoming = userAppointments.filter((a) => a.status === "Upcoming" || a.status === "Confirmed");
   const past = userAppointments.filter((a) => a.status === "Completed");
 
+  const totalSaved = savingsTrend.reduce((a, b) => a + b.saved, 0);
+
   const stats = [
-    { label: "Upcoming", value: upcoming.length, icon: CalendarCheck, hint: "Next: Jun 12" },
-    { label: "Past visits", value: past.length, icon: Activity, hint: "This year" },
-    { label: "Saved providers", value: 6, icon: Bookmark, hint: "+2 this week" },
-    { label: "Reviews written", value: 3, icon: Star, hint: "Avg. 4.7 ★" },
+    { label: "Upcoming", value: upcoming.length, icon: CalendarCheck, hint: "Next: Jun 12", tone: "primary" },
+    { label: "Money saved", value: `₹${totalSaved.toLocaleString()}`, icon: Wallet, hint: "Lifetime", tone: "success" },
+    { label: "Saved hospitals", value: 6, icon: Bookmark, hint: "+2 this week", tone: "primary" },
+    { label: "Past visits", value: past.length, icon: Activity, hint: "This year", tone: "primary" },
   ];
 
   return (
