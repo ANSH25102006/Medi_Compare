@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { userAppointments, hospitals } from "@/lib/mock-data";
 import {
-  LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart,
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
