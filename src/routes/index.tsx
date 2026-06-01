@@ -21,6 +21,9 @@ import {
 } from "@/components/ui/accordion";
 import { SiteShell } from "@/components/site/SiteShell";
 import { HospitalCard } from "@/components/site/HospitalCard";
+import { PopularServices } from "@/components/site/PopularServices";
+import { AIRecommendation } from "@/components/site/AIRecommendation";
+import { NearbyMap } from "@/components/site/NearbyMap";
 import { hospitals, testimonials, faqs, partners } from "@/lib/mock-data";
 import { useState } from "react";
 
@@ -202,6 +205,17 @@ function Landing() {
           ))}
         </div>
       </section>
+
+      {/* Popular services */}
+      <PopularServices />
+
+      {/* AI Recommendation */}
+      <AIRecommendation />
+
+      {/* Hospitals near you */}
+      <NearbyMap />
+
+
 
       {/* How it works */}
       <section className="bg-secondary/40 py-24">

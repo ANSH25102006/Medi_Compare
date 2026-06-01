@@ -261,3 +261,69 @@ export const servicePopularity = [
   { service: "Blood Test", bookings: 198 },
   { service: "Dermatology", bookings: 156 },
 ];
+
+// ---- Price comparison helpers ----
+export function getServiceAverage(serviceName: string): number {
+  const prices = hospitals.flatMap((h) =>
+    h.services.filter((s) => s.name === serviceName).map((s) => s.price),
+  );
+  if (!prices.length) return 0;
+  return Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+}
+
+export function getServiceMin(serviceName: string): number {
+  const prices = hospitals.flatMap((h) =>
+    h.services.filter((s) => s.name === serviceName).map((s) => s.price),
+  );
+  return prices.length ? Math.min(...prices) : 0;
+}
+
+export type PopularService = {
+  slug: string;
+  name: string;
+  icon: string; // lucide icon name
+  startingAt: number;
+  bookings: string;
+  tint: string;
+};
+
+export const popularServices: PopularService[] = [
+  { slug: "mri", name: "MRI Scan", icon: "Brain", startingAt: 7200, bookings: "2.4k", tint: "from-blue-500/15 to-blue-500/0" },
+  { slug: "ct", name: "CT Scan", icon: "ScanLine", startingAt: 5400, bookings: "1.8k", tint: "from-indigo-500/15 to-indigo-500/0" },
+  { slug: "blood", name: "Blood Test", icon: "TestTube", startingAt: 600, bookings: "5.1k", tint: "from-rose-500/15 to-rose-500/0" },
+  { slug: "xray", name: "X-Ray", icon: "Bone", startingAt: 800, bookings: "3.2k", tint: "from-cyan-500/15 to-cyan-500/0" },
+  { slug: "ultrasound", name: "Ultrasound", icon: "Activity", startingAt: 1500, bookings: "2.0k", tint: "from-violet-500/15 to-violet-500/0" },
+  { slug: "ecg", name: "ECG", icon: "HeartPulse", startingAt: 450, bookings: "4.4k", tint: "from-pink-500/15 to-pink-500/0" },
+  { slug: "dental", name: "Dental Care", icon: "Smile", startingAt: 500, bookings: "3.7k", tint: "from-amber-500/15 to-amber-500/0" },
+  { slug: "fullbody", name: "Full Body Checkup", icon: "Stethoscope", startingAt: 3900, bookings: "6.0k", tint: "from-emerald-500/15 to-emerald-500/0" },
+];
+
+export const recentSearches = [
+  { id: "rs-1", query: "MRI Scan", location: "Bengaluru", when: "2 days ago" },
+  { id: "rs-2", query: "Cardiac Consultation", location: "Mumbai", when: "5 days ago" },
+  { id: "rs-3", query: "Full Body Checkup", location: "Gurugram", when: "1 week ago" },
+];
+
+export const medicalRecords = [
+  { id: "mr-1", name: "MRI Brain Report.pdf", date: "May 14, 2026", size: "1.4 MB", type: "Radiology" },
+  { id: "mr-2", name: "Blood Panel Results.pdf", date: "May 02, 2026", size: "320 KB", type: "Pathology" },
+  { id: "mr-3", name: "Cardiology Consult Notes.pdf", date: "Apr 18, 2026", size: "210 KB", type: "Consultation" },
+  { id: "mr-4", name: "Prescription_Apollo.pdf", date: "Apr 10, 2026", size: "98 KB", type: "Prescription" },
+];
+
+export const savingsTrend = [
+  { m: "Jan", saved: 1200 },
+  { m: "Feb", saved: 1800 },
+  { m: "Mar", saved: 900 },
+  { m: "Apr", saved: 2400 },
+  { m: "May", saved: 3100 },
+  { m: "Jun", saved: 4200 },
+];
+
+export const aiRecommendation = {
+  query: "Affordable MRI scan near Bengaluru with same-day availability",
+  hospitalId: "fortis-greens",
+  service: "MRI Scan",
+  rationale:
+    "Best balance of price, 4.7★ rating and availability within 5km. ~₹1,300 below the city average.",
+};

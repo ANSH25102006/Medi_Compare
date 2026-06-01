@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  LayoutDashboard, CalendarCheck, Star, Bookmark, Settings as SettingsIcon,
-  TrendingUp, Activity, Clock, ArrowUpRight,
+  LayoutDashboard, CalendarCheck, Star, Bookmark, Settings as SettingsIcon, FileText,
+  TrendingUp, Activity, Clock, ArrowUpRight, Wallet, Search as SearchIcon, Download,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { userAppointments, hospitals } from "@/lib/mock-data";
+import { userAppointments, hospitals, recentSearches, medicalRecords, savingsTrend } from "@/lib/mock-data";
 import {
-  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart, BarChart, Bar,
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
@@ -43,11 +43,13 @@ function Dashboard() {
   const upcoming = userAppointments.filter((a) => a.status === "Upcoming" || a.status === "Confirmed");
   const past = userAppointments.filter((a) => a.status === "Completed");
 
+  const totalSaved = savingsTrend.reduce((a, b) => a + b.saved, 0);
+
   const stats = [
-    { label: "Upcoming", value: upcoming.length, icon: CalendarCheck, hint: "Next: Jun 12" },
-    { label: "Past visits", value: past.length, icon: Activity, hint: "This year" },
-    { label: "Saved providers", value: 6, icon: Bookmark, hint: "+2 this week" },
-    { label: "Reviews written", value: 3, icon: Star, hint: "Avg. 4.7 ★" },
+    { label: "Upcoming", value: upcoming.length, icon: CalendarCheck, hint: "Next: Jun 12", tone: "primary" },
+    { label: "Money saved", value: `₹${totalSaved.toLocaleString()}`, icon: Wallet, hint: "Lifetime", tone: "success" },
+    { label: "Saved hospitals", value: 6, icon: Bookmark, hint: "+2 this week", tone: "primary" },
+    { label: "Past visits", value: past.length, icon: Activity, hint: "This year", tone: "primary" },
   ];
 
   return (
@@ -73,10 +75,10 @@ function Dashboard() {
         {stats.map((s) => (
           <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary"><s.icon className="h-5 w-5" /></span>
+              <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.tone === "success" ? "bg-success/15 text-success" : "bg-primary-soft text-primary"}`}><s.icon className="h-5 w-5" /></span>
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-4 text-3xl font-bold">{s.value}</p>
+            <p className={`mt-4 text-3xl font-bold ${s.tone === "success" ? "text-success" : ""}`}>{s.value}</p>
             <p className="text-sm text-muted-foreground">{s.label}</p>
             <p className="mt-2 text-xs text-muted-foreground">{s.hint}</p>
           </div>
@@ -131,6 +133,76 @@ function Dashboard() {
           </ul>
         </div>
       </div>
+
+      {/* Money saved chart + recent searches */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Money saved by comparing</h2>
+              <p className="text-sm text-muted-foreground">Total saved this year: <strong className="text-success">₹{totalSaved.toLocaleString()}</strong></p>
+            </div>
+            <Badge className="rounded-full bg-success/15 text-success hover:bg-success/20"><TrendingUp className="mr-1 h-3 w-3" />+34%</Badge>
+          </div>
+          <div className="mt-6 h-60">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={savingsTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.93 0.01 250)" />
+                <XAxis dataKey="m" stroke="oklch(0.50 0.03 250)" fontSize={12} />
+                <YAxis stroke="oklch(0.50 0.03 250)" fontSize={12} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.93 0.01 250)" }} formatter={(v: number) => [`₹${v.toLocaleString()}`, "Saved"]} />
+                <Bar dataKey="saved" radius={[8, 8, 0, 0]} fill="oklch(0.65 0.16 160)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+          <h2 className="text-lg font-semibold">Recent searches</h2>
+          <p className="text-sm text-muted-foreground">Pick up where you left off.</p>
+          <ul className="mt-5 space-y-3">
+            {recentSearches.map((s) => (
+              <li key={s.id} className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/40">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><SearchIcon className="h-4 w-4" /></span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-medium">{s.query}</p>
+                  <p className="text-xs text-muted-foreground">{s.location} • {s.when}</p>
+                </div>
+                <Button asChild size="sm" variant="ghost" className="rounded-full">
+                  <Link to="/compare" search={{ q: s.query, city: s.location }}>Re-run</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Medical records */}
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Medical records</h2>
+            <p className="text-sm text-muted-foreground">All your reports, in one secure vault.</p>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-full">Upload new</Button>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {medicalRecords.map((r) => (
+            <div key={r.id} className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/40">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary"><FileText className="h-5 w-5" /></span>
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-medium">{r.name}</p>
+                <p className="text-xs text-muted-foreground">{r.type} • {r.date} • {r.size}</p>
+              </div>
+              <Button size="icon" variant="ghost" className="rounded-full" aria-label="Download">
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
 
       {/* Appointments table */}
       <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">

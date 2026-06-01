@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, MapPin, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, LayoutGrid, Table as TableIcon, TrendingDown } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { HospitalCard } from "@/components/site/HospitalCard";
-import { Input } from "@/components/ui/input";
+import { FloatingSearch } from "@/components/site/FloatingSearch";
+import { ComparisonTable, buildRows, sortRows, type SortKey } from "@/components/site/ComparisonTable";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { hospitals, services } from "@/lib/mock-data";
+import { hospitals, services, getServiceAverage } from "@/lib/mock-data";
 
 type SearchParams = { q?: string; city?: string };
 
@@ -26,8 +27,8 @@ export const Route = createFileRoute("/compare")({
   }),
   head: () => ({
     meta: [
-      { title: "Compare Healthcare Providers — MediCompare" },
-      { name: "description", content: "Compare hospital pricing, ratings, and availability across India." },
+      { title: "Compare Prices — MediCompare" },
+      { name: "description", content: "Compare hospital pricing, ratings, distance, and availability side by side." },
     ],
   }),
   component: ComparePage,
@@ -35,57 +36,62 @@ export const Route = createFileRoute("/compare")({
 
 function ComparePage() {
   const { q: initialQ, city: initialCity } = Route.useSearch();
-  const [query, setQuery] = useState(initialQ ?? "");
+  const [query] = useState(initialQ ?? "");
   const [location, setLocation] = useState(initialCity ?? "");
-  const [service, setService] = useState<string>("all");
+  // Resolve initial service from query (e.g., from popular service link)
+  const initialService = useMemo(() => {
+    if (!initialQ) return "all";
+    const exact = services.find((s) => s.toLowerCase() === initialQ.toLowerCase());
+    if (exact) return exact;
+    const partial = services.find((s) => s.toLowerCase().includes(initialQ.toLowerCase()));
+    return partial ?? "all";
+  }, [initialQ]);
+
+  const [service, setService] = useState<string>(initialService);
   const [maxPrice, setMaxPrice] = useState([10000]);
   const [minRating, setMinRating] = useState([4]);
   const [maxDistance, setMaxDistance] = useState([10]);
   const [availableOnly, setAvailableOnly] = useState(false);
-  const [sort, setSort] = useState("recommended");
+  const [sort, setSort] = useState<SortKey>("price");
+  const [view, setView] = useState<"table" | "grid">("table");
 
-  const filtered = useMemo(() => {
-    let list = hospitals.filter((h) => {
-      if (query && !h.name.toLowerCase().includes(query.toLowerCase()) && !h.specialties.some(s => s.toLowerCase().includes(query.toLowerCase()))) return false;
+  const filteredHospitals = useMemo(() => {
+    return hospitals.filter((h) => {
+      if (query && !h.name.toLowerCase().includes(query.toLowerCase()) && !h.specialties.some((s) => s.toLowerCase().includes(query.toLowerCase()))) return false;
       if (location && !h.city.toLowerCase().includes(location.toLowerCase())) return false;
       if (h.rating < minRating[0]) return false;
       if (h.distance > maxDistance[0]) return false;
-      const svc = service !== "all" ? h.services.find(s => s.name === service) : h.services[0];
+      const svc = service !== "all" ? h.services.find((s) => s.name === service) : h.services[0];
       if (service !== "all" && !svc) return false;
       if (svc && svc.price > maxPrice[0]) return false;
       if (availableOnly && h.slots.length < 3) return false;
       return true;
     });
+  }, [query, location, service, minRating, maxDistance, maxPrice, availableOnly]);
 
-    if (sort === "price") {
-      list = [...list].sort((a, b) => a.services[0].price - b.services[0].price);
-    } else if (sort === "rating") {
-      list = [...list].sort((a, b) => b.rating - a.rating);
-    } else if (sort === "distance") {
-      list = [...list].sort((a, b) => a.distance - b.distance);
-    }
-    return list;
-  }, [query, location, service, minRating, maxDistance, maxPrice, availableOnly, sort]);
+  const tableRows = useMemo(() => {
+    const all = buildRows(service);
+    const ids = new Set(filteredHospitals.map((h) => h.id));
+    const filtered = all.filter((r) => ids.has(r.hospitalId));
+    return sortRows(filtered, sort);
+  }, [filteredHospitals, service, sort]);
+
+  const avgPrice = service !== "all" ? getServiceAverage(service) : 0;
 
   return (
     <SiteShell>
-      <section className="border-b border-border bg-hero-gradient">
+      {/* Hero with floating search */}
+      <section className="relative overflow-hidden border-b border-border bg-hero-gradient">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold md:text-4xl">Compare Healthcare Providers</h1>
-          <p className="mt-2 text-muted-foreground">
-            {filtered.length} verified hospitals matching your criteria.
+          <h1 className="text-3xl font-bold md:text-4xl">Compare healthcare prices</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            {filteredHospitals.length} verified hospitals
+            {service !== "all" && avgPrice > 0 && (
+              <> • Avg <strong className="text-foreground">₹{avgPrice.toLocaleString()}</strong> for {service}</>
+            )}
           </p>
-
-          <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-border bg-background/80 p-2 shadow-soft backdrop-blur sm:flex-row">
-            <div className="flex flex-1 items-center gap-2 rounded-xl bg-background px-3">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Service, hospital, specialty" className="border-0 shadow-none focus-visible:ring-0" />
-            </div>
-            <div className="flex flex-1 items-center gap-2 rounded-xl bg-background px-3">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City" className="border-0 shadow-none focus-visible:ring-0" />
-            </div>
-            <Button className="rounded-xl">Search</Button>
+          <div className="mt-6">
+            <FloatingSearch />
           </div>
         </div>
       </section>
@@ -106,6 +112,19 @@ function ComparePage() {
                 <SelectContent>
                   <SelectItem value="all">All services</SelectItem>
                   {services.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">City</Label>
+              <Select value={location || "all"} onValueChange={(v) => setLocation(v === "all" ? "" : v)}>
+                <SelectTrigger className="mt-2"><SelectValue placeholder="Any city" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any city</SelectItem>
+                  {Array.from(new Set(hospitals.map((h) => h.city))).map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -143,27 +162,46 @@ function ComparePage() {
 
         {/* Results */}
         <div>
-          <div className="mb-5 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{filtered.length} results</p>
-            <Select value={sort} onValueChange={setSort}>
-              <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recommended">Recommended</SelectItem>
-                <SelectItem value="price">Price: low to high</SelectItem>
-                <SelectItem value="rating">Highest rated</SelectItem>
-                <SelectItem value="distance">Nearest first</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">{tableRows.length} results</p>
+              {service !== "all" && tableRows.some((r) => r.savings > 0) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+                  <TrendingDown className="h-3 w-3" /> Save up to ₹{Math.max(...tableRows.map((r) => r.savings)).toLocaleString()}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="price">Lowest Price</SelectItem>
+                  <SelectItem value="rating">Highest Rating</SelectItem>
+                  <SelectItem value="distance">Nearest</SelectItem>
+                  <SelectItem value="earliest">Earliest Appointment</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="inline-flex rounded-full border border-border bg-card p-0.5">
+                <Button size="sm" variant={view === "table" ? "default" : "ghost"} className="rounded-full" onClick={() => setView("table")}>
+                  <TableIcon className="h-3.5 w-3.5" />
+                </Button>
+                <Button size="sm" variant={view === "grid" ? "default" : "ghost"} className="rounded-full" onClick={() => setView("grid")}>
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {view === "table" ? (
+            <ComparisonTable rows={tableRows} />
+          ) : filteredHospitals.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-card p-16 text-center">
               <p className="text-lg font-semibold">No hospitals match your filters</p>
               <p className="mt-2 text-sm text-muted-foreground">Try adjusting the price range or distance.</p>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-2">
-              {filtered.map((h) => (
+              {filteredHospitals.map((h) => (
                 <HospitalCard key={h.id} hospital={h} serviceName={service !== "all" ? service : undefined} />
               ))}
             </div>
