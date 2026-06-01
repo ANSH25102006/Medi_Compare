@@ -9,38 +9,188 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ReviewsRouteImport } from './routes/reviews'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as BookRouteImport } from './routes/book'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HospitalsIndexRouteImport } from './routes/hospitals.index'
+import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HospitalsIndexRoute = HospitalsIndexRouteImport.update({
+  id: '/hospitals/',
+  path: '/hospitals/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HospitalsHospitalIdRoute = HospitalsHospitalIdRouteImport.update({
+  id: '/hospitals/$hospitalId',
+  path: '/hospitals/$hospitalId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
+  '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
+  '/reviews': typeof ReviewsRoute
+  '/signup': typeof SignupRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
+  '/hospitals/': typeof HospitalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
+  '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
+  '/reviews': typeof ReviewsRoute
+  '/signup': typeof SignupRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
+  '/hospitals': typeof HospitalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
+  '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
+  '/reviews': typeof ReviewsRoute
+  '/signup': typeof SignupRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
+  '/hospitals/': typeof HospitalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/book'
+    | '/compare'
+    | '/contact'
+    | '/login'
+    | '/reviews'
+    | '/signup'
+    | '/hospitals/$hospitalId'
+    | '/hospitals/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/book'
+    | '/compare'
+    | '/contact'
+    | '/login'
+    | '/reviews'
+    | '/signup'
+    | '/hospitals/$hospitalId'
+    | '/hospitals'
+  id:
+    | '__root__'
+    | '/'
+    | '/book'
+    | '/compare'
+    | '/contact'
+    | '/login'
+    | '/reviews'
+    | '/signup'
+    | '/hospitals/$hospitalId'
+    | '/hospitals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BookRoute: typeof BookRoute
+  CompareRoute: typeof CompareRoute
+  ContactRoute: typeof ContactRoute
+  LoginRoute: typeof LoginRoute
+  ReviewsRoute: typeof ReviewsRoute
+  SignupRoute: typeof SignupRoute
+  HospitalsHospitalIdRoute: typeof HospitalsHospitalIdRoute
+  HospitalsIndexRoute: typeof HospitalsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +198,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hospitals/': {
+      id: '/hospitals/'
+      path: '/hospitals'
+      fullPath: '/hospitals/'
+      preLoaderRoute: typeof HospitalsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hospitals/$hospitalId': {
+      id: '/hospitals/$hospitalId'
+      path: '/hospitals/$hospitalId'
+      fullPath: '/hospitals/$hospitalId'
+      preLoaderRoute: typeof HospitalsHospitalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BookRoute: BookRoute,
+  CompareRoute: CompareRoute,
+  ContactRoute: ContactRoute,
+  LoginRoute: LoginRoute,
+  ReviewsRoute: ReviewsRoute,
+  SignupRoute: SignupRoute,
+  HospitalsHospitalIdRoute: HospitalsHospitalIdRoute,
+  HospitalsIndexRoute: HospitalsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
