@@ -33,7 +33,7 @@ export const Route = createFileRoute("/hospitals/$hospitalId")({
 });
 
 function HospitalDetails() {
-  const hospital = Route.useLoaderData();
+  const hospital = Route.useLoaderData() as Hospital;
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [slot, setSlot] = useState<string | null>(null);
 
