@@ -17,7 +17,7 @@ import {
 import { hospitals } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/hospitals/$hospitalId")({
-  loader: ({ params }) => {
+  loader: ({ params }): Hospital => {
     const hospital = hospitals.find((h) => h.id === params.hospitalId);
     if (!hospital) throw notFound();
     return hospital;
