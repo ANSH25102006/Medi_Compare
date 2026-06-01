@@ -206,6 +206,17 @@ function Landing() {
         </div>
       </section>
 
+      {/* Popular services */}
+      <PopularServices />
+
+      {/* AI Recommendation */}
+      <AIRecommendation />
+
+      {/* Hospitals near you */}
+      <NearbyMap />
+
+
+
       {/* How it works */}
       <section className="bg-secondary/40 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
