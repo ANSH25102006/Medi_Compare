@@ -165,8 +165,6 @@ function Dashboard() {
           </Table>
         </div>
       </div>
-      {/* unused but imported types - silence */}
-      {false && <LineChart data={[]} width={0} height={0}><Line dataKey="v" /></LineChart>}
     </DashboardShell>
   );
 }
