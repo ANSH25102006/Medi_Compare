@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { hospitals } from "@/lib/mock-data";
+import { hospitals, type Hospital } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/hospitals/$hospitalId")({
   loader: ({ params }): Hospital => {
