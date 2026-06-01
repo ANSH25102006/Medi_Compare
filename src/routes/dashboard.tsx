@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  LayoutDashboard, CalendarCheck, Star, Bookmark, Settings as SettingsIcon,
-  TrendingUp, Activity, Clock, ArrowUpRight,
+  LayoutDashboard, CalendarCheck, Star, Bookmark, Settings as SettingsIcon, FileText,
+  TrendingUp, Activity, Clock, ArrowUpRight, Wallet, Search as SearchIcon, Download,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { userAppointments, hospitals } from "@/lib/mock-data";
+import { userAppointments, hospitals, recentSearches, medicalRecords, savingsTrend } from "@/lib/mock-data";
 import {
-  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Area, AreaChart, BarChart, Bar,
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
