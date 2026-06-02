@@ -42,7 +42,86 @@ This lack of transparency can lead to unexpected medical expenses and poor decis
 The platform combines healthcare accessibility, affordability, and transparency into a single user-friendly interface.
 
 ---
+---
 
+## 🏗 Architecture
+
+```text
+User
+ │
+ ▼
+Frontend (React + TypeScript)
+ │
+ ├── Authentication Layer
+ ├── Search & Filtering Engine
+ ├── Comparison Module
+ ├── Booking System
+ ├── Dashboard Module
+ └── AI Recommendation Engine
+ │
+ ▼
+Data Layer
+ │
+ ├── Hospital Data
+ ├── Services Data
+ ├── Reviews Data
+ └── Appointment Data
+```
+
+---
+
+## 📁 Project Structure
+
+```
+health-compare-hub/
+├── src/
+│   ├── components/
+│   │   ├── dashboard/
+│   │   │   └── DashboardShell.tsx      # Sidebar layout for dashboard pages
+│   │   ├── site/
+│   │   │   ├── AIRecommendation.tsx    # AI-powered hospital suggestion widget
+│   │   │   ├── ComparisonTable.tsx     # Sortable hospital comparison table
+│   │   │   ├── FloatingSearch.tsx      # Search bar with live filtering
+│   │   │   ├── Footer.tsx              # Site footer with nav links
+│   │   │   ├── HospitalCard.tsx        # Hospital card for grid views
+│   │   │   ├── Navbar.tsx              # Sticky nav with auth-aware user menu
+│   │   │   ├── NearbyMap.tsx           # "Hospitals near you" section
+│   │   │   ├── PopularServices.tsx     # Popular services grid
+│   │   │   └── SiteShell.tsx           # Wraps Navbar + Footer
+│   │   └── ui/                         # shadcn/ui components (Button, Input, etc.)
+│   ├── lib/
+│   │   ├── auth.tsx                    # Auth context (login, signup, logout)
+│   │   ├── mock-data.ts               # All hospitals, services, testimonials, FAQs
+│   │   └── utils.ts                   # cn() utility
+│   ├── routes/
+│   │   ├── __root.tsx                  # Root layout (QueryClient + AuthProvider)
+│   │   ├── index.tsx                   # Landing page (Hero, Features, How it works)
+│   │   ├── compare.tsx                 # Price comparison with filters
+│   │   ├── hospitals.index.tsx         # Hospital listing
+│   │   ├── hospitals.$hospitalId.tsx   # Hospital detail page
+│   │   ├── book.tsx                    # Multi-step appointment booking
+│   │   ├── login.tsx                   # Login page
+│   │   ├── signup.tsx                  # Signup with password strength
+│   │   ├── dashboard.tsx               # Patient dashboard overview
+│   │   ├── dashboard.appointments.tsx  # Appointment management
+│   │   ├── dashboard.reviews.tsx       # Write & view reviews
+│   │   ├── dashboard.saved.tsx         # Saved / bookmarked hospitals
+│   │   ├── dashboard.settings.tsx      # Account settings
+│   │   ├── admin.tsx                   # Hospital admin panel
+│   │   ├── reviews.tsx                 # Public reviews page
+│   │   └── contact.tsx                 # Contact form
+│   ├── router.tsx                      # Router configuration
+│   ├── routeTree.gen.ts               # Auto-generated route tree (do not edit)
+│   ├── server.ts                       # Server entry point
+│   ├── start.ts                        # App start
+│   └── styles.css                      # Global styles + Tailwind v4 tokens
+├── components.json                     # shadcn/ui config
+├── vite.config.ts
+├── tsconfig.json
+└── package.json
+```
+
+---
 ## 🚀 Key Features
 
 ### 🔍 Smart Healthcare Search
@@ -154,86 +233,7 @@ The platform combines healthcare accessibility, affordability, and transparency 
 * ESLint
 * Prettier
 
----
 
-## 🏗 Architecture
-
-```text
-User
- │
- ▼
-Frontend (React + TypeScript)
- │
- ├── Authentication Layer
- ├── Search & Filtering Engine
- ├── Comparison Module
- ├── Booking System
- ├── Dashboard Module
- └── AI Recommendation Engine
- │
- ▼
-Data Layer
- │
- ├── Hospital Data
- ├── Services Data
- ├── Reviews Data
- └── Appointment Data
-```
-
----
-
-## 📁 Project Structure
-
-```
-health-compare-hub/
-├── src/
-│   ├── components/
-│   │   ├── dashboard/
-│   │   │   └── DashboardShell.tsx      # Sidebar layout for dashboard pages
-│   │   ├── site/
-│   │   │   ├── AIRecommendation.tsx    # AI-powered hospital suggestion widget
-│   │   │   ├── ComparisonTable.tsx     # Sortable hospital comparison table
-│   │   │   ├── FloatingSearch.tsx      # Search bar with live filtering
-│   │   │   ├── Footer.tsx              # Site footer with nav links
-│   │   │   ├── HospitalCard.tsx        # Hospital card for grid views
-│   │   │   ├── Navbar.tsx              # Sticky nav with auth-aware user menu
-│   │   │   ├── NearbyMap.tsx           # "Hospitals near you" section
-│   │   │   ├── PopularServices.tsx     # Popular services grid
-│   │   │   └── SiteShell.tsx           # Wraps Navbar + Footer
-│   │   └── ui/                         # shadcn/ui components (Button, Input, etc.)
-│   ├── lib/
-│   │   ├── auth.tsx                    # Auth context (login, signup, logout)
-│   │   ├── mock-data.ts               # All hospitals, services, testimonials, FAQs
-│   │   └── utils.ts                   # cn() utility
-│   ├── routes/
-│   │   ├── __root.tsx                  # Root layout (QueryClient + AuthProvider)
-│   │   ├── index.tsx                   # Landing page (Hero, Features, How it works)
-│   │   ├── compare.tsx                 # Price comparison with filters
-│   │   ├── hospitals.index.tsx         # Hospital listing
-│   │   ├── hospitals.$hospitalId.tsx   # Hospital detail page
-│   │   ├── book.tsx                    # Multi-step appointment booking
-│   │   ├── login.tsx                   # Login page
-│   │   ├── signup.tsx                  # Signup with password strength
-│   │   ├── dashboard.tsx               # Patient dashboard overview
-│   │   ├── dashboard.appointments.tsx  # Appointment management
-│   │   ├── dashboard.reviews.tsx       # Write & view reviews
-│   │   ├── dashboard.saved.tsx         # Saved / bookmarked hospitals
-│   │   ├── dashboard.settings.tsx      # Account settings
-│   │   ├── admin.tsx                   # Hospital admin panel
-│   │   ├── reviews.tsx                 # Public reviews page
-│   │   └── contact.tsx                 # Contact form
-│   ├── router.tsx                      # Router configuration
-│   ├── routeTree.gen.ts               # Auto-generated route tree (do not edit)
-│   ├── server.ts                       # Server entry point
-│   ├── start.ts                        # App start
-│   └── styles.css                      # Global styles + Tailwind v4 tokens
-├── components.json                     # shadcn/ui config
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
-```
-
----
 ## 📂 Major Modules
 
 ### 1. Authentication Module
