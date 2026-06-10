@@ -24,7 +24,9 @@ import { HospitalCard } from "@/components/site/HospitalCard";
 import { PopularServices } from "@/components/site/PopularServices";
 import { AIRecommendation } from "@/components/site/AIRecommendation";
 import { NearbyMap } from "@/components/site/NearbyMap";
-import { hospitals, testimonials, faqs, partners } from "@/lib/mock-data";
+import { HospitalNetworkTrust } from "@/components/site/HospitalNetworkTrust";
+import { HealthcareEcosystemMarquee } from "@/components/site/HealthcareEcosystemMarquee";
+import { hospitals, testimonials, faqs } from "@/lib/mock-data";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -162,21 +164,8 @@ function Landing() {
         </div>
       </section>
 
-      {/* Partners */}
-      <section className="border-y border-border bg-background py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Partnered with India's leading hospital networks
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70">
-            {partners.map((p) => (
-              <span key={p} className="text-lg font-bold tracking-tight text-muted-foreground">
-                {p}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HospitalNetworkTrust />
+      <HealthcareEcosystemMarquee />
 
       {/* Features */}
       <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
