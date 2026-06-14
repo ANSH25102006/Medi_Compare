@@ -84,13 +84,7 @@ const ecosystemCards: EcosystemCard[] = [
   },
 ];
 
-function EcosystemCardItem({
-  card,
-  index,
-}: {
-  card: EcosystemCard;
-  index: number;
-}) {
+function EcosystemCardItem({ card, index }: { card: EcosystemCard; index: number }) {
   const Icon = card.icon;
 
   return (
@@ -112,12 +106,8 @@ function EcosystemCardItem({
         <span className="ecosystem-card-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-background/80 text-primary shadow-soft ring-1 ring-border/60 transition-transform duration-300 group-hover:scale-110 dark:bg-background/40">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <h3 className="mt-4 text-sm font-bold leading-tight text-foreground">
-          {card.title}
-        </h3>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-          {card.description}
-        </p>
+        <h3 className="mt-4 text-sm font-bold leading-tight text-foreground">{card.title}</h3>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{card.description}</p>
       </div>
     </article>
   );
@@ -141,25 +131,25 @@ export function HealthcareEcosystemMarquee() {
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">
             Healthcare ecosystem
           </p>
-          <h2
-            id="ecosystem-heading"
-            className="mt-3 text-3xl font-bold text-balance md:text-4xl"
-          >
+          <h2 id="ecosystem-heading" className="mt-3 text-3xl font-bold text-balance md:text-4xl">
             Built Around India&apos;s Healthcare Ecosystem
           </h2>
           <p className="mt-4 text-muted-foreground text-balance">
-            Connecting hospitals, patients, diagnostics, insurance providers,
-            pharmacies, and healthcare innovators on one transparent platform.
+            Connecting hospitals, patients, diagnostics, insurance providers, pharmacies, and
+            healthcare innovators on one transparent platform.
           </p>
         </div>
       </div>
 
-      <div
-        className="marquee-container relative mt-12"
-        aria-label="Healthcare ecosystem partners"
-      >
-        <div className="marquee-fade-secondary-left pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24" aria-hidden="true" />
-        <div className="marquee-fade-secondary-right pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24" aria-hidden="true" />
+      <div className="marquee-container relative mt-12" aria-label="Healthcare ecosystem partners">
+        <div
+          className="marquee-fade-secondary-left pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24"
+          aria-hidden="true"
+        />
+        <div
+          className="marquee-fade-secondary-right pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24"
+          aria-hidden="true"
+        />
 
         <div className="marquee-track group overflow-hidden py-2">
           <div className="marquee-content flex w-max gap-4 px-4 sm:gap-5">

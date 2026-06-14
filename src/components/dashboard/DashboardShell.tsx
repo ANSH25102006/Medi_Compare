@@ -41,7 +41,9 @@ export function DashboardShell({
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-gradient text-primary-foreground shadow-soft">
                 <Heart className="h-4 w-4" fill="currentColor" />
               </span>
-              <span className="text-base font-semibold tracking-tight group-data-[collapsible=icon]:hidden">MediCompare</span>
+              <span className="text-base font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+                MediCompare
+              </span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -81,7 +83,11 @@ export function DashboardShell({
               <Button variant="outline" size="icon" className="rounded-full">
                 <Bell className="h-4 w-4" />
               </Button>
-              <img src={user.avatar} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="h-9 w-9 rounded-full object-cover"
+              />
             </div>
           </header>
           <div className="flex-1 p-4 sm:p-6 lg:p-8">{children ?? <Outlet />}</div>

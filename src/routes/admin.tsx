@@ -1,21 +1,50 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 import {
-  LayoutDashboard, Briefcase, BadgeDollarSign, CalendarCheck, Star, BarChart3,
-  TrendingUp, Plus, Pencil, Trash2,
+  LayoutDashboard,
+  Briefcase,
+  BadgeDollarSign,
+  CalendarCheck,
+  Star,
+  BarChart3,
+  TrendingUp,
+  Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { adminAppointmentsTrend, servicePopularity, hospitals } from "@/lib/mock-data";
 import {
-  ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
 } from "recharts";
 import { toast } from "sonner";
 
@@ -34,12 +63,35 @@ const navItems: NavItem[] = [
 ];
 
 function AdminPage() {
-  const user = { name: "Apollo Specialty", role: "Hospital Admin", avatar: "https://i.pravatar.cc/120?img=64" };
+  const { user: authUser, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate({ to: "/login", search: { redirect: "/admin" } });
+      return;
+    }
+    if (authUser?.role !== "Admin") {
+      toast.error("Access denied. Admin portal is restricted.");
+      navigate({ to: "/dashboard" });
+    }
+  }, [isLoggedIn, authUser, navigate]);
+
   const [services, setServices] = useState(hospitals[0].services);
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newDuration, setNewDuration] = useState("");
+
+  if (!isLoggedIn || authUser?.role !== "Admin") {
+    return null;
+  }
+
+  const user = {
+    name: authUser?.name ?? "Hospital Admin",
+    role: "Hospital Admin",
+    avatar: authUser?.avatar ?? "https://i.pravatar.cc/120?img=64",
+  };
 
   const metrics = [
     { label: "Total appointments", value: "2,930", change: "+18%", icon: CalendarCheck },
@@ -50,8 +102,13 @@ function AdminPage() {
 
   const addService = () => {
     if (!newName || !newPrice) return;
-    setServices([...services, { name: newName, price: Number(newPrice), duration: newDuration || "30 min" }]);
-    setNewName(""); setNewPrice(""); setNewDuration("");
+    setServices([
+      ...services,
+      { name: newName, price: Number(newPrice), duration: newDuration || "30 min" },
+    ]);
+    setNewName("");
+    setNewPrice("");
+    setNewDuration("");
     setOpen(false);
     toast.success("Service added");
   };
@@ -61,7 +118,9 @@ function AdminPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold md:text-3xl">Operations overview</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Performance across appointments, revenue, and services.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Performance across appointments, revenue, and services.
+          </p>
         </div>
         <Button className="rounded-full">Generate report</Button>
       </div>
@@ -70,8 +129,13 @@ function AdminPage() {
         {metrics.map((m) => (
           <div key={m.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary"><m.icon className="h-5 w-5" /></span>
-              <Badge variant="secondary" className="rounded-full text-xs"><TrendingUp className="mr-1 h-3 w-3" />{m.change}</Badge>
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <m.icon className="h-5 w-5" />
+              </span>
+              <Badge variant="secondary" className="rounded-full text-xs">
+                <TrendingUp className="mr-1 h-3 w-3" />
+                {m.change}
+              </Badge>
             </div>
             <p className="mt-4 text-2xl font-bold">{m.value}</p>
             <p className="text-sm text-muted-foreground">{m.label}</p>
@@ -99,9 +163,23 @@ function AdminPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.93 0.01 250)" />
                 <XAxis dataKey="month" stroke="oklch(0.50 0.03 250)" fontSize={12} />
                 <YAxis stroke="oklch(0.50 0.03 250)" fontSize={12} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.93 0.01 250)" }} />
-                <Area type="monotone" dataKey="appointments" stroke="oklch(0.56 0.17 250)" strokeWidth={2} fill="url(#ag1)" />
-                <Area type="monotone" dataKey="revenue" stroke="oklch(0.66 0.16 160)" strokeWidth={2} fill="url(#ag2)" />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.93 0.01 250)" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="appointments"
+                  stroke="oklch(0.56 0.17 250)"
+                  strokeWidth={2}
+                  fill="url(#ag1)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="oklch(0.66 0.16 160)"
+                  strokeWidth={2}
+                  fill="url(#ag2)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -115,8 +193,16 @@ function AdminPage() {
               <BarChart data={servicePopularity} layout="vertical" margin={{ left: 10 }}>
                 <CartesianGrid horizontal={false} stroke="oklch(0.93 0.01 250)" />
                 <XAxis type="number" stroke="oklch(0.50 0.03 250)" fontSize={12} />
-                <YAxis dataKey="service" type="category" width={100} stroke="oklch(0.50 0.03 250)" fontSize={11} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.93 0.01 250)" }} />
+                <YAxis
+                  dataKey="service"
+                  type="category"
+                  width={100}
+                  stroke="oklch(0.50 0.03 250)"
+                  fontSize={11}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: "1px solid oklch(0.93 0.01 250)" }}
+                />
                 <Bar dataKey="bookings" fill="oklch(0.56 0.17 250)" radius={[0, 8, 8, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -128,23 +214,55 @@ function AdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Services & pricing</h2>
-            <p className="text-sm text-muted-foreground">Manage active services for your hospital.</p>
+            <p className="text-sm text-muted-foreground">
+              Manage active services for your hospital.
+            </p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full"><Plus className="mr-1 h-4 w-4" /> Add service</Button>
+              <Button className="rounded-full">
+                <Plus className="mr-1 h-4 w-4" /> Add service
+              </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add a new service</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Add a new service</DialogTitle>
+              </DialogHeader>
               <div className="space-y-4">
-                <div><Label>Service name</Label><Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Diabetes Screening" className="mt-1.5" /></div>
+                <div>
+                  <Label>Service name</Label>
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="e.g. Diabetes Screening"
+                    className="mt-1.5"
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Price (₹)</Label><Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} className="mt-1.5" /></div>
-                  <div><Label>Duration</Label><Input value={newDuration} onChange={(e) => setNewDuration(e.target.value)} placeholder="30 min" className="mt-1.5" /></div>
+                  <div>
+                    <Label>Price (₹)</Label>
+                    <Input
+                      type="number"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Duration</Label>
+                    <Input
+                      value={newDuration}
+                      onChange={(e) => setNewDuration(e.target.value)}
+                      placeholder="30 min"
+                      className="mt-1.5"
+                    />
+                  </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
                 <Button onClick={addService}>Add service</Button>
               </DialogFooter>
             </DialogContent>
@@ -166,10 +284,24 @@ function AdminPage() {
                 <TableRow key={s.name}>
                   <TableCell className="font-medium">{s.name}</TableCell>
                   <TableCell className="text-muted-foreground">{s.duration}</TableCell>
-                  <TableCell className="text-right font-semibold text-primary">₹{s.price.toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-semibold text-primary">
+                    ₹{s.price.toLocaleString()}
+                  </TableCell>
                   <TableCell className="text-right">
-                    <Button size="icon" variant="ghost" className="h-8 w-8"><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setServices(services.filter(x => x.name !== s.name)); toast("Service removed"); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setServices(services.filter((x) => x.name !== s.name));
+                        toast("Service removed");
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

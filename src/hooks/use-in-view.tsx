@@ -4,14 +4,12 @@ type UseInViewOptions = IntersectionObserverInit & {
   once?: boolean;
 };
 
-export function useInView<T extends HTMLElement = HTMLDivElement>(
-  {
-    once = true,
-    threshold = 0.12,
-    rootMargin = "0px 0px -40px 0px",
-    root = null,
-  }: UseInViewOptions = {},
-) {
+export function useInView<T extends HTMLElement = HTMLDivElement>({
+  once = true,
+  threshold = 0.12,
+  rootMargin = "0px 0px -40px 0px",
+  root = null,
+}: UseInViewOptions = {}) {
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(false);
 
