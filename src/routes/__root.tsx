@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -79,16 +80,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "MediCompare — Find Quality Healthcare at the Right Price" },
-      { name: "description", content: "Compare medical service costs, discover trusted hospitals, and book appointments instantly." },
+      {
+        name: "description",
+        content:
+          "Compare medical service costs, discover trusted hospitals, and book appointments instantly.",
+      },
       { name: "author", content: "MediCompare" },
       { property: "og:title", content: "MediCompare — Find Quality Healthcare at the Right Price" },
-      { property: "og:description", content: "Compare medical service costs, discover trusted hospitals, and book appointments instantly." },
+      {
+        property: "og:description",
+        content:
+          "Compare medical service costs, discover trusted hospitals, and book appointments instantly.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "MediCompare — Find Quality Healthcare at the Right Price" },
-      { name: "twitter:description", content: "Compare medical service costs, discover trusted hospitals, and book appointments instantly." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e77b3532-8efe-43f0-9870-de7d15ed0c32/id-preview-d5eeb615--b7387ebd-9ce1-4c85-8d8d-5449a6650d52.lovable.app-1780314374237.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e77b3532-8efe-43f0-9870-de7d15ed0c32/id-preview-d5eeb615--b7387ebd-9ce1-4c85-8d8d-5449a6650d52.lovable.app-1780314374237.png" },
+      {
+        name: "twitter:title",
+        content: "MediCompare — Find Quality Healthcare at the Right Price",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Compare medical service costs, discover trusted hospitals, and book appointments instantly.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e77b3532-8efe-43f0-9870-de7d15ed0c32/id-preview-d5eeb615--b7387ebd-9ce1-4c85-8d8d-5449a6650d52.lovable.app-1780314374237.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e77b3532-8efe-43f0-9870-de7d15ed0c32/id-preview-d5eeb615--b7387ebd-9ce1-4c85-8d8d-5449a6650d52.lovable.app-1780314374237.png",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -125,8 +149,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-right" />
+      <AuthProvider>
+        <Outlet />
+        <Toaster position="top-right" />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

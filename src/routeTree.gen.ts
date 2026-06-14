@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DoctorRouteImport } from './routes/doctor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -20,6 +21,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HospitalsIndexRouteImport } from './routes/hospitals.index'
 import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardSavedRouteImport } from './routes/dashboard.saved'
+import { Route as DashboardReviewsRouteImport } from './routes/dashboard.reviews'
+import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard.appointments'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -34,6 +39,11 @@ const ReviewsRoute = ReviewsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorRoute = DoctorRouteImport.update({
+  id: '/doctor',
+  path: '/doctor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -76,6 +86,26 @@ const HospitalsHospitalIdRoute = HospitalsHospitalIdRouteImport.update({
   path: '/hospitals/$hospitalId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSavedRoute = DashboardSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReviewsRoute = DashboardReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAppointmentsRoute = DashboardAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -83,10 +113,15 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/doctor': typeof DoctorRoute
   '/login': typeof LoginRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
+  '/dashboard/reviews': typeof DashboardReviewsRoute
+  '/dashboard/saved': typeof DashboardSavedRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
   '/hospitals/': typeof HospitalsIndexRoute
 }
@@ -96,10 +131,15 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/doctor': typeof DoctorRoute
   '/login': typeof LoginRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
+  '/dashboard/reviews': typeof DashboardReviewsRoute
+  '/dashboard/saved': typeof DashboardSavedRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
   '/hospitals': typeof HospitalsIndexRoute
 }
@@ -110,10 +150,15 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/doctor': typeof DoctorRoute
   '/login': typeof LoginRoute
   '/reviews': typeof ReviewsRoute
   '/signup': typeof SignupRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
+  '/dashboard/reviews': typeof DashboardReviewsRoute
+  '/dashboard/saved': typeof DashboardSavedRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
   '/hospitals/': typeof HospitalsIndexRoute
 }
@@ -126,9 +171,14 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/dashboard'
+    | '/doctor'
     | '/login'
     | '/reviews'
     | '/signup'
+    | '/dashboard/appointments'
+    | '/dashboard/reviews'
+    | '/dashboard/saved'
+    | '/dashboard/settings'
     | '/hospitals/$hospitalId'
     | '/hospitals/'
   fileRoutesByTo: FileRoutesByTo
@@ -139,9 +189,14 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/dashboard'
+    | '/doctor'
     | '/login'
     | '/reviews'
     | '/signup'
+    | '/dashboard/appointments'
+    | '/dashboard/reviews'
+    | '/dashboard/saved'
+    | '/dashboard/settings'
     | '/hospitals/$hospitalId'
     | '/hospitals'
   id:
@@ -152,9 +207,14 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/dashboard'
+    | '/doctor'
     | '/login'
     | '/reviews'
     | '/signup'
+    | '/dashboard/appointments'
+    | '/dashboard/reviews'
+    | '/dashboard/saved'
+    | '/dashboard/settings'
     | '/hospitals/$hospitalId'
     | '/hospitals/'
   fileRoutesById: FileRoutesById
@@ -165,7 +225,8 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  DoctorRoute: typeof DoctorRoute
   LoginRoute: typeof LoginRoute
   ReviewsRoute: typeof ReviewsRoute
   SignupRoute: typeof SignupRoute
@@ -194,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor': {
+      id: '/doctor'
+      path: '/doctor'
+      fullPath: '/doctor'
+      preLoaderRoute: typeof DoctorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -252,8 +320,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HospitalsHospitalIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/saved': {
+      id: '/dashboard/saved'
+      path: '/saved'
+      fullPath: '/dashboard/saved'
+      preLoaderRoute: typeof DashboardSavedRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reviews': {
+      id: '/dashboard/reviews'
+      path: '/reviews'
+      fullPath: '/dashboard/reviews'
+      preLoaderRoute: typeof DashboardReviewsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/appointments': {
+      id: '/dashboard/appointments'
+      path: '/appointments'
+      fullPath: '/dashboard/appointments'
+      preLoaderRoute: typeof DashboardAppointmentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
+
+interface DashboardRouteChildren {
+  DashboardAppointmentsRoute: typeof DashboardAppointmentsRoute
+  DashboardReviewsRoute: typeof DashboardReviewsRoute
+  DashboardSavedRoute: typeof DashboardSavedRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAppointmentsRoute: DashboardAppointmentsRoute,
+  DashboardReviewsRoute: DashboardReviewsRoute,
+  DashboardSavedRoute: DashboardSavedRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -261,7 +375,8 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  DoctorRoute: DoctorRoute,
   LoginRoute: LoginRoute,
   ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,

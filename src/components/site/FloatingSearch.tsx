@@ -21,7 +21,9 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
       <label className="group flex items-center gap-3 border-b border-border px-5 py-3 md:border-b-0 md:border-r">
         <Stethoscope className="h-4 w-4 text-primary" />
         <div className="flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Medical service</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Medical service
+          </p>
           <input
             list="fs-services"
             value={service}
@@ -30,7 +32,9 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
             className="mt-0.5 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           <datalist id="fs-services">
-            {services.map((s) => <option key={s} value={s} />)}
+            {services.map((s) => (
+              <option key={s} value={s} />
+            ))}
           </datalist>
         </div>
       </label>
@@ -38,7 +42,9 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
       <label className="group flex items-center gap-3 border-b border-border px-5 py-3 md:border-b-0 md:border-r">
         <MapPin className="h-4 w-4 text-primary" />
         <div className="flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Location</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Location
+          </p>
           <input
             list="fs-cities"
             value={city}
@@ -47,7 +53,9 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
             className="mt-0.5 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           <datalist id="fs-cities">
-            {cities.map((c) => <option key={c} value={c} />)}
+            {cities.map((c) => (
+              <option key={c} value={c} />
+            ))}
           </datalist>
         </div>
       </label>
@@ -55,7 +63,9 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
       <label className="group flex items-center gap-3 border-b border-border px-5 py-3 md:border-b-0 md:border-r">
         <CalendarDays className="h-4 w-4 text-primary" />
         <div className="flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Date</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Date
+          </p>
           <input
             type="date"
             value={date}

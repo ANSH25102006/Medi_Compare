@@ -2,9 +2,30 @@ import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 
 const groups = [
-  { title: "Company", links: [["About", "/about"], ["Contact", "/contact"], ["Careers", "/careers"]] },
-  { title: "Services", links: [["Compare Prices", "/compare"], ["Hospitals", "/hospitals"], ["Reviews", "/reviews"]] },
-  { title: "Legal", links: [["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"], ["Cookie Policy", "/cookies"]] },
+  {
+    title: "Company",
+    links: [
+      ["About", "/about"],
+      ["Contact", "/contact"],
+      ["Careers", "/careers"],
+    ],
+  },
+  {
+    title: "Services",
+    links: [
+      ["Compare Prices", "/compare"],
+      ["Hospitals", "/hospitals"],
+      ["Reviews", "/reviews"],
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      ["Privacy Policy", "/privacy"],
+      ["Terms of Service", "/terms"],
+      ["Cookie Policy", "/cookies"],
+    ],
+  },
 ] as const;
 
 export function Footer() {
@@ -20,7 +41,8 @@ export function Footer() {
               <span className="text-lg font-semibold tracking-tight">MediCompare</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              The transparent way to find, compare, and book quality healthcare services across India.
+              The transparent way to find, compare, and book quality healthcare services across
+              India.
             </p>
           </div>
           {groups.map((g) => (
@@ -29,9 +51,12 @@ export function Footer() {
               <ul className="mt-4 space-y-2">
                 {g.links.map(([label, href]) => (
                   <li key={label}>
-                    <Link to={href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    <a
+                      href={href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
                       {label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
