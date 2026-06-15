@@ -27,7 +27,7 @@ export function DashboardShell({
 }: {
   items: NavItem[];
   label: string;
-  user: { name: string; role: string; avatar: string };
+  user?: { name?: string; role?: string; avatar?: string };
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
@@ -76,7 +76,7 @@ export function DashboardShell({
               <SidebarTrigger />
               <div>
                 <p className="text-xs text-muted-foreground">Welcome back</p>
-                <p className="text-sm font-semibold">{user.name}</p>
+                <p className="text-sm font-semibold">{user?.name ?? "Guest"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -84,8 +84,8 @@ export function DashboardShell({
                 <Bell className="h-4 w-4" />
               </Button>
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={user?.avatar ?? "https://i.pravatar.cc/120?img=25"}
+                alt={user?.name ?? "Guest"}
                 className="h-9 w-9 rounded-full object-cover"
               />
             </div>

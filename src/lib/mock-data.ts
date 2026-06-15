@@ -1,3 +1,5 @@
+import { getItemSafe } from "./storage";
+
 export type Hospital = {
   id: string;
   name: string;
@@ -815,15 +817,10 @@ export function getHospitalRatingDetails(hospitalId: string): {
   const h = hospitals.find((x) => x.id === hospitalId);
   if (!h) return { rating: 0, reviewsCount: 0 };
 
-  let customReviews: PatientReview[] = [];
-  try {
-    const stored = localStorage.getItem("medicompare_reviews");
-    if (stored) {
-      customReviews = JSON.parse(stored).filter(
-        (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
-      );
-    }
-  } catch {}
+  const storedReviews = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+  const customReviews = storedReviews.filter(
+    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+  );
 
   const N_0 = h.reviews;
   const R_0 = h.rating;
@@ -861,27 +858,16 @@ export function getReviewsForHospital(hospitalId: string): PatientReview[] {
   }));
 
   // 2. Get custom reviews
-  let custom: PatientReview[] = [];
-  try {
-    const stored = localStorage.getItem("medicompare_reviews");
-    if (stored) {
-      custom = JSON.parse(stored).filter(
-        (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
-      );
-    }
-  } catch {}
+  const storedReviews = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+  const custom = storedReviews.filter(
+    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+  );
 
   return [...custom, ...base];
 }
 
 export function getAllReviews(): PatientReview[] {
-  let custom: PatientReview[] = [];
-  try {
-    const stored = localStorage.getItem("medicompare_reviews");
-    if (stored) {
-      custom = JSON.parse(stored);
-    }
-  } catch {}
+  const custom = getItemSafe<PatientReview[]>("medicompare_reviews", []);
 
   const base: PatientReview[] = [];
   hospitals.forEach((h) => {

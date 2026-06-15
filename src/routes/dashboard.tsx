@@ -40,6 +40,7 @@ import {
   healthSpendingBreakdown,
 } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
+import { getItemSafe } from "@/lib/storage";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -174,23 +175,15 @@ function Dashboard() {
   }, [isLoggedIn, user, navigate]);
 
   const [appointments] = useState<Appointment[]>(() => {
-    try {
-      if (typeof window === "undefined") return userAppointments;
-      const stored = localStorage.getItem("medicompare_appointments");
-      return stored ? JSON.parse(stored) : userAppointments;
-    } catch {
-      return userAppointments;
-    }
+    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
   });
 
   const [savedCount] = useState(() => {
-    try {
-      if (typeof window === "undefined") return 4;
-      const stored = localStorage.getItem("medicompare_saved_hospitals");
-      return stored ? JSON.parse(stored).length : 4;
-    } catch {
-      return 4;
-    }
+    const saved = getItemSafe<string[]>(
+      "medicompare_saved_hospitals",
+      ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
+    );
+    return saved.length;
   });
 
   if (!isLoggedIn || user?.role !== "Patient") {

@@ -18,6 +18,7 @@ import {
 import { SiteShell } from "@/components/site/SiteShell";
 import { HospitalCard } from "@/components/site/HospitalCard";
 import { FloatingSearch } from "@/components/site/FloatingSearch";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 import {
   ComparisonTable,
   buildRows,
@@ -160,10 +161,7 @@ function ComparePage() {
   const [showCompareView, setShowCompareView] = useState(false);
 
   const loadCompared = () => {
-    try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      setComparedIds(stored ? JSON.parse(stored) : []);
-    } catch {}
+    setComparedIds(getItemSafe<string[]>("medicompare_compared_hospitals", []));
   };
 
   useEffect(() => {
@@ -195,7 +193,7 @@ function ComparePage() {
 
   const clearComparison = () => {
     try {
-      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify([]));
+      setItemSafe("medicompare_compared_hospitals", []);
       setComparedIds([]);
       setShowCompareView(false);
       toast.success("Comparison cleared.");
@@ -205,7 +203,7 @@ function ComparePage() {
   const removeComparedId = (id: string) => {
     try {
       const updated = comparedIds.filter((x) => x !== id);
-      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify(updated));
+      setItemSafe("medicompare_compared_hospitals", updated);
       setComparedIds(updated);
       if (updated.length < 2) {
         setShowCompareView(false);
@@ -384,13 +382,13 @@ function ComparePage() {
 
     return scored.map((s) => {
       const isHighestRated = s.rating === highestRating;
-      const isMostAffordable = s.price === lowestPrice;
+      const isCheapest = s.price === lowestPrice;
       const isBestValue = s.overallScore === highestScore;
 
       return {
         ...s,
         isHighestRated,
-        isMostAffordable,
+        isCheapest,
         isBestValue,
       };
     });
@@ -475,7 +473,7 @@ function ComparePage() {
 
             {/* Side by side columns */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {comparisonData.map(({ hospital: h, price, serviceName, rating, reviews, distance, city, address, slots, facilities, specialties, overallScore, isHighestRated, isMostAffordable, isBestValue }) => (
+              {comparisonData.map(({ hospital: h, price, serviceName, rating, reviews, distance, city, address, slots, facilities, specialties, overallScore, isHighestRated, isCheapest, isBestValue }) => (
                 <div
                   key={h.id}
                   className="rounded-3xl border border-border bg-card p-6 shadow-elevated relative flex flex-col justify-between"
@@ -502,9 +500,9 @@ function ComparePage() {
                           Best Value
                         </span>
                       )}
-                      {isMostAffordable && (
+                      {isCheapest && (
                         <span className="inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-bold text-success">
-                          Most Affordable
+                          Cheapest
                         </span>
                       )}
                       {isHighestRated && (

@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { hospitals, userAppointments } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 
 type SearchParams = { hospital?: string; service?: string; date?: string; slot?: string };
 
@@ -57,6 +58,15 @@ function BookPage() {
   const [simulateFailure, setSimulateFailure] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [bookingId, setBookingId] = useState("");
+
+  // Sync user values if they load asynchronously
+  useEffect(() => {
+    if (user) {
+      setName(prev => prev || user.name || "");
+      setEmail(prev => prev || user.email || "");
+      setCardHolder(prev => prev || user.name || "");
+    }
+  }, [user]);
 
   // Validate query parameter/state: date must not be in the past
   useEffect(() => {
@@ -415,8 +425,7 @@ function BookPage() {
 
                     // Check for duplicate booking before paying
                     try {
-                      const stored = localStorage.getItem("medicompare_appointments");
-                      const currentList = stored ? JSON.parse(stored) : userAppointments;
+                      const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
                       const isDuplicate = currentList.some(
                         (a: { hospital: string; service: string; date: string; status: string }) =>
                           a.hospital === hospital.name &&
@@ -446,8 +455,7 @@ function BookPage() {
                         setBookingId(id);
 
                         try {
-                          const stored = localStorage.getItem("medicompare_appointments");
-                          const currentList = stored ? JSON.parse(stored) : userAppointments;
+                          const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
                           const newAppt = {
                             id,
                             date,
@@ -455,10 +463,7 @@ function BookPage() {
                             service: selectedService.name,
                             status: "Upcoming",
                           };
-                          localStorage.setItem(
-                            "medicompare_appointments",
-                            JSON.stringify([newAppt, ...currentList]),
-                          );
+                          setItemSafe("medicompare_appointments", [newAppt, ...currentList]);
                         } catch (e) {
                           // ignore
                         }
@@ -498,8 +503,7 @@ function BookPage() {
 
                       // Check for duplicate booking before proceeding to payment
                       try {
-                        const stored = localStorage.getItem("medicompare_appointments");
-                        const currentList = stored ? JSON.parse(stored) : userAppointments;
+                        const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
                         const isDuplicate = currentList.some(
                           (a: {
                             hospital: string;

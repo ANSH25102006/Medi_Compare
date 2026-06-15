@@ -30,6 +30,7 @@ import {
 import { userAppointments } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 
 export const Route = createFileRoute("/doctor")({
   head: () => ({ meta: [{ title: "Doctor Dashboard — MediCompare" }] }),
@@ -68,13 +69,7 @@ function DoctorDashboard() {
   }, [isLoggedIn, user, navigate]);
 
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    try {
-      if (typeof window === "undefined") return userAppointments;
-      const stored = localStorage.getItem("medicompare_appointments");
-      return stored ? JSON.parse(stored) : userAppointments;
-    } catch {
-      return userAppointments;
-    }
+    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
   });
 
   const updateStatus = (id: string, newStatus: "Confirmed" | "Completed" | "Cancelled") => {
@@ -86,7 +81,7 @@ function DoctorDashboard() {
         return a;
       });
       setAppointments(updated);
-      localStorage.setItem("medicompare_appointments", JSON.stringify(updated));
+      setItemSafe("medicompare_appointments", updated);
       toast.success(`Appointment status updated to ${newStatus}.`);
     } catch {
       toast.error("Failed to update status.");

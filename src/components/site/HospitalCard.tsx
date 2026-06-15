@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getServiceAverage, type Hospital } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 
 export function HospitalCard({
   hospital,
@@ -29,23 +30,18 @@ export function HospitalCard({
   const [isCompared, setIsCompared] = useState(false);
 
   useEffect(() => {
-    try {
-      const savedStored = localStorage.getItem("medicompare_saved_hospitals");
-      const savedIds = savedStored ? JSON.parse(savedStored) : [];
-      setIsSaved(savedIds.includes(hospital.id));
+    const savedIds = getItemSafe<string[]>("medicompare_saved_hospitals", []);
+    setIsSaved(savedIds.includes(hospital.id));
 
-      const compareStored = localStorage.getItem("medicompare_compared_hospitals");
-      const compareIds = compareStored ? JSON.parse(compareStored) : [];
-      setIsCompared(compareIds.includes(hospital.id));
-    } catch {}
+    const compareIds = getItemSafe<string[]>("medicompare_compared_hospitals", []);
+    setIsCompared(compareIds.includes(hospital.id));
   }, [hospital.id]);
 
   const handleSaveToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      const stored = localStorage.getItem("medicompare_saved_hospitals");
-      let ids = stored ? JSON.parse(stored) : [];
+      let ids = getItemSafe<string[]>("medicompare_saved_hospitals", []);
       if (ids.includes(hospital.id)) {
         ids = ids.filter((id: string) => id !== hospital.id);
         toast.success("Removed from saved hospitals.");
@@ -55,7 +51,7 @@ export function HospitalCard({
         toast.success("Hospital saved successfully!");
         setIsSaved(true);
       }
-      localStorage.setItem("medicompare_saved_hospitals", JSON.stringify(ids));
+      setItemSafe("medicompare_saved_hospitals", ids);
       onSaveToggle?.();
     } catch {
       toast.error("Failed to save hospital.");
@@ -64,8 +60,7 @@ export function HospitalCard({
 
   const handleCompareChange = (checked: boolean) => {
     try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      let ids = stored ? JSON.parse(stored) : [];
+      let ids = getItemSafe<string[]>("medicompare_compared_hospitals", []);
       if (checked) {
         if (ids.length >= 4) {
           toast.error("You can compare up to 4 hospitals at a time.");
@@ -81,7 +76,7 @@ export function HospitalCard({
         setIsCompared(false);
         toast.success(`Removed ${hospital.name} from comparison.`);
       }
-      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify(ids));
+      setItemSafe("medicompare_compared_hospitals", ids);
       onCompareToggle?.();
     } catch {
       toast.error("Failed to update comparison.");

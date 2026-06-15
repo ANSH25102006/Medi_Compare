@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { getAllReviews, getHospitalIdByName, type PatientReview, testimonials } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 import {
   Select,
   SelectContent,
@@ -119,9 +120,8 @@ function ReviewsPage() {
       }),
     };
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      const current = stored ? JSON.parse(stored) : [];
-      localStorage.setItem("medicompare_reviews", JSON.stringify([newReview, ...current]));
+      const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+      setItemSafe("medicompare_reviews", [newReview, ...current]);
       setRefreshTrigger((prev) => prev + 1);
       setReviewText("");
       setHospital("");
@@ -136,11 +136,9 @@ function ReviewsPage() {
 
   const handleDeleteReview = (id: string) => {
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review deleted.");
       setRefreshTrigger((prev) => prev + 1);
     } catch {
@@ -155,16 +153,14 @@ function ReviewsPage() {
       return;
     }
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
         if (r.id === editingReviewId) {
           return { ...r, text: editText.trim(), rating: editRating };
         }
         return r;
       });
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review updated!");
       setEditingReviewId(null);
       setRefreshTrigger((prev) => prev + 1);

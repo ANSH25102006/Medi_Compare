@@ -13,6 +13,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { hospitals } from "@/lib/mock-data";
 import { HospitalCard } from "@/components/site/HospitalCard";
+import { getItemSafe } from "@/lib/storage";
 
 export const Route = createFileRoute("/dashboard/saved")({
   head: () => ({ meta: [{ title: "Saved Hospitals — MediCompare" }] }),
@@ -46,13 +47,7 @@ function SavedPage() {
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
   const loadSaved = () => {
-    try {
-      if (typeof window === "undefined") return;
-      const stored = localStorage.getItem("medicompare_saved_hospitals");
-      setSavedIds(stored ? JSON.parse(stored) : []);
-    } catch {
-      setSavedIds([]);
-    }
+    setSavedIds(getItemSafe<string[]>("medicompare_saved_hospitals", []));
   };
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { hospitals, getServiceAverage, getServiceMin, getHospitalRatingDetails } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 
 type Row = {
   hospitalId: string;
@@ -77,10 +78,7 @@ export function ComparisonTable({
   const [comparedIds, setComparedIds] = useState<string[]>([]);
 
   const loadCompared = () => {
-    try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      setComparedIds(stored ? JSON.parse(stored) : []);
-    } catch {}
+    setComparedIds(getItemSafe<string[]>("medicompare_compared_hospitals", []));
   };
 
   useEffect(() => {
@@ -89,8 +87,7 @@ export function ComparisonTable({
 
   const handleCompareChange = (hospitalId: string, checked: boolean, hospitalName: string) => {
     try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      let ids = stored ? JSON.parse(stored) : [];
+      let ids = getItemSafe<string[]>("medicompare_compared_hospitals", []);
       if (checked) {
         if (ids.length >= 4) {
           toast.error("You can compare up to 4 hospitals at a time.");
@@ -105,7 +102,7 @@ export function ComparisonTable({
         ids = ids.filter((id: string) => id !== hospitalId);
         toast.success(`Removed ${hospitalName} from comparison.`);
       }
-      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify(ids));
+      setItemSafe("medicompare_compared_hospitals", ids);
       setComparedIds(ids);
       onCompareToggle?.();
     } catch {

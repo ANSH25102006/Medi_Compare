@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useNavigate, useLocation } from "@tanstack/react-router";
 import { Star, MapPin, Phone, ShieldCheck, Award, Calendar, Heart, ShieldAlert, Edit2, Trash2, Scale } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+import {
   hospitals,
   getReviewsForHospital,
   getHospitalRatingDetails,
@@ -23,6 +39,7 @@ import {
 } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { DetailSkeleton } from "@/components/site/SkeletonLoader";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 
 export const Route = createFileRoute("/hospitals/$hospitalId")({
   loader: ({ params }): Hospital => {
@@ -76,6 +93,67 @@ function HospitalDetails() {
   // Sync rating calculations reactive to refreshReviews
   const { rating, reviewsCount } = getHospitalRatingDetails(hospital.id);
 
+  const [trendService, setTrendService] = useState<string>(() => hospital.services[0]?.name ?? "");
+
+  const { trendData, sixMonthHigh, sixMonthLow, trendStatus, trendColor, selectedSvcPrice } = useMemo(() => {
+    const svc = hospital.services.find((s) => s.name === trendService) || hospital.services[0];
+    if (!svc) {
+      return {
+        trendData: [],
+        sixMonthHigh: 0,
+        sixMonthLow: 0,
+        trendStatus: "Stable",
+        trendColor: "text-muted-foreground",
+        selectedSvcPrice: 0,
+      };
+    }
+    const currentPrice = svc.price;
+
+    const seed = (hospital.id.charCodeAt(0) + (trendService.charCodeAt(0) || 0)) % 3;
+    let multipliers: number[];
+    let status: string;
+    let color: string;
+
+    if (seed === 0) {
+      multipliers = [1.06, 1.05, 1.03, 1.02, 1.01, 1.0];
+      status = "Downward";
+      color = "text-success";
+    } else if (seed === 1) {
+      multipliers = [0.93, 0.94, 0.97, 0.98, 0.99, 1.0];
+      status = "Upward";
+      color = "text-destructive";
+    } else {
+      multipliers = [0.99, 1.01, 0.98, 1.02, 0.99, 1.0];
+      status = "Stable";
+      color = "text-primary";
+    }
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonthIdx = new Date().getMonth();
+    const lastSixMonths = Array.from({ length: 6 }, (_, i) => {
+      const idx = (currentMonthIdx - 5 + i + 12) % 12;
+      return monthNames[idx];
+    });
+
+    const data = lastSixMonths.map((m, idx) => ({
+      month: m,
+      price: Math.round(currentPrice * multipliers[idx]),
+    }));
+
+    const prices = data.map((d) => d.price);
+    const high = Math.max(...prices);
+    const low = Math.min(...prices);
+
+    return {
+      trendData: data,
+      sixMonthHigh: high,
+      sixMonthLow: low,
+      trendStatus: status,
+      trendColor: color,
+      selectedSvcPrice: currentPrice,
+    };
+  }, [hospital.id, trendService]);
+
   useEffect(() => {
     setIsPageLoading(true);
     const timer = setTimeout(() => {
@@ -90,26 +168,18 @@ function HospitalDetails() {
   const [slot, setSlot] = useState<string | null>(null);
 
   const [isSaved, setIsSaved] = useState(() => {
-    try {
-      if (typeof window === "undefined") return false;
-      const stored = localStorage.getItem("medicompare_saved_hospitals");
-      const ids = stored
-        ? JSON.parse(stored)
-        : ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"];
-      return ids.includes(hospital.id);
-    } catch {
-      return false;
-    }
+    const ids = getItemSafe<string[]>(
+      "medicompare_saved_hospitals",
+      ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
+    );
+    return ids.includes(hospital.id);
   });
 
   const [isCompared, setIsCompared] = useState(false);
 
   const loadCompared = () => {
-    try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      const compareIds = stored ? JSON.parse(stored) : [];
-      setIsCompared(compareIds.includes(hospital.id));
-    } catch {}
+    const compareIds = getItemSafe<string[]>("medicompare_compared_hospitals", []);
+    setIsCompared(compareIds.includes(hospital.id));
   };
 
   useEffect(() => {
@@ -126,10 +196,10 @@ function HospitalDetails() {
       return;
     }
     try {
-      const stored = localStorage.getItem("medicompare_saved_hospitals");
-      let ids = stored
-        ? JSON.parse(stored)
-        : ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"];
+      let ids = getItemSafe<string[]>(
+        "medicompare_saved_hospitals",
+        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
+      );
       if (ids.includes(hospital.id)) {
         ids = ids.filter((id: string) => id !== hospital.id);
         toast.success("Removed from bookmarks.");
@@ -139,7 +209,7 @@ function HospitalDetails() {
         toast.success("Hospital bookmarked!");
         setIsSaved(true);
       }
-      localStorage.setItem("medicompare_saved_hospitals", JSON.stringify(ids));
+      setItemSafe("medicompare_saved_hospitals", ids);
     } catch {
       toast.error("Failed to update saved list.");
     }
@@ -147,8 +217,7 @@ function HospitalDetails() {
 
   const toggleCompare = () => {
     try {
-      const stored = localStorage.getItem("medicompare_compared_hospitals");
-      let ids = stored ? JSON.parse(stored) : [];
+      let ids = getItemSafe<string[]>("medicompare_compared_hospitals", []);
       if (isCompared) {
         ids = ids.filter((id: string) => id !== hospital.id);
         setIsCompared(false);
@@ -162,7 +231,7 @@ function HospitalDetails() {
         setIsCompared(true);
         toast.success("Added to comparison!");
       }
-      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify(ids));
+      setItemSafe("medicompare_compared_hospitals", ids);
     } catch {
       toast.error("Failed to update comparison.");
     }
@@ -211,9 +280,8 @@ function HospitalDetails() {
     };
 
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      const current = stored ? JSON.parse(stored) : [];
-      localStorage.setItem("medicompare_reviews", JSON.stringify([newReview, ...current]));
+      const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+      setItemSafe("medicompare_reviews", [newReview, ...current]);
       toast.success("Review posted successfully!");
       setReviewText("");
       setUserRating(5);
@@ -225,11 +293,9 @@ function HospitalDetails() {
 
   const handleDeleteReview = (id: string) => {
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review deleted.");
       setRefreshReviews((prev) => prev + 1);
     } catch {
@@ -244,16 +310,14 @@ function HospitalDetails() {
       return;
     }
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
         if (r.id === editingReviewId) {
           return { ...r, text: editText.trim(), rating: editRating };
         }
         return r;
       });
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review updated!");
       setEditingReviewId(null);
       setRefreshReviews((prev) => prev + 1);
@@ -394,36 +458,130 @@ function HospitalDetails() {
 
             <TabsContent
               value="services"
-              className="mt-6 rounded-2xl border border-border bg-card p-2 shadow-soft sm:p-6"
+              className="mt-6 space-y-8 outline-none"
             >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="w-40 text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {hospital.services.map((s) => (
-                    <TableRow key={s.name}>
-                      <TableCell className="font-medium">{s.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.duration}</TableCell>
-                      <TableCell className="text-right font-semibold text-primary">
-                        ₹{s.price.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild size="sm" variant="outline" className="rounded-full">
-                          <Link to="/book" search={{ hospital: hospital.id, service: s.name }}>
-                            Book
-                          </Link>
-                        </Button>
-                      </TableCell>
+              <div className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-6">
+                <h3 className="text-lg font-bold mb-4 px-2">Services & Procedures</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="w-40 text-right">Action</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {hospital.services.map((s) => (
+                      <TableRow key={s.name}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{s.duration}</TableCell>
+                        <TableCell className="text-right font-semibold text-primary">
+                          ₹{s.price.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button asChild size="sm" variant="outline" className="rounded-full">
+                            <Link to="/book" search={{ hospital: hospital.id, service: s.name }}>
+                              Book
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Price Trends Card */}
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5 mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold">Historical Cost Trends</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Monitor cost changes for procedures at this hospital over the last 6 months
+                    </p>
+                  </div>
+                  <Select
+                    value={trendService}
+                    onValueChange={setTrendService}
+                  >
+                    <SelectTrigger className="w-56 rounded-xl">
+                      <SelectValue placeholder="Select procedure" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hospital.services.map((s) => (
+                        <SelectItem key={s.name} value={s.name}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Trend summary metrics */}
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
+                  <div className="rounded-xl bg-secondary/50 p-4">
+                    <p className="text-xs text-muted-foreground">Current Cost</p>
+                    <p className="text-xl font-bold text-primary mt-1">₹{selectedSvcPrice.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-4">
+                    <p className="text-xs text-muted-foreground">6-Month High</p>
+                    <p className="text-xl font-bold mt-1">₹{sixMonthHigh.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-4">
+                    <p className="text-xs text-muted-foreground">6-Month Low</p>
+                    <p className="text-xl font-bold mt-1">₹{sixMonthLow.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-4">
+                    <p className="text-xs text-muted-foreground">Trend Status</p>
+                    <p className={`text-lg font-bold mt-1.5 flex items-center gap-1.5 ${trendColor}`}>
+                      {trendStatus === "Upward" ? "↗ Upward" : trendStatus === "Downward" ? "↘ Downward" : "→ Stable"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Line Chart */}
+                <div className="h-72 w-full pt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendData} margin={{ left: 10, right: 10, top: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226,232,240,0.3)" />
+                      <XAxis
+                        dataKey="month"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+                        domain={['auto', 'auto']}
+                      />
+                      <Tooltip
+                        formatter={(value: any) => [`₹${value.toLocaleString()}`, "Price"]}
+                        contentStyle={{
+                          background: "oklch(var(--card))",
+                          border: "1px solid oklch(var(--border))",
+                          borderRadius: "16px",
+                          boxShadow: "var(--shadow-soft)",
+                          fontSize: "12px",
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="price"
+                        stroke="rgb(59,130,246)"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, fill: "oklch(var(--card))" }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent

@@ -22,6 +22,8 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { getItemSafe, setItemSafe } from "@/lib/storage";
+
 export const Route = createFileRoute("/dashboard/appointments")({
   head: () => ({ meta: [{ title: "Appointments — MediCompare" }] }),
   component: AppointmentsPage,
@@ -67,13 +69,7 @@ function AppointmentsPage() {
   }, [isLoggedIn, user, navigate]);
 
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    try {
-      if (typeof window === "undefined") return userAppointments;
-      const stored = localStorage.getItem("medicompare_appointments");
-      return stored ? JSON.parse(stored) : userAppointments;
-    } catch {
-      return userAppointments;
-    }
+    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
   });
 
   const cancelAppointment = (id: string) => {
@@ -85,7 +81,7 @@ function AppointmentsPage() {
         return a;
       });
       setAppointments(updated);
-      localStorage.setItem("medicompare_appointments", JSON.stringify(updated));
+      setItemSafe("medicompare_appointments", updated);
       toast.success("Appointment cancelled successfully.");
     } catch {
       toast.error("Failed to cancel appointment.");

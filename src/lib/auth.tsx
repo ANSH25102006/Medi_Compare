@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { getItemSafe, setItemSafe, removeItemSafe } from "./storage";
 
 export type AuthUser = {
   name: string;
@@ -33,21 +34,15 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
-    try {
-      if (typeof window === "undefined") return null;
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? (JSON.parse(stored) as AuthUser) : null;
-    } catch {
-      return null;
-    }
+    return getItemSafe<AuthUser | null>(STORAGE_KEY, null);
   });
 
   // Keep localStorage in sync whenever user changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      setItemSafe(STORAGE_KEY, user);
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      removeItemSafe(STORAGE_KEY);
     }
   }, [user]);
 
@@ -68,18 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name = "Doctor";
     }
 
-    try {
-      const accounts = JSON.parse(localStorage.getItem("medicompare_accounts") ?? "{}");
-      if (accounts[email]) {
-        if (typeof accounts[email] === "object") {
-          name = accounts[email].name || name;
-          role = accounts[email].role || role;
-        } else {
-          name = accounts[email];
-        }
+    const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
+    if (accounts[email]) {
+      if (typeof accounts[email] === "object") {
+        name = accounts[email].name || name;
+        role = accounts[email].role || role;
+      } else {
+        name = accounts[email];
       }
-    } catch {
-      // ignore
     }
     const newUser: AuthUser = { name, email, avatar: generateAvatar(email), role };
     setUser(newUser);
@@ -96,13 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Please fill all fields. Password must be at least 6 characters.");
       }
       // Store name and role keyed by email
-      try {
-        const accounts = JSON.parse(localStorage.getItem("medicompare_accounts") ?? "{}");
-        accounts[email] = { name, role };
-        localStorage.setItem("medicompare_accounts", JSON.stringify(accounts));
-      } catch {
-        // ignore
-      }
+      const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
+      accounts[email] = { name, role };
+      setItemSafe("medicompare_accounts", accounts);
+
       const newUser: AuthUser = { name, email, avatar: generateAvatar(email), role };
       setUser(newUser);
     },
@@ -116,16 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (newName: string, newEmail: string) => {
       if (!user) return;
-      try {
-        const accounts = JSON.parse(localStorage.getItem("medicompare_accounts") ?? "{}");
-        if (accounts[user.email]) {
-          delete accounts[user.email];
-        }
-        accounts[newEmail] = { name: newName, role: user.role };
-        localStorage.setItem("medicompare_accounts", JSON.stringify(accounts));
-      } catch {
-        // ignore
+      const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
+      if (accounts[user.email]) {
+        delete accounts[user.email];
       }
+      accounts[newEmail] = { name: newName, role: user.role };
+      setItemSafe("medicompare_accounts", accounts);
+
       setUser((prev) => {
         if (!prev) return null;
         return { ...prev, name: newName, email: newEmail, avatar: generateAvatar(newEmail) };

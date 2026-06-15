@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -93,14 +94,8 @@ function DashboardReviewsPage() {
   const [editRating, setEditRating] = useState(5);
 
   useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const stored = localStorage.getItem("medicompare_reviews");
-      const all: PatientReview[] = stored ? JSON.parse(stored) : [];
-      setMyReviews(all.filter((r) => r.userEmail === user?.email));
-    } catch {
-      setMyReviews([]);
-    }
+    const all = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+    setMyReviews(all.filter((r) => r.userEmail === user?.email));
   }, [user?.email, refreshReviews]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
@@ -128,9 +123,8 @@ function DashboardReviewsPage() {
       }),
     };
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      const current = stored ? JSON.parse(stored) : [];
-      localStorage.setItem("medicompare_reviews", JSON.stringify([newReview, ...current]));
+      const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+      setItemSafe("medicompare_reviews", [newReview, ...current]);
       setHospital("");
       setText("");
       setRating(5);
@@ -143,11 +137,9 @@ function DashboardReviewsPage() {
 
   const handleDeleteReview = (id: string) => {
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review deleted.");
       setRefreshReviews((prev) => prev + 1);
     } catch {
@@ -162,16 +154,14 @@ function DashboardReviewsPage() {
       return;
     }
     try {
-      const stored = localStorage.getItem("medicompare_reviews");
-      if (!stored) return;
-      const current = JSON.parse(stored);
+      const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
         if (r.id === editingReviewId) {
           return { ...r, text: editText.trim(), rating: editRating };
         }
         return r;
       });
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      setItemSafe("medicompare_reviews", updated);
       toast.success("Review updated!");
       setEditingReviewId(null);
       setRefreshReviews((prev) => prev + 1);
