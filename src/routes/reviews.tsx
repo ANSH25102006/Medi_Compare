@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Star, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { Star, CheckCircle2, Edit2, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { testimonials } from "@/lib/mock-data";
+import { getAllReviews, getHospitalIdByName, type PatientReview } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import {
   Select,
@@ -86,8 +86,17 @@ function ReviewsPage() {
   const [rating, setRating] = useState(5);
   const [hospital, setHospital] = useState("");
   const [reviewText, setReviewText] = useState("");
-  const [reviews, setReviews] = useState(allReviewsBase);
+  const [reviews, setReviews] = useState<PatientReview[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editRating, setEditRating] = useState(5);
+
+  useEffect(() => {
+    setReviews(getAllReviews());
+  }, [refreshTrigger]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,20 +104,73 @@ function ReviewsPage() {
       toast.error("Please fill in all fields.");
       return;
     }
-    const newReview = {
-      name: user?.name ?? "Anonymous",
-      role: `Patient — ${hospital}`,
-      text: reviewText.trim(),
+    const newReview: PatientReview = {
+      id: `custom-${Date.now()}`,
+      hospitalId: getHospitalIdByName(hospital),
+      hospitalName: hospital,
+      userName: user?.name ?? "Anonymous",
+      userEmail: user?.email ?? "",
       rating,
-      avatar: user?.avatar,
+      text: reviewText.trim(),
+      date: new Date().toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
     };
-    setReviews((prev) => [newReview, ...prev]);
-    setReviewText("");
-    setHospital("");
-    setRating(5);
-    setSubmitted(true);
-    toast.success("Review submitted! Thank you for your feedback 🙏");
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      const stored = localStorage.getItem("medicompare_reviews");
+      const current = stored ? JSON.parse(stored) : [];
+      localStorage.setItem("medicompare_reviews", JSON.stringify([newReview, ...current]));
+      setRefreshTrigger((prev) => prev + 1);
+      setReviewText("");
+      setHospital("");
+      setRating(5);
+      setSubmitted(true);
+      toast.success("Review submitted! Thank you for your feedback 🙏");
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch {
+      toast.error("Failed to submit review.");
+    }
+  };
+
+  const handleDeleteReview = (id: string) => {
+    try {
+      const stored = localStorage.getItem("medicompare_reviews");
+      if (!stored) return;
+      const current = JSON.parse(stored);
+      const updated = current.filter((r: any) => r.id !== id);
+      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      toast.success("Review deleted.");
+      setRefreshTrigger((prev) => prev + 1);
+    } catch {
+      toast.error("Failed to delete review.");
+    }
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editText.trim()) {
+      toast.error("Review text is required.");
+      return;
+    }
+    try {
+      const stored = localStorage.getItem("medicompare_reviews");
+      if (!stored) return;
+      const current = JSON.parse(stored);
+      const updated = current.map((r: any) => {
+        if (r.id === editingReviewId) {
+          return { ...r, text: editText.trim(), rating: editRating };
+        }
+        return r;
+      });
+      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      toast.success("Review updated!");
+      setEditingReviewId(null);
+      setRefreshTrigger((prev) => prev + 1);
+    } catch {
+      toast.error("Failed to update review.");
+    }
   };
 
   return (
@@ -135,40 +197,106 @@ function ReviewsPage() {
         <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
           {/* Reviews grid */}
           <div className="grid auto-rows-min gap-6 sm:grid-cols-2">
-            {reviews.map((t, idx) => (
-              <figure
-                key={`${t.name}-${idx}`}
-                className="rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
-              >
-                <div className="flex items-center gap-1 text-warning">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                  {Array.from({ length: 5 - t.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-muted-foreground" />
-                  ))}
-                </div>
-                <blockquote className="mt-4 text-sm leading-relaxed">"{t.text}"</blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  {t.avatar ? (
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="h-9 w-9 rounded-full object-cover"
-                    />
+            {reviews.map((t, idx) => {
+              const isMyReview = isLoggedIn && user && t.userEmail === user.email;
+              const isEditing = editingReviewId === t.id;
+
+              return (
+                <figure
+                  key={t.id || `${t.userName}-${idx}`}
+                  className="rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated relative"
+                >
+                  {isEditing ? (
+                    <form onSubmit={handleSaveEdit} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-primary">Editing your review</p>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setEditRating(star)}
+                              className="transition-transform hover:scale-110"
+                            >
+                              <Star
+                                className={`h-4 w-4 ${
+                                  editRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-xl border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                        placeholder="Update your review..."
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full"
+                          type="button"
+                          onClick={() => setEditingReviewId(null)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button size="sm" className="rounded-full" type="submit">
+                          Save
+                        </Button>
+                      </div>
+                    </form>
                   ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary text-sm font-bold">
-                      {t.name[0]}
-                    </div>
+                    <>
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-1 text-warning">
+                          {Array.from({ length: t.rating }).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-current" />
+                          ))}
+                          {Array.from({ length: 5 - t.rating }).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 text-muted-foreground" />
+                          ))}
+                        </div>
+                        {isMyReview && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <button
+                              onClick={() => {
+                                setEditingReviewId(t.id);
+                                setEditText(t.text);
+                                setEditRating(t.rating);
+                              }}
+                              className="flex items-center gap-1 text-primary hover:underline"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" /> Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReview(t.id)}
+                              className="flex items-center gap-1 text-destructive hover:underline"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <blockquote className="mt-4 text-sm leading-relaxed">"{t.text}"</blockquote>
+                      <figcaption className="mt-5 flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary text-sm font-bold">
+                          {t.userName ? t.userName[0].toUpperCase() : "A"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{t.userName}</p>
+                          <p className="text-xs text-muted-foreground">Patient — {t.hospitalName}</p>
+                        </div>
+                        <CheckCircle2 className="ml-auto h-4 w-4 text-success" />
+                      </figcaption>
+                    </>
                   )}
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                  <CheckCircle2 className="ml-auto h-4 w-4 text-success" />
-                </figcaption>
-              </figure>
-            ))}
+                </figure>
+              );
+            })}
           </div>
 
           {/* Write a review */}

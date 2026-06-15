@@ -5,6 +5,8 @@ import {
   Star as StarIcon,
   Bookmark,
   Settings as SettingsIcon,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getHospitalIdByName, type PatientReview } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/dashboard/reviews")({
   head: () => ({ meta: [{ title: "My Reviews — MediCompare" }] }),
@@ -82,33 +85,23 @@ function DashboardReviewsPage() {
   const [rating, setRating] = useState(5);
   const [hospital, setHospital] = useState("");
   const [text, setText] = useState("");
-  const [myReviews, setMyReviews] = useState<
-    Array<{ hospital: string; rating: number; text: string; date: string }>
-  >(() => {
+  const [myReviews, setMyReviews] = useState<PatientReview[]>([]);
+  const [refreshReviews, setRefreshReviews] = useState(0);
+
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editRating, setEditRating] = useState(5);
+
+  useEffect(() => {
     try {
-      if (typeof window === "undefined") return [];
+      if (typeof window === "undefined") return;
       const stored = localStorage.getItem("medicompare_reviews");
-      return stored
-        ? JSON.parse(stored)
-        : [
-            {
-              hospital: "Apollo Specialty Hospital",
-              rating: 5,
-              text: "Excellent cardiac consultation. Highly recommended!",
-              date: "12 May 2026",
-            },
-          ];
+      const all: PatientReview[] = stored ? JSON.parse(stored) : [];
+      setMyReviews(all.filter((r) => r.userEmail === user?.email));
     } catch {
-      return [
-        {
-          hospital: "Apollo Specialty Hospital",
-          rating: 5,
-          text: "Excellent cardiac consultation. Highly recommended!",
-          date: "12 May 2026",
-        },
-      ];
+      setMyReviews([]);
     }
-  });
+  }, [user?.email, refreshReviews]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
@@ -120,8 +113,12 @@ function DashboardReviewsPage() {
       toast.error("Please select a hospital and write your review.");
       return;
     }
-    const newReview = {
-      hospital,
+    const newReview: PatientReview = {
+      id: `custom-${Date.now()}`,
+      hospitalId: getHospitalIdByName(hospital),
+      hospitalName: hospital,
+      userName: user?.name ?? "Patient",
+      userEmail: user?.email ?? "",
       rating,
       text: text.trim(),
       date: new Date().toLocaleDateString("en-IN", {
@@ -130,17 +127,57 @@ function DashboardReviewsPage() {
         year: "numeric",
       }),
     };
-    const updated = [newReview, ...myReviews];
-    setMyReviews(updated);
     try {
-      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      const stored = localStorage.getItem("medicompare_reviews");
+      const current = stored ? JSON.parse(stored) : [];
+      localStorage.setItem("medicompare_reviews", JSON.stringify([newReview, ...current]));
+      setHospital("");
+      setText("");
+      setRating(5);
+      setRefreshReviews((prev) => prev + 1);
+      toast.success("Review published!");
     } catch {
-      // ignore
+      toast.error("Failed to save review.");
     }
-    setHospital("");
-    setText("");
-    setRating(5);
-    toast.success("Review published!");
+  };
+
+  const handleDeleteReview = (id: string) => {
+    try {
+      const stored = localStorage.getItem("medicompare_reviews");
+      if (!stored) return;
+      const current = JSON.parse(stored);
+      const updated = current.filter((r: any) => r.id !== id);
+      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      toast.success("Review deleted.");
+      setRefreshReviews((prev) => prev + 1);
+    } catch {
+      toast.error("Failed to delete review.");
+    }
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editText.trim()) {
+      toast.error("Review text is required.");
+      return;
+    }
+    try {
+      const stored = localStorage.getItem("medicompare_reviews");
+      if (!stored) return;
+      const current = JSON.parse(stored);
+      const updated = current.map((r: any) => {
+        if (r.id === editingReviewId) {
+          return { ...r, text: editText.trim(), rating: editRating };
+        }
+        return r;
+      });
+      localStorage.setItem("medicompare_reviews", JSON.stringify(updated));
+      toast.success("Review updated!");
+      setEditingReviewId(null);
+      setRefreshReviews((prev) => prev + 1);
+    } catch {
+      toast.error("Failed to update review.");
+    }
   };
 
   return (
@@ -164,20 +201,93 @@ function DashboardReviewsPage() {
               </p>
             </div>
           ) : (
-            myReviews.map((r, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold">{r.hospital}</p>
-                  <span className="text-xs text-muted-foreground">{r.date}</span>
+            myReviews.map((r, i) => {
+              const isEditing = editingReviewId === r.id;
+              return (
+                <div key={r.id || i} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+                  {isEditing ? (
+                    <form onSubmit={handleSaveEdit} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-primary">Editing review for {r.hospitalName}</p>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setEditRating(star)}
+                              className="transition-transform hover:scale-110"
+                            >
+                              <StarIcon
+                                className={`h-4 w-4 ${
+                                  editRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-xl border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                        placeholder="Update review text..."
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full"
+                          type="button"
+                          onClick={() => setEditingReviewId(null)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button size="sm" className="rounded-full" type="submit">
+                          Save Changes
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-foreground">{r.hospitalName}</p>
+                          <span className="text-xs text-muted-foreground">{r.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <button
+                            onClick={() => {
+                              setEditingReviewId(r.id);
+                              setEditText(r.text);
+                              setEditRating(r.rating);
+                            }}
+                            className="flex items-center gap-1 text-primary hover:underline"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReview(r.id)}
+                            className="flex items-center gap-1 text-destructive hover:underline"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex gap-0.5 text-warning">
+                        {Array.from({ length: r.rating }).map((_, j) => (
+                          <StarIcon key={j} className="h-4 w-4 fill-current" />
+                        ))}
+                        {Array.from({ length: 5 - r.rating }).map((_, j) => (
+                          <StarIcon key={j} className="h-4 w-4 text-muted-foreground" />
+                        ))}
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">"{r.text}"</p>
+                    </>
+                  )}
                 </div>
-                <div className="mt-2 flex gap-0.5 text-warning">
-                  {Array.from({ length: r.rating }).map((_, j) => (
-                    <StarIcon key={j} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">"{r.text}"</p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

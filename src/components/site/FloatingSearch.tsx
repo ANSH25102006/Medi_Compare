@@ -1,14 +1,27 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Search, MapPin, CalendarDays, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { services, cities } from "@/lib/mock-data";
 
 export function FloatingSearch({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
-  const [service, setService] = useState("");
-  const [city, setCity] = useState("");
+  const search = useSearch({ strict: false }) as any;
+
+  const [service, setService] = useState(search.q || search.service || "");
+  const [city, setCity] = useState(search.city || "");
   const [date, setDate] = useState(new Date(Date.now() + 86400000).toISOString().slice(0, 10));
+
+  useEffect(() => {
+    if (search.q !== undefined) {
+      setService(search.q);
+    } else if (search.service !== undefined) {
+      setService(search.service);
+    }
+    if (search.city !== undefined) {
+      setCity(search.city);
+    }
+  }, [search.q, search.service, search.city]);
 
   return (
     <form

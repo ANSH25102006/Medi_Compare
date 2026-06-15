@@ -43,17 +43,21 @@ function SavedPage() {
     }
   }, [isLoggedIn, user, navigate]);
 
-  const [savedIds] = useState<string[]>(() => {
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+
+  const loadSaved = () => {
     try {
-      if (typeof window === "undefined") return [];
+      if (typeof window === "undefined") return;
       const stored = localStorage.getItem("medicompare_saved_hospitals");
-      return stored
-        ? JSON.parse(stored)
-        : ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"];
+      setSavedIds(stored ? JSON.parse(stored) : []);
     } catch {
-      return ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"];
+      setSavedIds([]);
     }
-  });
+  };
+
+  useEffect(() => {
+    loadSaved();
+  }, []);
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
@@ -99,7 +103,7 @@ function SavedPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {saved.map((h) => (
-            <HospitalCard key={h.id} hospital={h} />
+            <HospitalCard key={h.id} hospital={h} onSaveToggle={loadSaved} />
           ))}
         </div>
       )}

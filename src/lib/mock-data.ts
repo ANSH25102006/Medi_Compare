@@ -682,3 +682,231 @@ export function getServiceMax(serviceName: string): number {
 export function getHospitalCountForService(serviceName: string): number {
   return hospitals.filter((h) => h.services.some((s) => s.name === serviceName)).length;
 }
+
+// ---- Unified Review Persistence & Rating Math Utilities ----
+
+export type PatientReview = {
+  id: string;
+  hospitalId: string;
+  hospitalName: string;
+  userName: string;
+  userEmail: string;
+  rating: number;
+  text: string;
+  date: string;
+};
+
+export const defaultHospitalReviews: Record<
+  string,
+  { name: string; text: string; rating: number; date: string }[]
+> = {
+  "apollo-central": [
+    {
+      name: "Pooja S.",
+      text: "Quick admission, professional staff and the surgery was a complete success.",
+      rating: 5,
+      date: "10 May 2026",
+    },
+    {
+      name: "Arjun K.",
+      text: "Pricing was clear from MediCompare and matched what the hospital charged.",
+      rating: 5,
+      date: "15 May 2026",
+    },
+    {
+      name: "Meera D.",
+      text: "Very clean facility and the consultation was thorough.",
+      rating: 4,
+      date: "20 May 2026",
+    },
+  ],
+  "fortis-greens": [
+    {
+      name: "Rajesh M.",
+      text: "Very supportive doctors. The MRI scan was done quickly and reports were sent online.",
+      rating: 4,
+      date: "12 May 2026",
+    },
+    {
+      name: "Sunita R.",
+      text: "NABL accreditation is visible in hygiene and processes. Highly satisfied.",
+      rating: 5,
+      date: "18 May 2026",
+    },
+  ],
+  "max-superspecialty": [
+    {
+      name: "Vikram A.",
+      text: "Top-class equipment. The oncology consultation was detailed and helpful.",
+      rating: 5,
+      date: "09 May 2026",
+    },
+    {
+      name: "Sneha J.",
+      text: "Highly professional service. Rates matched exactly with MediCompare listings.",
+      rating: 5,
+      date: "24 May 2026",
+    },
+    {
+      name: "Anil K.",
+      text: "Very neat, but slightly long waiting times in the OPD department.",
+      rating: 4,
+      date: "01 Jun 2026",
+    },
+  ],
+  "manipal-city": [
+    {
+      name: "Kiran P.",
+      text: "Excellent diagnostic center. Dr. Aisha Khan is highly skilled and detailed.",
+      rating: 5,
+      date: "14 May 2026",
+    },
+    {
+      name: "Gaurav S.",
+      text: "Budget-friendly checkups. Smooth checkin and fast results.",
+      rating: 4,
+      date: "28 May 2026",
+    },
+  ],
+  kokilaben: [
+    {
+      name: "Hasmukh Patel",
+      text: "Amazing quaternary care facility. Advanced surgical care was excellent.",
+      rating: 5,
+      date: "04 May 2026",
+    },
+    {
+      name: "Kirti S.",
+      text: "World class doctors. Pricing was highly transparent.",
+      rating: 5,
+      date: "16 May 2026",
+    },
+  ],
+  medanta: [
+    {
+      name: "Vicky S.",
+      text: "Very large medical city, well managed. Got consultation from Dr. Anil Verma.",
+      rating: 5,
+      date: "11 May 2026",
+    },
+    {
+      name: "Ruchi T.",
+      text: "Affordable full body health checkup package. Friendly support staff.",
+      rating: 4,
+      date: "22 May 2026",
+    },
+  ],
+};
+
+export function getHospitalIdByName(name: string): string {
+  const h = hospitals.find((x) => x.name.toLowerCase() === name.toLowerCase());
+  return h ? h.id : "unknown";
+}
+
+export function getHospitalNameById(id: string): string {
+  const h = hospitals.find((x) => x.id === id);
+  return h ? h.name : "Unknown Hospital";
+}
+
+export function getHospitalRatingDetails(hospitalId: string): {
+  rating: number;
+  reviewsCount: number;
+} {
+  const h = hospitals.find((x) => x.id === hospitalId);
+  if (!h) return { rating: 0, reviewsCount: 0 };
+
+  let customReviews: PatientReview[] = [];
+  try {
+    const stored = localStorage.getItem("medicompare_reviews");
+    if (stored) {
+      customReviews = JSON.parse(stored).filter(
+        (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+      );
+    }
+  } catch {}
+
+  const N_0 = h.reviews;
+  const R_0 = h.rating;
+  const N_custom = customReviews.length;
+  const sum_custom = customReviews.reduce((sum, r) => sum + r.rating, 0);
+
+  const totalReviews = N_0 + N_custom;
+  const averageRating =
+    totalReviews > 0 ? Math.round(((R_0 * N_0 + sum_custom) / totalReviews) * 10) / 10 : R_0;
+
+  return { rating: averageRating, reviewsCount: totalReviews };
+}
+
+export function getReviewsForHospital(hospitalId: string): PatientReview[] {
+  const h = hospitals.find((x) => x.id === hospitalId);
+  if (!h) return [];
+
+  // 1. Get base reviews
+  const base = (defaultHospitalReviews[hospitalId] || [
+    {
+      name: "Priya S.",
+      text: "Great consultation and clean facility. Verified pricing.",
+      rating: 5,
+      date: "10 Jun 2026",
+    },
+  ]).map((r, i) => ({
+    id: `default-${hospitalId}-${i}`,
+    hospitalId,
+    hospitalName: h.name,
+    userName: r.name,
+    userEmail: "anonymous@example.com",
+    rating: r.rating,
+    text: r.text,
+    date: r.date,
+  }));
+
+  // 2. Get custom reviews
+  let custom: PatientReview[] = [];
+  try {
+    const stored = localStorage.getItem("medicompare_reviews");
+    if (stored) {
+      custom = JSON.parse(stored).filter(
+        (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+      );
+    }
+  } catch {}
+
+  return [...custom, ...base];
+}
+
+export function getAllReviews(): PatientReview[] {
+  let custom: PatientReview[] = [];
+  try {
+    const stored = localStorage.getItem("medicompare_reviews");
+    if (stored) {
+      custom = JSON.parse(stored);
+    }
+  } catch {}
+
+  const base: PatientReview[] = [];
+  hospitals.forEach((h) => {
+    const reviews = defaultHospitalReviews[h.id] || [
+      {
+        name: "Priya S.",
+        text: "Great consultation and clean facility. Verified pricing.",
+        rating: 5,
+        date: "10 Jun 2026",
+      },
+    ];
+    reviews.forEach((r, i) => {
+      base.push({
+        id: `default-${h.id}-${i}`,
+        hospitalId: h.id,
+        hospitalName: h.name,
+        userName: r.name,
+        userEmail: "anonymous@example.com",
+        rating: r.rating,
+        text: r.text,
+        date: r.date,
+      });
+    });
+  });
+
+  return [...custom, ...base];
+}
+

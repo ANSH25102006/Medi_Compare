@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Star, MapPin, Clock, ArrowRight, TrendingDown, BadgeCheck, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hospitals, getServiceAverage, getServiceMin } from "@/lib/mock-data";
+import { Checkbox } from "@/components/ui/checkbox";
+import { hospitals, getServiceAverage, getServiceMin, getHospitalRatingDetails } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 type Row = {
   hospitalId: string;
@@ -29,14 +32,15 @@ export function buildRows(serviceName: string | "all"): Row[] {
     matches.forEach((s) => {
       const avg = getServiceAverage(s.name);
       const min = getServiceMin(s.name);
+      const { rating, reviewsCount } = getHospitalRatingDetails(h.id);
       rows.push({
         hospitalId: h.id,
         hospitalName: h.name,
         image: h.image,
         service: s.name,
         price: s.price,
-        rating: h.rating,
-        reviews: h.reviews,
+        rating,
+        reviews: reviewsCount,
         distance: h.distance,
         city: h.city,
         slots: h.slots,
@@ -63,7 +67,52 @@ export function sortRows(rows: Row[], sort: SortKey): Row[] {
   }
 }
 
-export function ComparisonTable({ rows }: { rows: Row[] }) {
+export function ComparisonTable({
+  rows,
+  onCompareToggle,
+}: {
+  rows: Row[];
+  onCompareToggle?: () => void;
+}) {
+  const [comparedIds, setComparedIds] = useState<string[]>([]);
+
+  const loadCompared = () => {
+    try {
+      const stored = localStorage.getItem("medicompare_compared_hospitals");
+      setComparedIds(stored ? JSON.parse(stored) : []);
+    } catch {}
+  };
+
+  useEffect(() => {
+    loadCompared();
+  }, [rows]);
+
+  const handleCompareChange = (hospitalId: string, checked: boolean, hospitalName: string) => {
+    try {
+      const stored = localStorage.getItem("medicompare_compared_hospitals");
+      let ids = stored ? JSON.parse(stored) : [];
+      if (checked) {
+        if (ids.length >= 4) {
+          toast.error("You can compare up to 4 hospitals at a time.");
+          loadCompared();
+          return;
+        }
+        if (!ids.includes(hospitalId)) {
+          ids.push(hospitalId);
+          toast.success(`Added ${hospitalName} to comparison.`);
+        }
+      } else {
+        ids = ids.filter((id: string) => id !== hospitalId);
+        toast.success(`Removed ${hospitalName} from comparison.`);
+      }
+      localStorage.setItem("medicompare_compared_hospitals", JSON.stringify(ids));
+      setComparedIds(ids);
+      onCompareToggle?.();
+    } catch {
+      toast.error("Failed to update comparison.");
+    }
+  };
+
   if (rows.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center max-w-lg mx-auto shadow-soft mt-6">
@@ -78,12 +127,14 @@ export function ComparisonTable({ rows }: { rows: Row[] }) {
       </div>
     );
   }
+
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[920px] text-sm">
+        <table className="w-full min-w-[960px] text-sm">
           <thead className="bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
+              <th className="w-16 px-5 py-4 text-center font-semibold">Compare</th>
               <th className="px-5 py-4 text-left font-semibold">Hospital</th>
               <th className="px-4 py-4 text-left font-semibold">Service</th>
               <th className="px-4 py-4 text-right font-semibold">Price</th>
@@ -99,6 +150,14 @@ export function ComparisonTable({ rows }: { rows: Row[] }) {
                 key={r.hospitalId + r.service}
                 className="border-t border-border align-middle transition-colors hover:bg-secondary/30"
               >
+                <td className="px-5 py-4 text-center">
+                  <Checkbox
+                    checked={comparedIds.includes(r.hospitalId)}
+                    onCheckedChange={(checked) =>
+                      handleCompareChange(r.hospitalId, !!checked, r.hospitalName)
+                    }
+                  />
+                </td>
                 <td className="px-5 py-4">
                   <Link
                     to="/hospitals/$hospitalId"
