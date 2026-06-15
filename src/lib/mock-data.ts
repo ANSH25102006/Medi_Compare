@@ -258,6 +258,22 @@ export function getFallbackHospitalDefaults(id: string, name: string, city: stri
   };
 }
 
+export function getSlugFromName(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("omr")) return "apollo-chennai";
+  if (n.includes("apollo specialty") || n.includes("apollo specialty hospital")) return "apollo-central";
+  if (n.includes("fortis greens")) return "fortis-greens";
+  if (n.includes("max super speciality") || n.includes("saket")) return "max-superspecialty";
+  if (n.includes("manipal city")) return "manipal-city";
+  if (n.includes("kokilaben")) return "kokilaben";
+  if (n.includes("medanta")) return "medanta";
+  if (n.includes("fortis malar")) return "fortis-malar-chennai";
+  if (n.includes("care hospital")) return "care-hyderabad";
+  if (n.includes("continental")) return "continental-hyderabad";
+  if (n.includes("fortis hospital") && (n.includes("bannerghatta") || n.includes("bangalore"))) return "fortis-bangalore";
+  return n.replace(/[^a-z0-9]+/g, "-");
+}
+
 export function mapSupabaseHospital(db: any): Hospital {
   if (!db) return {} as Hospital;
   const id = db.id;
@@ -269,7 +285,8 @@ export function mapSupabaseHospital(db: any): Hospital {
   const address = db.address || "Main Street, " + city;
   const phone = db.phone || "+91 80 1234 5678";
 
-  const defaults = hospitalDefaults[id] || getFallbackHospitalDefaults(id, name, city);
+  const slug = getSlugFromName(name);
+  const defaults = hospitalDefaults[id] || hospitalDefaults[slug] || getFallbackHospitalDefaults(id, name, city);
 
   return {
     id,
