@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Sparkles, Star, MapPin, ArrowRight, Bot, CheckCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { aiRecommendation, aiAlternatives, getServiceAverage } from "@/lib/mock-data";
