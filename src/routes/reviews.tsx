@@ -6,7 +6,7 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getAllReviews, getHospitalIdByName, type PatientReview } from "@/lib/mock-data";
+import { getAllReviews, getHospitalIdByName, type PatientReview, testimonials } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import {
   Select,
