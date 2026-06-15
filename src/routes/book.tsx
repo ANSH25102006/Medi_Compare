@@ -199,6 +199,33 @@ function BookPage() {
         });
       }
       toast.success("Appointment booked successfully!");
+
+      // Trigger email confirmation asynchronously
+      fetch("/.netlify/functions/send-booking-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: id,
+          customerName: name.trim(),
+          customerEmail: email.trim(),
+          hospitalName: hospital.name,
+          serviceName: selectedService.name,
+          bookingDate: date,
+          bookingTime: slot || "—",
+          amountPaid: finalAmount,
+          paymentStatus: "Paid",
+        }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            console.error("Booking email API returned status:", res.status);
+          } else {
+            console.log("Booking email successfully sent/triggered.");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to trigger booking confirmation email:", err);
+        });
     } catch (err) {
       console.error("Failed to save booking to Supabase:", err);
       setSavedBooking({
