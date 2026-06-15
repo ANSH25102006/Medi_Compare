@@ -6,9 +6,11 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getAllReviews, getHospitalIdByName, type PatientReview, testimonials } from "@/lib/mock-data";
+import { getAllReviews, getHospitalIdByName, getHospitalNameById, defaultHospitalReviews, type PatientReview, testimonials } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 import {
   Select,
   SelectContent,
@@ -84,6 +86,7 @@ function StarRating({
 
 function ReviewsPage() {
   const { user, isLoggedIn } = useAuth();
+  const { data: hospitalsList = [] } = useHospitals();
   const [rating, setRating] = useState(5);
   const [hospital, setHospital] = useState("");
   const [reviewText, setReviewText] = useState("");
@@ -96,8 +99,63 @@ function ReviewsPage() {
   const [editRating, setEditRating] = useState(5);
 
   useEffect(() => {
-    setReviews(getAllReviews());
-  }, [refreshTrigger]);
+    async function loadAllReviews() {
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const supabaseReviews = (data || []).map((r: any) => ({
+          id: r.id,
+          hospitalId: r.hospital_id,
+          hospitalName: getHospitalNameById(r.hospital_id, hospitalsList),
+          userName: r.user_name,
+          userEmail: r.user_email,
+          rating: r.rating,
+          text: r.review_text,
+          date: new Date(r.created_at || Date.now()).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          }),
+        }));
+
+        // Get base reviews
+        const customLocal = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+
+        // Get static default reviews
+        const base: PatientReview[] = [];
+        hospitalsList.forEach((h) => {
+          const reviews = defaultHospitalReviews[h.id] || [];
+          reviews.forEach((r, i) => {
+            base.push({
+              id: `default-${h.id}-${i}`,
+              hospitalId: h.id,
+              hospitalName: h.name,
+              userName: r.name,
+              userEmail: "anonymous@example.com",
+              rating: r.rating,
+              text: r.text,
+              date: r.date,
+            });
+          });
+        });
+
+        const seenIds = new Set(supabaseReviews.map((sr) => sr.id));
+        const customLocalFiltered = customLocal.filter((clr) => !seenIds.has(clr.id));
+
+        setReviews([...supabaseReviews, ...customLocalFiltered, ...base]);
+      } catch (err) {
+        console.warn("Failed to load reviews from Supabase, falling back to localStorage", err);
+        setReviews(getAllReviews());
+      }
+    }
+
+    loadAllReviews();
+  }, [refreshTrigger, hospitalsList]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,19 +177,45 @@ function ReviewsPage() {
         year: "numeric",
       }),
     };
+
     try {
       const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
       setItemSafe("medicompare_reviews", [newReview, ...current]);
-      setRefreshTrigger((prev) => prev + 1);
-      setReviewText("");
-      setHospital("");
-      setRating(5);
-      setSubmitted(true);
-      toast.success("Review submitted! Thank you for your feedback 🙏");
-      setTimeout(() => setSubmitted(false), 3000);
-    } catch {
-      toast.error("Failed to submit review.");
+    } catch (err) {
+      console.error("Local storage fallback save failed:", err);
     }
+
+    async function saveToSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .insert([
+            {
+              id: newReview.id,
+              hospital_id: newReview.hospitalId,
+              user_name: newReview.userName,
+              user_email: newReview.userEmail,
+              rating: newReview.rating,
+              review_text: newReview.text,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        if (error) throw error;
+        toast.success("Review submitted! Thank you for your feedback 🙏");
+      } catch (err) {
+        console.error("Failed to post review to Supabase:", err);
+        toast.success("Review saved locally (Offline mode).");
+      } finally {
+        setRefreshTrigger((prev) => prev + 1);
+        setReviewText("");
+        setHospital("");
+        setRating(5);
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 3000);
+      }
+    }
+
+    saveToSupabase();
   };
 
   const handleDeleteReview = (id: string) => {
@@ -139,11 +223,27 @@ function ReviewsPage() {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review deleted.");
-      setRefreshTrigger((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to delete review.");
+    } catch (err) {
+      console.error("Local storage fallback delete failed:", err);
     }
+
+    async function deleteFromSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+        toast.success("Review deleted.");
+      } catch (err) {
+        console.error("Failed to delete review from Supabase:", err);
+        toast.success("Review deleted locally.");
+      } finally {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    }
+
+    deleteFromSupabase();
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -152,6 +252,7 @@ function ReviewsPage() {
       toast.error("Review text is required.");
       return;
     }
+
     try {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
@@ -161,12 +262,31 @@ function ReviewsPage() {
         return r;
       });
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review updated!");
-      setEditingReviewId(null);
-      setRefreshTrigger((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to update review.");
+    } catch (err) {
+      console.error("Local storage fallback update failed:", err);
     }
+
+    async function updateInSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .update({
+            review_text: editText.trim(),
+            rating: editRating,
+          })
+          .eq("id", editingReviewId);
+        if (error) throw error;
+        toast.success("Review updated!");
+      } catch (err) {
+        console.error("Failed to update review in Supabase:", err);
+        toast.success("Review updated locally.");
+      } finally {
+        setEditingReviewId(null);
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    }
+
+    updateInSupabase();
   };
 
   return (
@@ -320,16 +440,9 @@ function ReviewsPage() {
                       <SelectValue placeholder="Select hospital…" />
                     </SelectTrigger>
                     <SelectContent>
-                      {[
-                        "Apollo Specialty Hospital",
-                        "Fortis Greens Medical Center",
-                        "Max Super Speciality Hospital",
-                        "Manipal City Hospital",
-                        "Kokilaben Dhirubhai Ambani Hospital",
-                        "Medanta The Medicity",
-                      ].map((h) => (
-                        <SelectItem key={h} value={h}>
-                          {h}
+                      {hospitalsList.map((h) => (
+                        <SelectItem key={h.name} value={h.name}>
+                          {h.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

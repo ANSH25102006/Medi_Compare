@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { MapPin, Star, Navigation, Clock, TrendingDown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hospitals, getServiceAverage } from "@/lib/mock-data";
+import { getServiceAverage } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 
 // Pre-computed pseudo-coords (percentage positions on the faux map canvas)
 const pins = [
@@ -15,6 +16,7 @@ const pins = [
 ];
 
 export function NearbyMap() {
+  const { data: hospitalsList = [] } = useHospitals();
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
   const [selectedHospital, setSelectedHospital] = useState<string | null>(null);
 
@@ -172,9 +174,10 @@ export function NearbyMap() {
 
           {/* Hospital pins */}
           {pins.map((p) => {
-            const h = hospitals.find((x) => x.id === p.id)!;
+            const h = hospitalsList.find((x) => x.id === p.id);
+            if (!h) return null;
             const svc = h.services[0];
-            const avg = getServiceAverage(svc.name);
+            const avg = getServiceAverage(svc.name, hospitalsList);
             const savings = Math.max(avg - svc.price, 0);
             const isHovered = hoveredPin === p.id;
             const isSelected = selectedHospital === p.id;
@@ -254,9 +257,9 @@ export function NearbyMap() {
 
         {/* Hospital list */}
         <div className="flex flex-col gap-3">
-          {hospitals.slice(0, 5).map((h) => {
+          {hospitalsList.slice(0, 5).map((h) => {
             const svc = h.services[0];
-            const avg = getServiceAverage(svc.name);
+            const avg = getServiceAverage(svc.name, hospitalsList);
             const savings = Math.max(avg - svc.price, 0);
             const isSelected = selectedHospital === h.id;
 

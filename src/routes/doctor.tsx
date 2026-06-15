@@ -27,10 +27,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { userAppointments } from "@/lib/mock-data";
+import { userAppointments, getHospitalNameById } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/doctor")({
   head: () => ({ meta: [{ title: "Doctor Dashboard — MediCompare" }] }),
@@ -68,24 +69,71 @@ function DoctorDashboard() {
     }
   }, [isLoggedIn, user, navigate]);
 
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    async function loadDoctorAppointments() {
+      try {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const dbAppts = (data || []).map((b: any) => ({
+          id: b.id,
+          date: b.booking_date,
+          hospital: getHospitalNameById(b.hospital_id),
+          service: b.service_name,
+          status: b.status as any,
+        }));
+
+        const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
+        const seenIds = new Set(dbAppts.map((a) => a.id));
+        const localApptsUnique = localAppts.filter((la) => !seenIds.has(la.id));
+
+        setAppointments([...dbAppts, ...localApptsUnique]);
+      } catch (err) {
+        console.warn("Failed to load appointments in doctor dashboard from Supabase:", err);
+        setAppointments(getItemSafe<Appointment[]>("medicompare_appointments", userAppointments));
+      }
+    }
+
+    loadDoctorAppointments();
+  }, [refreshTrigger]);
 
   const updateStatus = (id: string, newStatus: "Confirmed" | "Completed" | "Cancelled") => {
     try {
-      const updated = appointments.map((a) => {
-        if (a.id === id) {
-          return { ...a, status: newStatus };
-        }
-        return a;
-      });
-      setAppointments(updated);
-      setItemSafe("medicompare_appointments", updated);
-      toast.success(`Appointment status updated to ${newStatus}.`);
-    } catch {
-      toast.error("Failed to update status.");
+      const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
+      const updatedLocal = localAppts.map((a) => (a.id === id ? { ...a, status: newStatus } : a));
+      setItemSafe("medicompare_appointments", updatedLocal);
+      
+      const updatedState = appointments.map((a) => (a.id === id ? { ...a, status: newStatus } : a));
+      setAppointments(updatedState);
+    } catch (err) {
+      console.error("Local storage fallback status update failed:", err);
     }
+
+    async function updateInSupabase() {
+      try {
+        const { error } = await supabase
+          .from("bookings")
+          .update({ status: newStatus })
+          .eq("id", id);
+
+        if (error) throw error;
+        toast.success(`Appointment status updated to ${newStatus}.`);
+      } catch (err) {
+        console.error("Failed to update status in Supabase:", err);
+        toast.success(`Appointment status updated to ${newStatus} locally.`);
+      } finally {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    }
+
+    updateInSupabase();
   };
 
   if (!isLoggedIn || user?.role !== "Doctor") {

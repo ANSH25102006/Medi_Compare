@@ -31,58 +31,36 @@ import {
   CartesianGrid,
 } from "recharts";
 import {
-  hospitals,
   getReviewsForHospital,
   getHospitalRatingDetails,
+  getHospitalNameById,
+  defaultHospitalReviews,
   type Hospital,
   type PatientReview,
 } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { DetailSkeleton } from "@/components/site/SkeletonLoader";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
+import { useHospital } from "@/hooks/use-hospitals";
 
 export const Route = createFileRoute("/hospitals/$hospitalId")({
-  loader: ({ params }): Hospital => {
-    const hospital = hospitals.find((h) => h.id === params.hospitalId);
-    if (!hospital) throw notFound();
-    return hospital;
+  head: ({ params }) => {
+    const name = getHospitalNameById(params.hospitalId);
+    return {
+      meta: [
+        { title: `${name} — MediCompare` },
+        { name: "description", content: `View services, ratings, and compare prices at ${name}.` },
+      ],
+    };
   },
-  notFoundComponent: () => (
-    <SiteShell>
-      <div className="flex min-h-[60vh] flex-col items-center justify-center bg-background px-4 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
-          <ShieldAlert className="h-8 w-8" />
-        </div>
-        <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Hospital Not Found
-        </h1>
-        <p className="mt-3 text-base text-muted-foreground max-w-md">
-          The medical provider you are trying to view does not exist in our directory or has been
-          removed.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button asChild className="rounded-full bg-primary-gradient px-6">
-            <Link to="/compare">Browse Directory</Link>
-          </Button>
-          <Button asChild variant="outline" className="rounded-full px-6">
-            <Link to="/">Go Home</Link>
-          </Button>
-        </div>
-      </div>
-    </SiteShell>
-  ),
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.name ?? "Hospital"} — MediCompare` },
-      { name: "description", content: loaderData?.about ?? "Hospital details on MediCompare." },
-      { property: "og:image", content: loaderData?.image },
-    ],
-  }),
   component: HospitalDetails,
 });
 
+
 function HospitalDetails() {
-  const hospital = Route.useLoaderData() as Hospital;
+  const { hospitalId } = Route.useParams();
+  const { data: hospital, isLoading, error } = useHospital(hospitalId);
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn, user } = useAuth();
@@ -90,12 +68,46 @@ function HospitalDetails() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [refreshReviews, setRefreshReviews] = useState(0);
 
-  // Sync rating calculations reactive to refreshReviews
-  const { rating, reviewsCount } = getHospitalRatingDetails(hospital.id);
+  const [reviewsList, setReviewsList] = useState<PatientReview[]>([]);
 
-  const [trendService, setTrendService] = useState<string>(() => hospital.services[0]?.name ?? "");
+  // Sync rating calculations reactive to reviewsList
+  const { rating, reviewsCount } = useMemo(() => {
+    if (!hospital) return { rating: 0, reviewsCount: 0 };
+    const customReviews = reviewsList.filter((r) => !r.id.startsWith("default-"));
+    const baseReviewsCount = hospital.reviews;
+    const baseRating = hospital.rating;
+
+    const N_0 = baseReviewsCount;
+    const R_0 = baseRating;
+    const N_custom = customReviews.length;
+    const sum_custom = customReviews.reduce((sum, r) => sum + r.rating, 0);
+
+    const totalReviews = N_0 + N_custom;
+    const averageRating =
+      totalReviews > 0 ? Math.round(((R_0 * N_0 + sum_custom) / totalReviews) * 10) / 10 : R_0;
+
+    return { rating: averageRating, reviewsCount: totalReviews };
+  }, [reviewsList, hospital]);
+
+  const [trendService, setTrendService] = useState<string>("");
+
+  useEffect(() => {
+    if (hospital?.services?.[0]?.name) {
+      setTrendService(hospital.services[0].name);
+    }
+  }, [hospital]);
 
   const { trendData, sixMonthHigh, sixMonthLow, trendStatus, trendColor, selectedSvcPrice } = useMemo(() => {
+    if (!hospital) {
+      return {
+        trendData: [],
+        sixMonthHigh: 0,
+        sixMonthLow: 0,
+        trendStatus: "Stable",
+        trendColor: "text-muted-foreground",
+        selectedSvcPrice: 0,
+      };
+    }
     const svc = hospital.services.find((s) => s.name === trendService) || hospital.services[0];
     if (!svc) {
       return {
@@ -152,39 +164,70 @@ function HospitalDetails() {
       trendColor: color,
       selectedSvcPrice: currentPrice,
     };
-  }, [hospital.id, trendService]);
+  }, [hospital, trendService]);
 
   useEffect(() => {
     setIsPageLoading(true);
+
     const timer = setTimeout(() => {
       setIsPageLoading(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [hospital.id]);
+  }, [hospital?.id]);
 
   const [date, setDate] = useState<string>(() =>
     new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   );
   const [slot, setSlot] = useState<string | null>(null);
 
-  const [isSaved, setIsSaved] = useState(() => {
-    const ids = getItemSafe<string[]>(
-      "medicompare_saved_hospitals",
-      ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
-    );
-    return ids.includes(hospital.id);
-  });
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    async function checkSaved() {
+      if (!hospital) return;
+      const ids = getItemSafe<string[]>(
+        "medicompare_saved_hospitals",
+        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
+      );
+      setIsSaved(ids.includes(hospital.id));
+
+      if (isLoggedIn && user?.email) {
+        try {
+          const { data, error } = await supabase
+            .from("favorites")
+            .select("id")
+            .eq("hospital_id", hospital.id)
+            .eq("user_email", user.email)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (data) {
+            setIsSaved(true);
+            if (!ids.includes(hospital.id)) {
+              setItemSafe("medicompare_saved_hospitals", [...ids, hospital.id]);
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to check saved status in Supabase:", err);
+        }
+      }
+    }
+    checkSaved();
+  }, [hospital?.id, isLoggedIn, user?.email]);
+
 
   const [isCompared, setIsCompared] = useState(false);
 
   const loadCompared = () => {
+    if (!hospital) return;
     const compareIds = getItemSafe<string[]>("medicompare_compared_hospitals", []);
     setIsCompared(compareIds.includes(hospital.id));
   };
 
   useEffect(() => {
     loadCompared();
-  }, [hospital.id]);
+  }, [hospital?.id]);
+
 
   const toggleSave = () => {
     if (!isLoggedIn) {
@@ -195,6 +238,9 @@ function HospitalDetails() {
       });
       return;
     }
+
+    const nextSavedState = !isSaved;
+
     try {
       let ids = getItemSafe<string[]>(
         "medicompare_saved_hospitals",
@@ -213,6 +259,29 @@ function HospitalDetails() {
     } catch {
       toast.error("Failed to update saved list.");
     }
+
+    async function syncFavorite() {
+      if (!user?.email) return;
+      try {
+        if (nextSavedState) {
+          const { error } = await supabase
+            .from("favorites")
+            .insert([{ hospital_id: hospital.id, user_email: user.email }]);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from("favorites")
+            .delete()
+            .eq("hospital_id", hospital.id)
+            .eq("user_email", user.email);
+          if (error) throw error;
+        }
+      } catch (err) {
+        console.warn("Failed to sync favorite with Supabase:", err);
+      }
+    }
+
+    syncFavorite();
   };
 
   const toggleCompare = () => {
@@ -237,7 +306,6 @@ function HospitalDetails() {
     }
   };
 
-  const [reviewsList, setReviewsList] = useState<PatientReview[]>([]);
   const [reviewText, setReviewText] = useState("");
   const [userRating, setUserRating] = useState(5);
 
@@ -246,8 +314,89 @@ function HospitalDetails() {
   const [editRating, setEditRating] = useState(5);
 
   useEffect(() => {
-    setReviewsList(getReviewsForHospital(hospital.id));
-  }, [hospital.id, refreshReviews]);
+    async function loadReviews() {
+      if (!hospital) return;
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("*")
+          .eq("hospital_id", hospital.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const supabaseReviews = (data || []).map((r: any) => ({
+          id: r.id,
+          hospitalId: r.hospital_id,
+          hospitalName: hospital.name,
+          userName: r.user_name,
+          userEmail: r.user_email,
+          rating: r.rating,
+          text: r.review_text,
+          date: new Date(r.created_at || Date.now()).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          }),
+        }));
+
+        const base = (defaultHospitalReviews[hospital.id] || []).map((r: any, i: number) => ({
+          id: `default-${hospital.id}-${i}`,
+          hospitalId: hospital.id,
+          hospitalName: hospital.name,
+          userName: r.name,
+          userEmail: "anonymous@example.com",
+          rating: r.rating,
+          text: r.text,
+          date: r.date,
+        }));
+
+        setReviewsList([...supabaseReviews, ...base]);
+      } catch (err) {
+        console.warn("Failed to fetch reviews from Supabase, falling back to localStorage", err);
+        setReviewsList(getReviewsForHospital(hospital.id));
+      }
+    }
+
+    loadReviews();
+  }, [hospital?.id, refreshReviews]);
+
+  if (isLoading) {
+    return (
+      <SiteShell>
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <DetailSkeleton />
+        </div>
+      </SiteShell>
+    );
+  }
+
+  if (error || !hospital) {
+    return (
+      <SiteShell>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center bg-background px-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Hospital Not Found or Failed to Load
+          </h1>
+          <p className="mt-3 text-base text-muted-foreground max-w-md">
+            There was an error fetching details for this provider. Please make sure the ID is correct or try again.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button asChild className="rounded-full bg-primary-gradient px-6">
+              <Link to="/compare">Browse Directory</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-full px-6">
+              <Link to="/">Go Home</Link>
+            </Button>
+          </div>
+        </div>
+      </SiteShell>
+    );
+  }
+
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,13 +431,38 @@ function HospitalDetails() {
     try {
       const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
       setItemSafe("medicompare_reviews", [newReview, ...current]);
-      toast.success("Review posted successfully!");
-      setReviewText("");
-      setUserRating(5);
-      setRefreshReviews((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to save review.");
+    } catch (err) {
+      console.error("Local storage fallback save failed:", err);
     }
+
+    async function saveToSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .insert([
+            {
+              id: newReview.id,
+              hospital_id: newReview.hospitalId,
+              user_name: newReview.userName,
+              user_email: newReview.userEmail,
+              rating: newReview.rating,
+              review_text: newReview.text,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        if (error) throw error;
+        toast.success("Review posted successfully!");
+      } catch (err) {
+        console.error("Failed to post review to Supabase:", err);
+        toast.success("Review saved locally (Offline mode).");
+      } finally {
+        setReviewText("");
+        setUserRating(5);
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    saveToSupabase();
   };
 
   const handleDeleteReview = (id: string) => {
@@ -296,11 +470,27 @@ function HospitalDetails() {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review deleted.");
-      setRefreshReviews((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to delete review.");
+    } catch (err) {
+      console.error("Local storage fallback delete failed:", err);
     }
+
+    async function deleteFromSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+        toast.success("Review deleted.");
+      } catch (err) {
+        console.error("Failed to delete review from Supabase:", err);
+        toast.success("Review deleted locally.");
+      } finally {
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    deleteFromSupabase();
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -309,6 +499,7 @@ function HospitalDetails() {
       toast.error("Review text is required.");
       return;
     }
+
     try {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
@@ -318,12 +509,31 @@ function HospitalDetails() {
         return r;
       });
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review updated!");
-      setEditingReviewId(null);
-      setRefreshReviews((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to update review.");
+    } catch (err) {
+      console.error("Local storage fallback update failed:", err);
     }
+
+    async function updateInSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .update({
+            review_text: editText.trim(),
+            rating: editRating,
+          })
+          .eq("id", editingReviewId);
+        if (error) throw error;
+        toast.success("Review updated!");
+      } catch (err) {
+        console.error("Failed to update review in Supabase:", err);
+        toast.success("Review updated locally.");
+      } finally {
+        setEditingReviewId(null);
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    updateInSupabase();
   };
 
   if (isPageLoading) {

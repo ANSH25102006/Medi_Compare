@@ -33,14 +33,16 @@ import {
 } from "@/components/ui/table";
 import {
   userAppointments,
-  hospitals,
+  getHospitalNameById,
   recentSearches,
   medicalRecords,
   savingsTrend,
   healthSpendingBreakdown,
 } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
-import { getItemSafe } from "@/lib/storage";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -161,6 +163,7 @@ type Appointment = {
 function Dashboard() {
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const { data: hospitalsList = [], isLoading } = useHospitals();
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -174,17 +177,60 @@ function Dashboard() {
     }
   }, [isLoggedIn, user, navigate]);
 
-  const [appointments] = useState<Appointment[]>(() => {
-    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [savedCount, setSavedCount] = useState(0);
 
-  const [savedCount] = useState(() => {
-    const saved = getItemSafe<string[]>(
-      "medicompare_saved_hospitals",
-      ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
-    );
-    return saved.length;
-  });
+  useEffect(() => {
+    if (!isLoggedIn || !user?.email) return;
+
+    async function loadDashboardData() {
+      const localSaved = getItemSafe<string[]>(
+        "medicompare_saved_hospitals",
+        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
+      );
+      setSavedCount(localSaved.length);
+
+      const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
+      setAppointments(localAppts);
+
+      try {
+        const { data: favs, error: favsErr } = await supabase
+          .from("favorites")
+          .select("hospital_id")
+          .eq("user_email", user.email);
+
+        if (favsErr) throw favsErr;
+        const favIds = (favs || []).map((f: any) => f.hospital_id);
+        const mergedFavs = Array.from(new Set([...localSaved, ...favIds]));
+        setSavedCount(mergedFavs.length);
+        setItemSafe("medicompare_saved_hospitals", mergedFavs);
+
+        const { data: bookingsData, error: bookingsErr } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("user_email", user.email);
+
+        if (bookingsErr) throw bookingsErr;
+        const dbAppts = (bookingsData || []).map((b: any) => ({
+          id: b.id,
+          date: b.booking_date,
+          hospital: getHospitalNameById(b.hospital_id, hospitalsList),
+          service: b.service_name,
+          status: b.status as any,
+        }));
+
+        const seenIds = new Set(dbAppts.map((a) => a.id));
+        const uniqueLocal = localAppts.filter((la) => !seenIds.has(la.id));
+        const mergedAppts = [...dbAppts, ...uniqueLocal];
+        setAppointments(mergedAppts);
+        setItemSafe("medicompare_appointments", mergedAppts);
+      } catch (err) {
+        console.warn("Failed to load dashboard metrics from Supabase, using local fallback:", err);
+      }
+    }
+
+    loadDashboardData();
+  }, [isLoggedIn, user?.email, hospitalsList]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
@@ -485,25 +531,37 @@ function Dashboard() {
           </Button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {hospitals.slice(0, 4).map((h) => (
-            <div
-              key={h.id}
-              className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/30"
-            >
-              <img src={h.image} alt="" className="h-10 w-10 rounded-lg object-cover" />
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-semibold">{h.name}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  ★ {h.rating} · {h.city}
-                </p>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="animate-pulse flex items-center gap-3 rounded-xl border border-border p-3">
+                <div className="h-10 w-10 rounded-lg bg-secondary shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-secondary rounded w-3/4" />
+                  <div className="h-2 bg-secondary rounded w-1/2" />
+                </div>
               </div>
-              <Button asChild size="sm" variant="ghost" className="rounded-full px-2">
-                <Link to="/hospitals/$hospitalId" params={{ hospitalId: h.id }}>
-                  →
-                </Link>
-              </Button>
-            </div>
-          ))}
+            ))
+          ) : (
+            hospitalsList.slice(0, 4).map((h) => (
+              <div
+                key={h.id}
+                className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/30"
+              >
+                <img src={h.image} alt="" className="h-10 w-10 rounded-lg object-cover shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-semibold">{h.name}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    ★ {h.rating} · {h.city}
+                  </p>
+                </div>
+                <Button asChild size="sm" variant="ghost" className="rounded-full px-2">
+                  <Link to="/hospitals/$hospitalId" params={{ hospitalId: h.id }}>
+                    →
+                  </Link>
+                </Button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

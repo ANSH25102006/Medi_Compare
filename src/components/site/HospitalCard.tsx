@@ -7,6 +7,8 @@ import { getServiceAverage, type Hospital } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 export function HospitalCard({
   hospital,
@@ -28,18 +30,52 @@ export function HospitalCard({
 
   const [isSaved, setIsSaved] = useState(false);
   const [isCompared, setIsCompared] = useState(false);
+  const { user, isLoggedIn } = useAuth();
 
   useEffect(() => {
-    const savedIds = getItemSafe<string[]>("medicompare_saved_hospitals", []);
-    setIsSaved(savedIds.includes(hospital.id));
+    async function checkSaved() {
+      const savedIds = getItemSafe<string[]>("medicompare_saved_hospitals", []);
+      setIsSaved(savedIds.includes(hospital.id));
+
+      if (isLoggedIn && user?.email) {
+        try {
+          const { data, error } = await supabase
+            .from("favorites")
+            .select("id")
+            .eq("hospital_id", hospital.id)
+            .eq("user_email", user.email)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (data) {
+            setIsSaved(true);
+            if (!savedIds.includes(hospital.id)) {
+              setItemSafe("medicompare_saved_hospitals", [...savedIds, hospital.id]);
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to check saved status in Supabase:", err);
+        }
+      }
+    }
+
+    checkSaved();
 
     const compareIds = getItemSafe<string[]>("medicompare_compared_hospitals", []);
     setIsCompared(compareIds.includes(hospital.id));
-  }, [hospital.id]);
+  }, [hospital.id, isLoggedIn, user?.email]);
 
   const handleSaveToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isLoggedIn) {
+      toast.error("Please sign in to save hospitals.");
+      return;
+    }
+
+    const nextSavedState = !isSaved;
+
     try {
       let ids = getItemSafe<string[]>("medicompare_saved_hospitals", []);
       if (ids.includes(hospital.id)) {
@@ -54,8 +90,31 @@ export function HospitalCard({
       setItemSafe("medicompare_saved_hospitals", ids);
       onSaveToggle?.();
     } catch {
-      toast.error("Failed to save hospital.");
+      toast.error("Failed to update saved list.");
     }
+
+    async function syncFavorite() {
+      if (!user?.email) return;
+      try {
+        if (nextSavedState) {
+          const { error } = await supabase
+            .from("favorites")
+            .insert([{ hospital_id: hospital.id, user_email: user.email }]);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from("favorites")
+            .delete()
+            .eq("hospital_id", hospital.id)
+            .eq("user_email", user.email);
+          if (error) throw error;
+        }
+      } catch (err) {
+        console.warn("Failed to sync favorite with Supabase:", err);
+      }
+    }
+
+    syncFavorite();
   };
 
   const handleCompareChange = (checked: boolean) => {

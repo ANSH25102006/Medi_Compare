@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Star, MapPin, Clock, ArrowRight, TrendingDown, BadgeCheck, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { hospitals, getServiceAverage, getServiceMin, getHospitalRatingDetails } from "@/lib/mock-data";
+import { getCachedOrDefaultHospitals, getServiceAverage, getServiceMin, getHospitalRatingDetails, type Hospital } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
@@ -25,15 +25,16 @@ type Row = {
 
 export type SortKey = "price" | "rating" | "distance" | "earliest";
 
-export function buildRows(serviceName: string | "all"): Row[] {
+export function buildRows(serviceName: string | "all", customList?: Hospital[]): Row[] {
   const rows: Row[] = [];
-  hospitals.forEach((h) => {
+  const list = getCachedOrDefaultHospitals(customList);
+  list.forEach((h) => {
     const matches =
       serviceName === "all" ? [h.services[0]] : h.services.filter((s) => s.name === serviceName);
     matches.forEach((s) => {
-      const avg = getServiceAverage(s.name);
-      const min = getServiceMin(s.name);
-      const { rating, reviewsCount } = getHospitalRatingDetails(h.id);
+      const avg = getServiceAverage(s.name, list);
+      const min = getServiceMin(s.name, list);
+      const { rating, reviewsCount } = getHospitalRatingDetails(h.id, list);
       rows.push({
         hospitalId: h.id,
         hospitalName: h.name,
@@ -53,6 +54,7 @@ export function buildRows(serviceName: string | "all"): Row[] {
   });
   return rows;
 }
+
 
 export function sortRows(rows: Row[], sort: SortKey): Row[] {
   const sorted = [...rows];

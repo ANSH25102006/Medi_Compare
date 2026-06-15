@@ -19,6 +19,7 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { HospitalCard } from "@/components/site/HospitalCard";
 import { FloatingSearch } from "@/components/site/FloatingSearch";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 import {
   ComparisonTable,
   buildRows,
@@ -38,13 +39,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  hospitals,
   services,
   getServiceAverage,
   getReviewsForHospital,
   getHospitalRatingDetails,
   type Hospital,
 } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import { CardSkeleton, TableSkeleton } from "@/components/site/SkeletonLoader";
 import { toast } from "sonner";
 
@@ -134,6 +135,24 @@ function ComparePage() {
   const [sort, setSort] = useState<SortKey>("price");
   const [view, setView] = useState<"table" | "grid">("table");
   const [isSimulatingLoading, setIsSimulatingLoading] = useState(false);
+  const [dbReviews, setDbReviews] = useState<any[]>([]);
+
+  const { data: hospitalsList = [], isLoading: isHospitalsLoading, error: hospitalsError } = useHospitals();
+
+  useEffect(() => {
+    async function loadAllReviews() {
+      try {
+        const { data, error } = await supabase.from("reviews").select("*");
+        if (error) throw error;
+        setDbReviews(data || []);
+      } catch (err) {
+        console.warn("Failed to load reviews from Supabase for comparison ratings:", err);
+        const local = getItemSafe<any[]>("medicompare_reviews", []);
+        setDbReviews(local);
+      }
+    }
+    loadAllReviews();
+  }, []);
 
   // Sync sliders locally with query params
   useEffect(() => {
@@ -213,22 +232,33 @@ function ComparePage() {
   };
 
   const allSpecialties = useMemo(() => {
-    return Array.from(new Set(hospitals.flatMap((h) => h.specialties)));
-  }, []);
+    return Array.from(new Set(hospitalsList.flatMap((h) => h.specialties)));
+  }, [hospitalsList]);
 
   const allHospitalTypes = useMemo(() => {
-    return Array.from(new Set(hospitals.map((h) => h.type).filter(Boolean)));
-  }, []);
+    return Array.from(new Set(hospitalsList.map((h) => h.type).filter(Boolean)));
+  }, [hospitalsList]);
 
   // Filter logic
   const filteredHospitals = useMemo(() => {
-    return hospitals
+    return hospitalsList
       .map((h) => {
-        const { rating, reviewsCount } = getHospitalRatingDetails(h.id);
+        const customReviews = dbReviews.filter(
+          (r) => r.hospital_id === h.id || r.hospitalId === h.id || r.hospitalName === h.name
+        );
+        const N_0 = h.reviews;
+        const R_0 = h.rating;
+        const N_custom = customReviews.length;
+        const sum_custom = customReviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+
+        const totalReviews = N_0 + N_custom;
+        const averageRating =
+          totalReviews > 0 ? Math.round(((R_0 * N_0 + sum_custom) / totalReviews) * 10) / 10 : R_0;
+
         return {
           ...h,
-          rating,
-          reviews: reviewsCount,
+          rating: averageRating,
+          reviews: totalReviews,
         };
       })
       .filter((h) => {
@@ -302,16 +332,16 @@ function ComparePage() {
 
       return true;
     });
-  }, [q, city, specialty, hospitalType, service, minRating, maxDistance, maxPrice, availableOnly]);
+  }, [q, city, specialty, hospitalType, service, minRating, maxDistance, maxPrice, availableOnly, dbReviews]);
 
   const tableRows = useMemo(() => {
-    const all = buildRows(service);
+    const all = buildRows(service, hospitalsList);
     const ids = new Set(filteredHospitals.map((h) => h.id));
     const filtered = all.filter((r) => ids.has(r.hospitalId));
     return sortRows(filtered, sort);
-  }, [filteredHospitals, service, sort]);
+  }, [filteredHospitals, hospitalsList, service, sort]);
 
-  const avgPrice = service !== "all" ? getServiceAverage(service) : 0;
+  const avgPrice = service !== "all" ? getServiceAverage(service, hospitalsList) : 0;
   const maxSavings = tableRows.length > 0 ? Math.max(...tableRows.map((r) => r.savings)) : 0;
 
   // Active filters count
@@ -330,8 +360,8 @@ function ComparePage() {
 
   // Comparison logic data calculation
   const comparedHospitals = useMemo(() => {
-    return hospitals.filter((h) => comparedIds.includes(h.id));
-  }, [comparedIds]);
+    return hospitalsList.filter((h) => comparedIds.includes(h.id));
+  }, [comparedIds, hospitalsList]);
 
   const comparisonData = useMemo(() => {
     if (comparedHospitals.length < 2) return [];
@@ -669,7 +699,7 @@ function ComparePage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any city</SelectItem>
-                    {Array.from(new Set(hospitals.map((h) => h.city))).map((c) => (
+                    {Array.from(new Set(hospitalsList.map((h) => h.city))).map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}
                       </SelectItem>
@@ -1038,7 +1068,7 @@ function ComparePage() {
                   </Button>
                 </div>
               </div>
-            ) : isSimulatingLoading ? (
+            ) : (isHospitalsLoading || isSimulatingLoading) ? (
               view === "table" ? (
                 <TableSkeleton />
               ) : (

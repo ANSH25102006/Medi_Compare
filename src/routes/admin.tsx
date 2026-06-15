@@ -34,7 +34,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { adminAppointmentsTrend, servicePopularity, hospitals } from "@/lib/mock-data";
+import { adminAppointmentsTrend, servicePopularity } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -77,7 +78,15 @@ function AdminPage() {
     }
   }, [isLoggedIn, authUser, navigate]);
 
-  const [services, setServices] = useState(hospitals[0].services);
+  const { data: hospitalsList = [] } = useHospitals();
+  const [services, setServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (hospitalsList.length > 0 && services.length === 0) {
+      setServices(hospitalsList[0].services);
+    }
+  }, [hospitalsList, services.length]);
+
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");

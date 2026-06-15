@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Sparkles, Star, MapPin, ArrowRight, Bot, CheckCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { aiRecommendation, aiAlternatives, hospitals, getServiceAverage } from "@/lib/mock-data";
+import { aiRecommendation, aiAlternatives, getServiceAverage } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 
 const ALL_RECS = [aiRecommendation, ...aiAlternatives];
 
@@ -42,16 +43,37 @@ function useTypingEffect(text: string, speed = 35) {
 }
 
 export function AIRecommendation() {
+  const { data: hospitalsList = [], isLoading } = useHospitals();
   const [recIdx, setRecIdx] = useState(0);
   const rec = ALL_RECS[recIdx];
-  const h = hospitals.find((x) => x.id === rec.hospitalId) ?? hospitals[0];
-  const svc = h.services.find((s) => s.name === rec.service) ?? h.services[0];
-  const avg = getServiceAverage(svc.name);
+
+  const h = useMemo(() => {
+    return hospitalsList.find((x) => x.id === rec.hospitalId) ?? hospitalsList[0];
+  }, [hospitalsList, rec.hospitalId]);
+
+  const svc = useMemo(() => {
+    return h?.services?.find((s) => s.name === rec.service) ?? h?.services?.[0] ?? { name: "General Service", price: 0 };
+  }, [h, rec.service]);
+
+  const avg = useMemo(() => {
+    return getServiceAverage(svc.name, hospitalsList);
+  }, [svc.name, hospitalsList]);
+
   const savings = Math.max(avg - svc.price, 0);
 
   const { displayed: typedQuery, done: queryDone } = useTypingEffect(`"${rec.query}"`, 28);
-
   const handleNext = () => setRecIdx((i) => (i + 1) % ALL_RECS.length);
+
+  // Early return if loading or hospital not resolved
+  if (isLoading || !h) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="animate-pulse rounded-3xl border border-primary/15 bg-card p-6 h-64 flex items-center justify-center">
+          <p className="text-muted-foreground text-sm font-medium">Loading recommendations...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

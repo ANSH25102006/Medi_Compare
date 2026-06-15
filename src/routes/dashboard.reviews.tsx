@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getHospitalIdByName, type PatientReview } from "@/lib/mock-data";
+import { getHospitalIdByName, getHospitalNameById, type PatientReview } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/reviews")({
   head: () => ({ meta: [{ title: "My Reviews — MediCompare" }] }),
@@ -94,8 +95,47 @@ function DashboardReviewsPage() {
   const [editRating, setEditRating] = useState(5);
 
   useEffect(() => {
-    const all = getItemSafe<PatientReview[]>("medicompare_reviews", []);
-    setMyReviews(all.filter((r) => r.userEmail === user?.email));
+    async function loadMyReviews() {
+      if (!user?.email) return;
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("*")
+          .eq("user_email", user.email)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const supabaseReviews = (data || []).map((r: any) => ({
+          id: r.id,
+          hospitalId: r.hospital_id,
+          hospitalName: getHospitalNameById(r.hospital_id),
+          userName: r.user_name,
+          userEmail: r.user_email,
+          rating: r.rating,
+          text: r.review_text,
+          date: new Date(r.created_at || Date.now()).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          }),
+        }));
+
+        const localAll = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+        const localFiltered = localAll.filter((r) => r.userEmail === user.email);
+
+        const seenIds = new Set(supabaseReviews.map((sr) => sr.id));
+        const localFilteredUnique = localFiltered.filter((lr) => !seenIds.has(lr.id));
+
+        setMyReviews([...supabaseReviews, ...localFilteredUnique]);
+      } catch (err) {
+        console.warn("Failed to load user reviews from Supabase, falling back to localStorage", err);
+        const all = getItemSafe<PatientReview[]>("medicompare_reviews", []);
+        setMyReviews(all.filter((r) => r.userEmail === user?.email));
+      }
+    }
+
+    loadMyReviews();
   }, [user?.email, refreshReviews]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
@@ -122,17 +162,43 @@ function DashboardReviewsPage() {
         year: "numeric",
       }),
     };
+
     try {
       const current = getItemSafe<PatientReview[]>("medicompare_reviews", []);
       setItemSafe("medicompare_reviews", [newReview, ...current]);
-      setHospital("");
-      setText("");
-      setRating(5);
-      setRefreshReviews((prev) => prev + 1);
-      toast.success("Review published!");
-    } catch {
-      toast.error("Failed to save review.");
+    } catch (err) {
+      console.error("Local storage fallback save failed:", err);
     }
+
+    async function saveToSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .insert([
+            {
+              id: newReview.id,
+              hospital_id: newReview.hospitalId,
+              user_name: newReview.userName,
+              user_email: newReview.userEmail,
+              rating: newReview.rating,
+              review_text: newReview.text,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        if (error) throw error;
+        toast.success("Review published!");
+      } catch (err) {
+        console.error("Failed to post review to Supabase:", err);
+        toast.success("Review saved locally (Offline mode).");
+      } finally {
+        setHospital("");
+        setText("");
+        setRating(5);
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    saveToSupabase();
   };
 
   const handleDeleteReview = (id: string) => {
@@ -140,11 +206,27 @@ function DashboardReviewsPage() {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.filter((r: any) => r.id !== id);
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review deleted.");
-      setRefreshReviews((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to delete review.");
+    } catch (err) {
+      console.error("Local storage fallback delete failed:", err);
     }
+
+    async function deleteFromSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+        toast.success("Review deleted.");
+      } catch (err) {
+        console.error("Failed to delete review from Supabase:", err);
+        toast.success("Review deleted locally.");
+      } finally {
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    deleteFromSupabase();
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -153,6 +235,7 @@ function DashboardReviewsPage() {
       toast.error("Review text is required.");
       return;
     }
+
     try {
       const current = getItemSafe<any[]>("medicompare_reviews", []);
       const updated = current.map((r: any) => {
@@ -162,12 +245,31 @@ function DashboardReviewsPage() {
         return r;
       });
       setItemSafe("medicompare_reviews", updated);
-      toast.success("Review updated!");
-      setEditingReviewId(null);
-      setRefreshReviews((prev) => prev + 1);
-    } catch {
-      toast.error("Failed to update review.");
+    } catch (err) {
+      console.error("Local storage fallback update failed:", err);
     }
+
+    async function updateInSupabase() {
+      try {
+        const { error } = await supabase
+          .from("reviews")
+          .update({
+            review_text: editText.trim(),
+            rating: editRating,
+          })
+          .eq("id", editingReviewId);
+        if (error) throw error;
+        toast.success("Review updated!");
+      } catch (err) {
+        console.error("Failed to update review in Supabase:", err);
+        toast.success("Review updated locally.");
+      } finally {
+        setEditingReviewId(null);
+        setRefreshReviews((prev) => prev + 1);
+      }
+    }
+
+    updateInSupabase();
   };
 
   return (

@@ -29,7 +29,9 @@ import { HealthcareEcosystemMarquee } from "@/components/site/HealthcareEcosyste
 import { HeroHealthcareCollage } from "@/components/site/HeroHealthcareCollage";
 import { HeroInteractiveDashboard } from "@/components/site/HeroInteractiveDashboard";
 import { HealthcareDiscovery } from "@/components/site/HealthcareDiscovery";
-import { hospitals, testimonials, faqs } from "@/lib/mock-data";
+import { testimonials, faqs } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
+import { CardSkeleton } from "@/components/site/SkeletonLoader";
 import { useState, useEffect, useRef } from "react";
 import { ComparisonDemo } from "@/components/site/ComparisonDemo";
 import { TrustMetricsBar } from "@/components/site/TrustMetricsBar";
@@ -151,6 +153,8 @@ function Landing() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
+  const { data: hospitalsList = [], isLoading, error } = useHospitals();
+
 
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
   const howItWorksRef = useRef<HTMLOListElement>(null);
@@ -447,9 +451,25 @@ function Landing() {
           </Button>
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {hospitals.slice(0, 3).map((h) => (
-            <HospitalCard key={h.id} hospital={h} />
-          ))}
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))
+          ) : error ? (
+            <div className="col-span-full rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center text-destructive">
+              <p className="font-bold">Failed to load featured hospitals</p>
+              <p className="text-xs mt-1">Please check your internet connection or database configuration.</p>
+            </div>
+          ) : hospitalsList.length === 0 ? (
+            <div className="col-span-full rounded-2xl border border-dashed border-border p-8 text-center">
+              <p className="font-bold text-muted-foreground">No hospitals available</p>
+              <p className="text-xs text-muted-foreground mt-1">There are no hospitals registered in the database yet.</p>
+            </div>
+          ) : (
+            hospitalsList.slice(0, 3).map((h) => (
+              <HospitalCard key={h.id} hospital={h} />
+            ))
+          )}
         </div>
       </section>
 

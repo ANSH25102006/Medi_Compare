@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Check,
   CalendarDays,
@@ -13,10 +13,12 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { hospitals, userAppointments } from "@/lib/mock-data";
+import { userAppointments } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 type SearchParams = { hospital?: string; service?: string; date?: string; slot?: string };
 
@@ -38,10 +40,21 @@ function BookPage() {
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const hospital = hospitals.find((h) => h.id === sp.hospital) ?? hospitals[0];
+  const { data: hospitalsList = [], isLoading } = useHospitals();
+
+  const hospital = useMemo(() => {
+    return hospitalsList.find((h) => h.id === sp.hospital) ?? hospitalsList[0];
+  }, [hospitalsList, sp.hospital]);
 
   const [step, setStep] = useState(() => (sp.date && sp.slot ? 3 : 0));
-  const [service, setService] = useState(sp.service ?? hospital.services[0].name);
+  const [service, setService] = useState(sp.service ?? "");
+
+  useEffect(() => {
+    if (!service && hospital?.services?.[0]?.name) {
+      setService(hospital.services[0].name);
+    }
+  }, [hospital, service]);
+
   const [date, setDate] = useState(
     sp.date ?? new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   );
@@ -58,6 +71,41 @@ function BookPage() {
   const [simulateFailure, setSimulateFailure] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [bookingId, setBookingId] = useState("");
+  const [savedBooking, setSavedBooking] = useState<any>(null);
+
+  // Dynamically load Razorpay checkout script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Synchronous redirect if not logged in
+  useEffect(() => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to book an appointment.");
+      navigate({
+        to: "/login",
+        search: { redirect: location.href },
+      });
+    }
+  }, [isLoggedIn, navigate, location]);
+
+  // Handle loading skeletons before rendering core UI
+  if (isLoading || !hospital) {
+    return (
+      <SiteShell>
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading booking details...</p>
+        </div>
+      </SiteShell>
+    );
+  }
 
   // Sync user values if they load asynchronously
   useEffect(() => {
@@ -86,17 +134,233 @@ function BookPage() {
     }
   }, [slot, hospital.slots]);
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      toast.error("Please sign in to book an appointment.");
-      navigate({
-        to: "/login",
-        search: { redirect: location.href },
-      });
-    }
-  }, [isLoggedIn, navigate, location]);
+  const selectedService = hospital?.services?.find((s) => s.name === service) ?? hospital?.services?.[0] ?? { name: "General Service", price: 0 };
 
-  const selectedService = hospital.services.find((s) => s.name === service)!;
+  const saveBookingRecord = async (paymentId: string, paymentStatus: string, finalAmount: number) => {
+    const id = `MC-${Math.floor(Math.random() * 9000) + 1000}`;
+    setBookingId(id);
+
+    const newAppt = {
+      id,
+      date,
+      hospital: hospital.name,
+      service: selectedService.name,
+      status: "Upcoming" as const,
+    };
+
+    try {
+      const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
+      setItemSafe("medicompare_appointments", [newAppt, ...currentList]);
+    } catch (e) {
+      console.error("Local storage booking backup failed:", e);
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("bookings")
+        .insert([
+          {
+            id,
+            hospital_id: hospital.id,
+            hospital_name: hospital.name,
+            service_name: selectedService.name,
+            booking_date: date,
+            booking_time: slot || "—",
+            amount: finalAmount,
+            booking_status: "Confirmed",
+            payment_id: paymentId,
+            payment_status: paymentStatus,
+            user_name: name.trim(),
+            user_email: email.trim(),
+            user_id: user?.email || user?.id || "anonymous",
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select();
+
+      if (error) throw error;
+      
+      if (data && data[0]) {
+        setSavedBooking(data[0]);
+      } else {
+        setSavedBooking({
+          id,
+          hospital_name: hospital.name,
+          service_name: selectedService.name,
+          booking_date: date,
+          booking_time: slot || "—",
+          amount: finalAmount,
+          booking_status: "Confirmed",
+          payment_id: paymentId,
+          payment_status: paymentStatus,
+          user_name: name.trim(),
+          user_email: email.trim(),
+        });
+      }
+      toast.success("Appointment booked successfully!");
+    } catch (err) {
+      console.error("Failed to save booking to Supabase:", err);
+      setSavedBooking({
+        id,
+        hospital_name: hospital.name,
+        service_name: selectedService.name,
+        booking_date: date,
+        booking_time: slot || "—",
+        amount: finalAmount,
+        booking_status: "Confirmed",
+        payment_id: paymentId,
+        payment_status: paymentStatus,
+        user_name: name.trim(),
+        user_email: email.trim(),
+      });
+      toast.success("Booking confirmed locally (Offline mode).");
+    } finally {
+      setIsPaying(false);
+      next();
+    }
+  };
+
+  const triggerMockPaymentFlow = () => {
+    if (cardNumber.length !== 16) {
+      toast.error("Please enter a valid 16-digit card number.");
+      setIsPaying(false);
+      return;
+    }
+    if (!cardExpiry.match(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/)) {
+      toast.error("Please enter a valid expiry date (MM/YY).");
+      setIsPaying(false);
+      return;
+    }
+    if (cardCvv.length !== 3) {
+      toast.error("Please enter a valid 3-digit CVV.");
+      setIsPaying(false);
+      return;
+    }
+    if (!cardHolder.trim()) {
+      toast.error("Cardholder name is required.");
+      setIsPaying(false);
+      return;
+    }
+
+    setTimeout(async () => {
+      if (simulateFailure) {
+        setIsPaying(false);
+        toast.error(
+          "Transaction declined by the bank. Appointment booking cancelled. Please try again.",
+        );
+      } else {
+        const mockPaymentId = `pay_mock_${Date.now()}`;
+        await saveBookingRecord(mockPaymentId, "Paid", selectedService.price);
+      }
+    }, 1500);
+  };
+
+  const handlePayAndConfirm = async () => {
+    try {
+      const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
+      const isDuplicate = currentList.some(
+        (a: { hospital: string; service: string; date: string; status: string }) =>
+          a.hospital === hospital.name &&
+          a.service === service &&
+          a.date === date &&
+          (a.status === "Upcoming" || a.status === "Confirmed"),
+      );
+      if (isDuplicate) {
+        toast.error(
+          "You already have an active appointment for this service and date at this hospital.",
+        );
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    setIsPaying(true);
+
+    try {
+      const response = await fetch("/.netlify/functions/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: selectedService.price,
+          receipt: `receipt_${Date.now()}`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Order API returned status ${response.status}`);
+      }
+
+      const orderData = await response.json();
+
+      if (orderData.mock || !(window as any).Razorpay || import.meta.env.VITE_RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID_HERE") {
+        console.warn("Using mock payment fallback flow.");
+        triggerMockPaymentFlow();
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "MediCompare",
+        description: `Booking for ${selectedService.name} at ${hospital.name}`,
+        order_id: orderData.id,
+        prefill: {
+          name: name.trim(),
+          email: email.trim(),
+          contact: phone.trim()
+        },
+        theme: {
+          color: "#3B82F6"
+        },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+            toast.error("Payment cancelled.");
+          }
+        },
+        handler: async function (paymentRes: any) {
+          try {
+            const verifyResponse = await fetch("/.netlify/functions/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: paymentRes.razorpay_order_id,
+                razorpay_payment_id: paymentRes.razorpay_payment_id,
+                razorpay_signature: paymentRes.razorpay_signature
+              })
+            });
+
+            if (!verifyResponse.ok) {
+              throw new Error("Verification failed");
+            }
+
+            const verifyData = await verifyResponse.json();
+            if (verifyData.verified) {
+              await saveBookingRecord(paymentRes.razorpay_payment_id, "Paid", selectedService.price);
+            } else {
+              throw new Error("Verification signature invalid");
+            }
+          } catch (err: any) {
+            console.error("Verification error:", err);
+            toast.error("Payment verification failed. Booking aborted.");
+            setIsPaying(false);
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (resp: any) {
+        toast.error(`Payment failed: ${resp.error.description || "Unknown error"}`);
+        setIsPaying(false);
+      });
+      rzp.open();
+    } catch (error) {
+      console.warn("Razorpay API not available, using local fallback payment flow:", error);
+      triggerMockPaymentFlow();
+    }
+  };
   const total = steps.length;
   const progress = ((step + 1) / total) * 100;
 
@@ -369,16 +633,22 @@ function BookPage() {
 
               <div className="mx-auto mt-6 max-w-md rounded-2xl border border-border bg-secondary/40 p-6 text-left">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FileText className="h-4 w-4" /> Booking ID #{bookingId}
+                  <FileText className="h-4 w-4" /> Booking ID #{savedBooking?.id || bookingId}
                 </div>
                 <div className="mt-4 grid gap-2 text-sm">
-                  <Row label="Hospital" value={hospital.name} />
-                  <Row label="Service" value={selectedService.name} />
-                  <Row label="Date" value={date} />
-                  <Row label="Time" value={slot || "—"} />
+                  <Row label="Hospital" value={savedBooking?.hospital_name || hospital.name} />
+                  <Row label="Service" value={savedBooking?.service_name || selectedService.name} />
+                  <Row label="Date" value={savedBooking?.booking_date || date} />
+                  <Row label="Time" value={savedBooking?.booking_time || slot || "—"} />
+                  {savedBooking?.payment_id && (
+                    <Row label="Payment ID" value={savedBooking.payment_id} />
+                  )}
+                  {savedBooking?.payment_status && (
+                    <Row label="Payment Status" value={savedBooking.payment_status} />
+                  )}
                   <Row
                     label="Total"
-                    value={`₹${selectedService.price.toLocaleString()}`}
+                    value={`₹${(savedBooking?.amount || selectedService.price).toLocaleString()}`}
                     highlight
                   />
                 </div>
@@ -405,75 +675,7 @@ function BookPage() {
               </div>
               {step === 4 ? (
                 <Button
-                  onClick={() => {
-                    if (cardNumber.length !== 16) {
-                      toast.error("Please enter a valid 16-digit card number.");
-                      return;
-                    }
-                    if (!cardExpiry.match(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/)) {
-                      toast.error("Please enter a valid expiry date (MM/YY).");
-                      return;
-                    }
-                    if (cardCvv.length !== 3) {
-                      toast.error("Please enter a valid 3-digit CVV.");
-                      return;
-                    }
-                    if (!cardHolder.trim()) {
-                      toast.error("Cardholder name is required.");
-                      return;
-                    }
-
-                    // Check for duplicate booking before paying
-                    try {
-                      const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
-                      const isDuplicate = currentList.some(
-                        (a: { hospital: string; service: string; date: string; status: string }) =>
-                          a.hospital === hospital.name &&
-                          a.service === service &&
-                          a.date === date &&
-                          (a.status === "Upcoming" || a.status === "Confirmed"),
-                      );
-                      if (isDuplicate) {
-                        toast.error(
-                          "You already have an active appointment for this service and date at this hospital.",
-                        );
-                        return;
-                      }
-                    } catch (e) {
-                      // ignore
-                    }
-
-                    setIsPaying(true);
-                    setTimeout(() => {
-                      if (simulateFailure) {
-                        setIsPaying(false);
-                        toast.error(
-                          "Transaction declined by the bank. Appointment booking cancelled. Please try again.",
-                        );
-                      } else {
-                        const id = `MC-${Math.floor(Math.random() * 9000) + 1000}`;
-                        setBookingId(id);
-
-                        try {
-                          const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
-                          const newAppt = {
-                            id,
-                            date,
-                            hospital: hospital.name,
-                            service: selectedService.name,
-                            status: "Upcoming",
-                          };
-                          setItemSafe("medicompare_appointments", [newAppt, ...currentList]);
-                        } catch (e) {
-                          // ignore
-                        }
-
-                        setIsPaying(false);
-                        toast.success("Payment completed successfully!");
-                        next();
-                      }
-                    }, 1500);
-                  }}
+                  onClick={handlePayAndConfirm}
                   disabled={isPaying}
                 >
                   {isPaying ? (

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Bot, X, Send, MessageCircle, Minimize2, Sparkles, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { hospitals, getServiceAverage, services } from "@/lib/mock-data";
+import { getServiceAverage, services } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
 import { Button } from "@/components/ui/button";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ interface Message {
 }
 
 // ── Response Engine ────────────────────────────────────────────────────────
-function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
+function getBotResponse(input: string, hospitalsList: any[]): Omit<Message, "id" | "role" | "time"> {
   const q = input.toLowerCase().trim();
 
   // Greeting
@@ -86,11 +87,11 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
   const matchedService = matchedServiceObj?.name;
 
   if (matchedService || wantsCheap || wantsNear || wantsBest) {
-    let results = [...hospitals];
+    let results = [...hospitalsList];
 
     // 1. Filter by service if specified
     if (matchedService) {
-      results = results.filter((h) => h.services.some((s) => s.name === matchedService));
+      results = results.filter((h) => h.services.some((s: any) => s.name === matchedService));
     }
 
     // 2. Score or sort based on user preferences
@@ -99,12 +100,12 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
       if (wantsBest && !wantsNear && !wantsCheap) return b.rating - a.rating;
       if (wantsCheap && !wantsNear && !wantsBest) {
         if (matchedService) {
-          const priceA = a.services.find((s) => s.name === matchedService)?.price || 0;
-          const priceB = b.services.find((s) => s.name === matchedService)?.price || 0;
+          const priceA = a.services.find((s: any) => s.name === matchedService)?.price || 0;
+          const priceB = b.services.find((s: any) => s.name === matchedService)?.price || 0;
           return priceA - priceB;
         } else {
-          const maxSaveA = Math.max(...a.services.map((s) => getServiceAverage(s.name) - s.price));
-          const maxSaveB = Math.max(...b.services.map((s) => getServiceAverage(s.name) - s.price));
+          const maxSaveA = Math.max(...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
+          const maxSaveB = Math.max(...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
           return maxSaveB - maxSaveA;
         }
       }
@@ -114,13 +115,13 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
       let scoreB = b.rating * 10 - b.distance * 2;
 
       if (matchedService) {
-        const priceA = a.services.find((s) => s.name === matchedService)?.price || 0;
-        const priceB = b.services.find((s) => s.name === matchedService)?.price || 0;
+        const priceA = a.services.find((s: any) => s.name === matchedService)?.price || 0;
+        const priceB = b.services.find((s: any) => s.name === matchedService)?.price || 0;
         scoreA -= priceA / 100;
         scoreB -= priceB / 100;
       } else if (wantsCheap) {
-        const saveA = Math.max(...a.services.map((s) => getServiceAverage(s.name) - s.price));
-        const saveB = Math.max(...b.services.map((s) => getServiceAverage(s.name) - s.price));
+        const saveA = Math.max(...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
+        const saveB = Math.max(...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
         scoreA += saveA / 100;
         scoreB += saveB / 100;
       }
@@ -139,7 +140,7 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
 
     let responseText = "";
     if (matchedService) {
-      const avg = getServiceAverage(matchedService);
+      const avg = getServiceAverage(matchedService, hospitalsList);
       responseText += `Here are the best options for **${matchedService}**`;
 
       const conditions = [];
@@ -154,7 +155,7 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
 
       const lines = topResults
         .map((h) => {
-          const svc = h.services.find((s) => s.name === matchedService)!;
+          const svc = h.services.find((s: any) => s.name === matchedService)!;
           const savings = Math.max(avg - svc.price, 0);
           const details = [];
           if (wantsNear || (wantsBest && wantsNear) || (!wantsCheap && !wantsNear && !wantsBest))
@@ -192,10 +193,10 @@ function getBotResponse(input: string): Omit<Message, "id" | "role" | "time"> {
           const details = [];
           if (wantsCheap) {
             const topSavingSvc = [...h.services].sort(
-              (a, b) => getServiceAverage(b.name) - b.price - (getServiceAverage(a.name) - a.price),
+              (a, b) => getServiceAverage(b.name, hospitalsList) - b.price - (getServiceAverage(a.name, hospitalsList) - a.price),
             )[0];
             if (topSavingSvc) {
-              const save = Math.max(getServiceAverage(topSavingSvc.name) - topSavingSvc.price, 0);
+              const save = Math.max(getServiceAverage(topSavingSvc.name, hospitalsList) - topSavingSvc.price, 0);
               if (save > 0) details.push(`Save ₹${save.toLocaleString()} on ${topSavingSvc.name}`);
               else details.push(`Great value for ${topSavingSvc.name}`);
             }
@@ -241,6 +242,7 @@ const QUICK_CHIPS = [
 
 // ── Main component ─────────────────────────────────────────────────────────
 export function HealthChatbot() {
+  const { data: hospitalsList = [] } = useHospitals();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [input, setInput] = useState("");
@@ -288,14 +290,14 @@ export function HealthChatbot() {
       // Simulate thinking delay
       const delay = 600 + Math.random() * 800;
       setTimeout(() => {
-        const response = getBotResponse(text);
+        const response = getBotResponse(text, hospitalsList);
         const aiMsg: Message = { id: `a-${Date.now()}`, role: "ai", ...response, time: new Date() };
         setMessages((prev) => [...prev, aiMsg]);
         setTyping(false);
         if (!open) setUnread((n) => n + 1);
       }, delay);
     },
-    [open],
+    [open, hospitalsList],
   );
 
   const handleSubmit = (e: React.FormEvent) => {

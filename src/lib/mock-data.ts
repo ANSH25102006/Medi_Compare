@@ -23,18 +23,21 @@ const img = (seed: string) =>
 
 const avatar = (n: number) => `https://i.pravatar.cc/120?img=${n}`;
 
-export const hospitals: Hospital[] = [
-  {
-    id: "apollo-central",
-    name: "Apollo Specialty Hospital",
+export const hospitalDefaults: Record<string, {
+  type: string;
+  distance: number;
+  specialties: string[];
+  services: { name: string; price: number; duration: string }[];
+  doctors: { name: string; specialty: string; experience: number; avatar: string }[];
+  slots: string[];
+  reviewsCount: number;
+  rating: number;
+}> = {
+  "apollo-central": {
     type: "Specialty Hospital",
-    image: img("photo-1587351021759-3e566b6af7cc"),
-    rating: 4.8,
-    reviews: 2143,
     distance: 1.2,
-    address: "21 MG Road, Bengaluru, KA 560001",
-    phone: "+91 80 4567 8900",
-    city: "Bengaluru",
+    reviewsCount: 2143,
+    rating: 4.8,
     specialties: ["Cardiology", "Oncology", "Neurology"],
     services: [
       { name: "Full Body Health Checkup", price: 4500, duration: "2 hrs" },
@@ -47,20 +50,12 @@ export const hospitals: Hospital[] = [
       { name: "Dr. Rohan Kapoor", specialty: "Neurologist", experience: 14, avatar: avatar(12) },
     ],
     slots: ["09:00", "10:30", "12:00", "14:30", "16:00", "17:30"],
-    about:
-      "Apollo Specialty Hospital is a JCI-accredited multi-specialty facility delivering world-class care across 30+ specialties.",
   },
-  {
-    id: "fortis-greens",
-    name: "Fortis Greens Medical Center",
+  "fortis-greens": {
     type: "Medical Center",
-    image: img("photo-1538108149393-fbbd81895907"),
-    rating: 4.7,
-    reviews: 1856,
     distance: 2.8,
-    address: "Sector 62, Noida, UP 201301",
-    phone: "+91 120 678 4500",
-    city: "Noida",
+    reviewsCount: 1856,
+    rating: 4.7,
     specialties: ["Orthopedics", "Pediatrics", "Radiology"],
     services: [
       { name: "Full Body Health Checkup", price: 3900, duration: "2 hrs" },
@@ -69,29 +64,16 @@ export const hospitals: Hospital[] = [
       { name: "Ultrasound", price: 1500, duration: "25 min" },
     ],
     doctors: [
-      {
-        name: "Dr. Vikram Shah",
-        specialty: "Orthopedic Surgeon",
-        experience: 22,
-        avatar: avatar(33),
-      },
+      { name: "Dr. Vikram Shah", specialty: "Orthopedic Surgeon", experience: 22, avatar: avatar(33) },
       { name: "Dr. Neha Iyer", specialty: "Pediatrician", experience: 11, avatar: avatar(45) },
     ],
     slots: ["08:30", "10:00", "11:30", "15:00", "16:30"],
-    about:
-      "Fortis Greens combines advanced diagnostics with compassionate care, serving over 200,000 patients annually.",
   },
-  {
-    id: "max-superspecialty",
-    name: "Max Super Speciality Hospital",
+  "max-superspecialty": {
     type: "Super Speciality",
-    image: img("photo-1586773860418-d37222d8fce3"),
-    rating: 4.9,
-    reviews: 3120,
     distance: 4.5,
-    address: "Saket District, New Delhi, DL 110017",
-    phone: "+91 11 2651 5050",
-    city: "New Delhi",
+    reviewsCount: 3120,
+    rating: 4.9,
     specialties: ["Oncology", "Transplants", "Cardiac"],
     services: [
       { name: "Full Body Health Checkup", price: 5200, duration: "2.5 hrs" },
@@ -104,20 +86,12 @@ export const hospitals: Hospital[] = [
       { name: "Dr. Priya Nair", specialty: "Cardiologist", experience: 16, avatar: avatar(48) },
     ],
     slots: ["09:30", "11:00", "13:00", "15:30", "17:00"],
-    about:
-      "Max Super Speciality Hospital is recognized as one of India's top tertiary care centers with cutting-edge robotics.",
   },
-  {
-    id: "manipal-city",
-    name: "Manipal City Hospital",
+  "manipal-city": {
     type: "General Hospital",
-    image: img("photo-1551076805-e1869033e561"),
-    rating: 4.6,
-    reviews: 1442,
     distance: 3.1,
-    address: "Old Airport Road, Bengaluru, KA 560017",
-    phone: "+91 80 2502 4444",
-    city: "Bengaluru",
+    reviewsCount: 1442,
+    rating: 4.6,
     specialties: ["Gastroenterology", "ENT", "Dermatology"],
     services: [
       { name: "Full Body Health Checkup", price: 4100, duration: "2 hrs" },
@@ -126,29 +100,16 @@ export const hospitals: Hospital[] = [
       { name: "Lipid Profile", price: 600, duration: "10 min" },
     ],
     doctors: [
-      {
-        name: "Dr. Karthik Reddy",
-        specialty: "Gastroenterologist",
-        experience: 13,
-        avatar: avatar(15),
-      },
+      { name: "Dr. Karthik Reddy", specialty: "Gastroenterologist", experience: 13, avatar: avatar(15) },
       { name: "Dr. Aisha Khan", specialty: "Dermatologist", experience: 9, avatar: avatar(32) },
     ],
     slots: ["09:00", "10:30", "12:30", "14:00", "16:00"],
-    about:
-      "Manipal City Hospital delivers integrated multi-specialty care backed by 70+ years of clinical excellence.",
   },
-  {
-    id: "kokilaben",
-    name: "Kokilaben Dhirubhai Ambani Hospital",
+  "kokilaben": {
     type: "Super Speciality",
-    image: img("photo-1631815588090-d4bfec5b1ccb"),
-    rating: 4.8,
-    reviews: 2580,
     distance: 5.4,
-    address: "Four Bunglows, Andheri West, Mumbai, MH 400053",
-    phone: "+91 22 4269 6969",
-    city: "Mumbai",
+    reviewsCount: 2580,
+    rating: 4.8,
     specialties: ["Neurosurgery", "Cardiac", "Transplants"],
     services: [
       { name: "Full Body Health Checkup", price: 5800, duration: "3 hrs" },
@@ -161,20 +122,12 @@ export const hospitals: Hospital[] = [
       { name: "Dr. Maya Banerjee", specialty: "Cardiologist", experience: 17, avatar: avatar(20) },
     ],
     slots: ["08:00", "09:30", "11:30", "14:00", "16:30"],
-    about:
-      "Kokilaben Hospital is a quaternary care facility recognized for excellence in advanced surgical specialties.",
   },
-  {
-    id: "medanta",
-    name: "Medanta The Medicity",
+  "medanta": {
     type: "Super Speciality",
-    image: img("photo-1519494026892-80bbd2d6fd0d"),
-    rating: 4.7,
-    reviews: 1980,
     distance: 6.2,
-    address: "Sector 38, Gurugram, HR 122001",
-    phone: "+91 124 414 1414",
-    city: "Gurugram",
+    reviewsCount: 1980,
+    rating: 4.7,
     specialties: ["Cardiac", "Orthopedics", "Liver"],
     services: [
       { name: "Full Body Health Checkup", price: 4800, duration: "2.5 hrs" },
@@ -187,20 +140,12 @@ export const hospitals: Hospital[] = [
       { name: "Dr. Ritu Sharma", specialty: "Hepatologist", experience: 15, avatar: avatar(41) },
     ],
     slots: ["09:00", "10:00", "12:00", "15:00", "17:00"],
-    about:
-      "Medanta is a multi-super-specialty institute built around clinical, surgical, and research excellence.",
   },
-  {
-    id: "apollo-chennai",
-    name: "Apollo Specialty Hospital, OMR",
+  "apollo-chennai": {
     type: "Specialty Hospital",
-    image: img("photo-1587351021759-3e566b6af7cc"),
-    rating: 4.7,
-    reviews: 1680,
     distance: 2.5,
-    address: "OMR Road, Karapakkam, Chennai, TN 600097",
-    phone: "+91 44 2496 5000",
-    city: "Chennai",
+    reviewsCount: 1680,
+    rating: 4.7,
     specialties: ["Oncology", "Cardiology", "Neurology"],
     services: [
       { name: "Full Body Health Checkup", price: 4600, duration: "2 hrs" },
@@ -210,28 +155,15 @@ export const hospitals: Hospital[] = [
     ],
     doctors: [
       { name: "Dr. Suresh Raman", specialty: "Oncologist", experience: 19, avatar: avatar(51) },
-      {
-        name: "Dr. Priya Vasudevan",
-        specialty: "Cardiologist",
-        experience: 15,
-        avatar: avatar(36),
-      },
+      { name: "Dr. Priya Vasudevan", specialty: "Cardiologist", experience: 15, avatar: avatar(36) },
     ],
     slots: ["09:00", "10:30", "14:00", "15:30", "17:00"],
-    about:
-      "Apollo Specialty Hospital Chennai OMR is a leading facility for cancer care and cardiac treatments in Tamil Nadu.",
   },
-  {
-    id: "fortis-malar-chennai",
-    name: "Fortis Malar Hospital",
+  "fortis-malar-chennai": {
     type: "General Hospital",
-    image: img("photo-1538108149393-fbbd81895907"),
-    rating: 4.5,
-    reviews: 1120,
     distance: 4.2,
-    address: "Gandhi Nagar, Adyar, Chennai, TN 600020",
-    phone: "+91 44 4242 4242",
-    city: "Chennai",
+    reviewsCount: 1120,
+    rating: 4.5,
     specialties: ["Cardiology", "Pediatrics", "Gynecology"],
     services: [
       { name: "Full Body Health Checkup", price: 3800, duration: "2 hrs" },
@@ -244,20 +176,12 @@ export const hospitals: Hospital[] = [
       { name: "Dr. Neha Sharma", specialty: "Pediatrician", experience: 12, avatar: avatar(28) },
     ],
     slots: ["08:30", "10:00", "11:30", "15:00", "16:30"],
-    about:
-      "Fortis Malar Hospital Chennai is a premier multi-specialty hospital offering comprehensive medical care.",
   },
-  {
-    id: "care-hyderabad",
-    name: "Care Hospitals, Banjara Hills",
+  "care-hyderabad": {
     type: "Specialty Hospital",
-    image: img("photo-1551076805-e1869033e561"),
-    rating: 4.6,
-    reviews: 1250,
     distance: 3.4,
-    address: "Road No 1, Banjara Hills, Hyderabad, TG 500034",
-    phone: "+91 40 6165 6565",
-    city: "Hyderabad",
+    reviewsCount: 1250,
+    rating: 4.6,
     specialties: ["Cardiology", "Nephrology", "Orthopedics"],
     services: [
       { name: "Full Body Health Checkup", price: 3500, duration: "2 hrs" },
@@ -267,28 +191,15 @@ export const hospitals: Hospital[] = [
     ],
     doctors: [
       { name: "Dr. K. S. Rao", specialty: "Cardiologist", experience: 15, avatar: avatar(59) },
-      {
-        name: "Dr. V. Srinivas",
-        specialty: "Orthopedic Surgeon",
-        experience: 17,
-        avatar: avatar(18),
-      },
+      { name: "Dr. V. Srinivas", specialty: "Orthopedic Surgeon", experience: 17, avatar: avatar(18) },
     ],
     slots: ["09:00", "10:30", "12:00", "14:30", "16:00"],
-    about:
-      "Care Hospitals, Banjara Hills is a multi-specialty center of excellence, highly regarded for cardiac care in South India.",
   },
-  {
-    id: "continental-hyderabad",
-    name: "Continental Hospitals",
+  "continental-hyderabad": {
     type: "Super Speciality",
-    image: img("photo-1586773860418-d37222d8fce3"),
-    rating: 4.8,
-    reviews: 980,
     distance: 5.1,
-    address: "Gachibowli, Hyderabad, TG 500032",
-    phone: "+91 40 6700 0000",
-    city: "Hyderabad",
+    reviewsCount: 980,
+    rating: 4.8,
     specialties: ["Gastroenterology", "Oncology", "Pulmonology"],
     services: [
       { name: "Full Body Health Checkup", price: 4200, duration: "2.5 hrs" },
@@ -297,29 +208,16 @@ export const hospitals: Hospital[] = [
       { name: "Endoscopy", price: 5800, duration: "40 min" },
     ],
     doctors: [
-      {
-        name: "Dr. Sandeep Prasad",
-        specialty: "Gastroenterologist",
-        experience: 12,
-        avatar: avatar(42),
-      },
+      { name: "Dr. Sandeep Prasad", specialty: "Gastroenterologist", experience: 12, avatar: avatar(42) },
       { name: "Dr. Arundhati Sen", specialty: "Oncologist", experience: 14, avatar: avatar(31) },
     ],
     slots: ["09:30", "11:00", "13:00", "15:30", "17:00"],
-    about:
-      "Continental Hospitals is a JCI and NABH accredited tertiary care facility located in Gachibowli IT Corridor.",
   },
-  {
-    id: "fortis-bangalore",
-    name: "Fortis Hospital, Bannerghatta Road",
+  "fortis-bangalore": {
     type: "Super Speciality",
-    image: img("photo-1519494026892-80bbd2d6fd0d"),
-    rating: 4.8,
-    reviews: 2210,
     distance: 3.5,
-    address: "Bannerghatta Road, Bengaluru, KA 560076",
-    phone: "+91 80 6621 4444",
-    city: "Bengaluru",
+    reviewsCount: 2210,
+    rating: 4.8,
     specialties: ["Cardiology", "Orthopedics", "Neurology"],
     services: [
       { name: "Full Body Health Checkup", price: 4300, duration: "2 hrs" },
@@ -328,24 +226,70 @@ export const hospitals: Hospital[] = [
       { name: "Ultrasound", price: 1450, duration: "25 min" },
     ],
     doctors: [
-      {
-        name: "Dr. Vivek Jawali",
-        specialty: "Cardiothoracic Surgeon",
-        experience: 32,
-        avatar: avatar(54),
-      },
-      {
-        name: "Dr. Sandeep Vaishya",
-        specialty: "Neurosurgeon",
-        experience: 21,
-        avatar: avatar(55),
-      },
+      { name: "Dr. Vivek Jawali", specialty: "Cardiothoracic Surgeon", experience: 32, avatar: avatar(54) },
+      { name: "Dr. Sandeep Vaishya", specialty: "Neurosurgeon", experience: 21, avatar: avatar(55) },
     ],
     slots: ["09:00", "10:00", "12:00", "14:30", "16:00"],
-    about:
-      "Fortis Hospital Bannerghatta Road is a multi-speciality tertiary care hospital known for its state-of-the-art infrastructure.",
-  },
-];
+  }
+};
+
+export function getFallbackHospitalDefaults(id: string, name: string, city: string) {
+  const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const distance = Math.round((1.0 + (hash % 80) / 10) * 10) / 10;
+  const rating = Math.round((4.0 + (hash % 10) / 10) * 10) / 10;
+  const reviewsCount = 100 + (hash % 900);
+  
+  return {
+    type: "General Hospital",
+    distance,
+    rating,
+    reviewsCount,
+    specialties: ["General Medicine", "Pediatrics", "Radiology"],
+    services: [
+      { name: "Full Body Health Checkup", price: 3000 + (hash % 20) * 100, duration: "2 hrs" },
+      { name: "MRI Scan", price: 7000 + (hash % 15) * 100, duration: "45 min" },
+      { name: "Cardiac Consultation", price: 800 + (hash % 10) * 50, duration: "30 min" },
+      { name: "Blood Test Panel", price: 500 + (hash % 10) * 30, duration: "15 min" },
+    ],
+    doctors: [
+      { name: "Dr. Rajesh Sen", specialty: "General Physician", experience: 10 + (hash % 15), avatar: avatar(hash % 70) },
+    ],
+    slots: ["09:00", "10:30", "14:00", "16:00"],
+  };
+}
+
+export function mapSupabaseHospital(db: any): Hospital {
+  if (!db) return {} as Hospital;
+  const id = db.id;
+  const name = db.name || "Unnamed Hospital";
+  const city = db.city || "Unknown";
+  const rating = db.rating ? Number(db.rating) : 4.5;
+  const image = db.image_url || "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80";
+  const about = db.description || "Healthcare facility delivering quality care.";
+  const address = db.address || "Main Street, " + city;
+  const phone = db.phone || "+91 80 1234 5678";
+
+  const defaults = hospitalDefaults[id] || getFallbackHospitalDefaults(id, name, city);
+
+  return {
+    id,
+    name,
+    city,
+    rating,
+    image,
+    about,
+    address,
+    phone,
+    reviews: defaults.reviewsCount,
+    type: defaults.type,
+    distance: defaults.distance,
+    specialties: defaults.specialties,
+    services: defaults.services,
+    doctors: defaults.doctors,
+    slots: defaults.slots,
+  };
+}
+
 
 export const services = [
   "Full Body Health Checkup",
@@ -481,16 +425,18 @@ export const servicePopularity = [
 ];
 
 // ---- Price comparison helpers ----
-export function getServiceAverage(serviceName: string): number {
-  const prices = hospitals.flatMap((h) =>
+export function getServiceAverage(serviceName: string, customList?: Hospital[]): number {
+  const list = getCachedOrDefaultHospitals(customList);
+  const prices = list.flatMap((h) =>
     h.services.filter((s) => s.name === serviceName).map((s) => s.price),
   );
   if (!prices.length) return 0;
   return Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
 }
 
-export function getServiceMin(serviceName: string): number {
-  const prices = hospitals.flatMap((h) =>
+export function getServiceMin(serviceName: string, customList?: Hospital[]): number {
+  const list = getCachedOrDefaultHospitals(customList);
+  const prices = list.flatMap((h) =>
     h.services.filter((s) => s.name === serviceName).map((s) => s.price),
   );
   return prices.length ? Math.min(...prices) : 0;
@@ -674,15 +620,17 @@ export const aiAlternatives = [
 ];
 
 // ---- Additional price helpers ----
-export function getServiceMax(serviceName: string): number {
-  const prices = hospitals.flatMap((h) =>
+export function getServiceMax(serviceName: string, customList?: Hospital[]): number {
+  const list = getCachedOrDefaultHospitals(customList);
+  const prices = list.flatMap((h) =>
     h.services.filter((s) => s.name === serviceName).map((s) => s.price),
   );
   return prices.length ? Math.max(...prices) : 0;
 }
 
-export function getHospitalCountForService(serviceName: string): number {
-  return hospitals.filter((h) => h.services.some((s) => s.name === serviceName)).length;
+export function getHospitalCountForService(serviceName: string, customList?: Hospital[]): number {
+  const list = getCachedOrDefaultHospitals(customList);
+  return list.filter((h) => h.services.some((s) => s.name === serviceName)).length;
 }
 
 // ---- Unified Review Persistence & Rating Math Utilities ----
@@ -800,21 +748,63 @@ export const defaultHospitalReviews: Record<
   ],
 };
 
-export function getHospitalIdByName(name: string): string {
-  const h = hospitals.find((x) => x.name.toLowerCase() === name.toLowerCase());
+export function getCachedOrDefaultHospitals(customList?: Hospital[]): Hospital[] {
+  if (customList && customList.length > 0) {
+    return customList;
+  }
+  try {
+    const cached = getItemSafe<any[]>("medicompare_hospitals_cache", []);
+    if (cached && cached.length > 0) {
+      return cached.map(mapSupabaseHospital);
+    }
+  } catch (e) {}
+
+  const baseKeys = Object.keys(hospitalDefaults);
+  const defaultNames: Record<string, string> = {
+    "apollo-central": "Apollo Specialty Hospital",
+    "fortis-greens": "Fortis Greens Medical Center",
+    "max-superspecialty": "Max Super Speciality Hospital",
+    "manipal-city": "Manipal City Hospital",
+    "kokilaben": "Kokilaben Dhirubhai Ambani Hospital",
+    "medanta": "Medanta The Medicity",
+    "apollo-chennai": "Apollo Specialty Hospital, OMR",
+    "fortis-malar-chennai": "Fortis Malar Hospital",
+    "care-hyderabad": "Care Hospitals, Banjara Hills",
+    "continental-hyderabad": "Continental Hospitals",
+    "fortis-bangalore": "Fortis Hospital, Bannerghatta Road"
+  };
+  return baseKeys.map((id) => {
+    return mapSupabaseHospital({
+      id,
+      name: defaultNames[id] || id,
+      city: id.includes("chennai") ? "Chennai" : id.includes("hyderabad") ? "Hyderabad" : id.includes("greens") ? "Noida" : id.includes("superspecialty") ? "New Delhi" : id.includes("medanta") ? "Gurugram" : id.includes("kokilaben") ? "Mumbai" : "Bengaluru",
+      rating: hospitalDefaults[id].rating,
+      image_url: `https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80`,
+      description: "Default mock hospital information.",
+      address: "Main Street",
+      phone: "+91 80 1234 5678"
+    });
+  });
+}
+
+export function getHospitalIdByName(name: string, customList?: Hospital[]): string {
+  const list = getCachedOrDefaultHospitals(customList);
+  const h = list.find((x) => x.name.toLowerCase() === name.toLowerCase());
   return h ? h.id : "unknown";
 }
 
-export function getHospitalNameById(id: string): string {
-  const h = hospitals.find((x) => x.id === id);
+export function getHospitalNameById(id: string, customList?: Hospital[]): string {
+  const list = getCachedOrDefaultHospitals(customList);
+  const h = list.find((x) => x.id === id);
   return h ? h.name : "Unknown Hospital";
 }
 
-export function getHospitalRatingDetails(hospitalId: string): {
+export function getHospitalRatingDetails(hospitalId: string, customList?: Hospital[]): {
   rating: number;
   reviewsCount: number;
 } {
-  const h = hospitals.find((x) => x.id === hospitalId);
+  const list = getCachedOrDefaultHospitals(customList);
+  const h = list.find((x) => x.id === hospitalId);
   if (!h) return { rating: 0, reviewsCount: 0 };
 
   const storedReviews = getItemSafe<PatientReview[]>("medicompare_reviews", []);
@@ -834,8 +824,9 @@ export function getHospitalRatingDetails(hospitalId: string): {
   return { rating: averageRating, reviewsCount: totalReviews };
 }
 
-export function getReviewsForHospital(hospitalId: string): PatientReview[] {
-  const h = hospitals.find((x) => x.id === hospitalId);
+export function getReviewsForHospital(hospitalId: string, customList?: Hospital[]): PatientReview[] {
+  const list = getCachedOrDefaultHospitals(customList);
+  const h = list.find((x) => x.id === hospitalId);
   if (!h) return [];
 
   // 1. Get base reviews
@@ -866,11 +857,12 @@ export function getReviewsForHospital(hospitalId: string): PatientReview[] {
   return [...custom, ...base];
 }
 
-export function getAllReviews(): PatientReview[] {
+export function getAllReviews(customList?: Hospital[]): PatientReview[] {
+  const list = getCachedOrDefaultHospitals(customList);
   const custom = getItemSafe<PatientReview[]>("medicompare_reviews", []);
 
   const base: PatientReview[] = [];
-  hospitals.forEach((h) => {
+  list.forEach((h) => {
     const reviews = defaultHospitalReviews[h.id] || [
       {
         name: "Priya S.",
@@ -895,4 +887,5 @@ export function getAllReviews(): PatientReview[] {
 
   return [...custom, ...base];
 }
+
 

@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { hospitals } from "@/lib/mock-data";
+import { useHospitals } from "@/hooks/use-hospitals";
+import { CardSkeleton } from "@/components/site/SkeletonLoader";
 import { HospitalCard } from "@/components/site/HospitalCard";
-import { getItemSafe } from "@/lib/storage";
+import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/saved")({
   head: () => ({ meta: [{ title: "Saved Hospitals — MediCompare" }] }),
@@ -46,13 +48,32 @@ function SavedPage() {
 
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
-  const loadSaved = () => {
-    setSavedIds(getItemSafe<string[]>("medicompare_saved_hospitals", []));
+  const loadSaved = async () => {
+    const localSaved = getItemSafe<string[]>("medicompare_saved_hospitals", []);
+    if (isLoggedIn && user?.email) {
+      try {
+        const { data, error } = await supabase
+          .from("favorites")
+          .select("hospital_id")
+          .eq("user_email", user.email);
+
+        if (error) throw error;
+        const dbIds = (data || []).map((f: any) => f.hospital_id);
+        const merged = Array.from(new Set([...localSaved, ...dbIds]));
+        setSavedIds(merged);
+        setItemSafe("medicompare_saved_hospitals", merged);
+      } catch (err) {
+        console.warn("Failed to load saved hospitals from Supabase, using local fallback:", err);
+        setSavedIds(localSaved);
+      }
+    } else {
+      setSavedIds(localSaved);
+    }
   };
 
   useEffect(() => {
     loadSaved();
-  }, []);
+  }, [user?.email, isLoggedIn]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
@@ -64,7 +85,8 @@ function SavedPage() {
     avatar: user?.avatar ?? "https://i.pravatar.cc/120?img=25",
   };
 
-  const saved = hospitals.filter((h) => savedIds.includes(h.id));
+  const { data: hospitalsList = [], isLoading } = useHospitals();
+  const saved = hospitalsList.filter((h) => savedIds.includes(h.id));
 
   return (
     <DashboardShell items={navItems} label="Patient" user={authUser}>
@@ -84,7 +106,13 @@ function SavedPage() {
         </Button>
       </div>
 
-      {saved.length === 0 ? (
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+      ) : saved.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-16 text-center">
           <Bookmark className="h-10 w-10 text-muted-foreground mb-3" />
           <p className="font-semibold">No saved hospitals yet</p>

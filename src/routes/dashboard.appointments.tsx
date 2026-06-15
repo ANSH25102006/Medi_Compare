@@ -17,12 +17,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { userAppointments } from "@/lib/mock-data";
+import { userAppointments, getHospitalNameById } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { getItemSafe, setItemSafe } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/appointments")({
   head: () => ({ meta: [{ title: "Appointments — MediCompare" }] }),
@@ -68,24 +69,73 @@ function AppointmentsPage() {
     }
   }, [isLoggedIn, user, navigate]);
 
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    return getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    async function loadAppointments() {
+      if (!user?.email) return;
+      try {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("user_email", user.email)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const dbAppts = (data || []).map((b: any) => ({
+          id: b.id,
+          date: b.booking_date,
+          hospital: getHospitalNameById(b.hospital_id),
+          service: b.service_name,
+          status: b.status as any,
+        }));
+
+        const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
+        const seenIds = new Set(dbAppts.map((a) => a.id));
+        const localApptsUnique = localAppts.filter((la) => !seenIds.has(la.id));
+
+        setAppointments([...dbAppts, ...localApptsUnique]);
+      } catch (err) {
+        console.warn("Failed to load appointments from Supabase, using local fallback:", err);
+        setAppointments(getItemSafe<Appointment[]>("medicompare_appointments", userAppointments));
+      }
+    }
+
+    loadAppointments();
+  }, [user?.email, refreshTrigger]);
 
   const cancelAppointment = (id: string) => {
     try {
-      const updated = appointments.map((a) => {
-        if (a.id === id) {
-          return { ...a, status: "Cancelled" };
-        }
-        return a;
-      });
-      setAppointments(updated);
-      setItemSafe("medicompare_appointments", updated);
-      toast.success("Appointment cancelled successfully.");
-    } catch {
-      toast.error("Failed to cancel appointment.");
+      const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
+      const updatedLocal = localAppts.map((a) => (a.id === id ? { ...a, status: "Cancelled" as const } : a));
+      setItemSafe("medicompare_appointments", updatedLocal);
+      
+      const updatedState = appointments.map((a) => (a.id === id ? { ...a, status: "Cancelled" as const } : a));
+      setAppointments(updatedState);
+    } catch (err) {
+      console.error("Local storage fallback cancel failed:", err);
     }
+
+    async function cancelInSupabase() {
+      try {
+        const { error } = await supabase
+          .from("bookings")
+          .update({ status: "Cancelled" })
+          .eq("id", id);
+
+        if (error) throw error;
+        toast.success("Appointment cancelled successfully.");
+      } catch (err) {
+        console.error("Failed to cancel appointment in Supabase:", err);
+        toast.success("Appointment cancelled locally.");
+      } finally {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    }
+
+    cancelInSupabase();
   };
 
   if (!isLoggedIn || user?.role !== "Patient") {
