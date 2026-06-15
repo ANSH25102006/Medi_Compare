@@ -72,6 +72,7 @@ function BookPage() {
   const [isPaying, setIsPaying] = useState(false);
   const [bookingId, setBookingId] = useState("");
   const [savedBooking, setSavedBooking] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "mock">("razorpay");
 
   // Dynamically load Razorpay checkout script
   useEffect(() => {
@@ -277,6 +278,11 @@ function BookPage() {
 
     setIsPaying(true);
 
+    if (paymentMethod === "mock") {
+      triggerMockPaymentFlow();
+      return;
+    }
+
     try {
       const response = await fetch("/.netlify/functions/create-order", {
         method: "POST",
@@ -292,15 +298,18 @@ function BookPage() {
       }
 
       const orderData = await response.json();
+      const keyId = orderData.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-      if (orderData.mock || !(window as any).Razorpay || import.meta.env.VITE_RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID_HERE") {
-        console.warn("Using mock payment fallback flow.");
-        triggerMockPaymentFlow();
+      if (orderData.mock || !(window as any).Razorpay || !keyId || keyId === "YOUR_RAZORPAY_KEY_ID_HERE") {
+        console.warn("Razorpay keys or script not available. Falling back to mock card payment.");
+        toast.warning("Razorpay Test Mode is not configured on the server/client. Switching to Mock Sandbox Card.");
+        setPaymentMethod("mock");
+        setIsPaying(false);
         return;
       }
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: keyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "MediCompare",
@@ -357,8 +366,10 @@ function BookPage() {
       });
       rzp.open();
     } catch (error) {
-      console.warn("Razorpay API not available, using local fallback payment flow:", error);
-      triggerMockPaymentFlow();
+      console.warn("Razorpay API not available, switching to local mock payment:", error);
+      toast.warning("Razorpay connection issue. Switching to Mock Sandbox Card.");
+      setPaymentMethod("mock");
+      setIsPaying(false);
     }
   };
   const total = steps.length;
@@ -531,8 +542,34 @@ function BookPage() {
                 <CreditCard className="h-5 w-5 text-primary" /> Payment details
               </h2>
               <p className="text-sm text-muted-foreground">
-                Secure your appointment booking with a safe mock payment.
+                Choose your payment option and secure your appointment.
               </p>
+
+              {/* Tab Selector */}
+              <div className="flex rounded-xl bg-secondary/50 p-1 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("razorpay")}
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all ${
+                    paymentMethod === "razorpay"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <CreditCard className="h-4 w-4 text-primary" /> Razorpay Checkout
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("mock")}
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all ${
+                    paymentMethod === "mock"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <CreditCard className="h-4 w-4 text-muted-foreground" /> Mock Sandbox Card
+                </button>
+              </div>
 
               <div className="rounded-2xl border border-border bg-secondary/20 p-5 mt-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -556,68 +593,88 @@ function BookPage() {
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-4">
-                <div>
-                  <Label htmlFor="card-number">Card number</Label>
-                  <Input
-                    id="card-number"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
-                    placeholder="4111 2222 3333 4444"
-                    className="mt-1.5"
-                  />
+              {paymentMethod === "razorpay" ? (
+                <div className="rounded-2xl border border-border bg-primary-soft/30 p-6 text-center space-y-4 animate-fade-in mt-4">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary">
+                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-lg">Razorpay Checkout</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                      Pay securely via UPI, Cards, NetBanking, or Wallets using Razorpay Test Mode.
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground border-t border-border pt-4 mt-2">
+                    Click <strong>Pay & Confirm</strong> below to open the secure payment checkout.
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+              ) : (
+                <div className="mt-4 grid gap-4 animate-fade-in">
                   <div>
-                    <Label htmlFor="card-expiry">Expiry date</Label>
+                    <Label htmlFor="card-number">Card number</Label>
                     <Input
-                      id="card-expiry"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value.slice(0, 5))}
-                      placeholder="MM/YY"
+                      id="card-number"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
+                      placeholder="4111 2222 3333 4444"
                       className="mt-1.5"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="card-expiry">Expiry date</Label>
+                      <Input
+                        id="card-expiry"
+                        value={cardExpiry}
+                        onChange={(e) => setCardExpiry(e.target.value.slice(0, 5))}
+                        placeholder="MM/YY"
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="card-cvv">CVV</Label>
+                      <Input
+                        id="card-cvv"
+                        type="password"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                        placeholder="•••"
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
                   <div>
-                    <Label htmlFor="card-cvv">CVV</Label>
+                    <Label htmlFor="card-holder">Cardholder name</Label>
                     <Input
-                      id="card-cvv"
-                      type="password"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                      placeholder="•••"
+                      id="card-holder"
+                      value={cardHolder}
+                      onChange={(e) => setCardHolder(e.target.value)}
+                      placeholder="Ananya Sharma"
                       className="mt-1.5"
                     />
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="card-holder">Cardholder name</Label>
-                  <Input
-                    id="card-holder"
-                    value={cardHolder}
-                    onChange={(e) => setCardHolder(e.target.value)}
-                    placeholder="Ananya Sharma"
-                    className="mt-1.5"
-                  />
-                </div>
 
-                <label className="flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-3 text-xs cursor-pointer hover:bg-destructive/10 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={simulateFailure}
-                    onChange={(e) => setSimulateFailure(e.target.checked)}
-                    className="h-4 w-4 accent-destructive rounded"
-                  />
-                  <div>
-                    <p className="font-semibold text-destructive">
-                      Simulate transaction failure (QA Testing)
-                    </p>
-                    <p className="text-muted-foreground mt-0.5">
-                      Test how the platform handles payment processing errors.
-                    </p>
-                  </div>
-                </label>
-              </div>
+                  <label className="flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-3 text-xs cursor-pointer hover:bg-destructive/10 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={simulateFailure}
+                      onChange={(e) => setSimulateFailure(e.target.checked)}
+                      className="h-4 w-4 accent-destructive rounded"
+                    />
+                    <div>
+                      <p className="font-semibold text-destructive">
+                        Simulate transaction failure (QA Testing)
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">
+                        Test how the platform handles payment processing errors.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
           )}
 
