@@ -52,7 +52,10 @@ export function TableSkeleton() {
         </div>
         {/* Body rows */}
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+          <div
+            key={i}
+            className="flex items-center justify-between py-3 border-b border-border last:border-0"
+          >
             <Skeleton className="h-5 w-5 rounded" />
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10 rounded-xl" />

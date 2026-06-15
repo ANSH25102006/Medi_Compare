@@ -15,7 +15,10 @@ interface Message {
 }
 
 // ── Response Engine ────────────────────────────────────────────────────────
-function getBotResponse(input: string, hospitalsList: any[]): Omit<Message, "id" | "role" | "time"> {
+function getBotResponse(
+  input: string,
+  hospitalsList: any[],
+): Omit<Message, "id" | "role" | "time"> {
   const q = input.toLowerCase().trim();
 
   // Greeting
@@ -104,8 +107,12 @@ function getBotResponse(input: string, hospitalsList: any[]): Omit<Message, "id"
           const priceB = b.services.find((s: any) => s.name === matchedService)?.price || 0;
           return priceA - priceB;
         } else {
-          const maxSaveA = Math.max(...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
-          const maxSaveB = Math.max(...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
+          const maxSaveA = Math.max(
+            ...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price),
+          );
+          const maxSaveB = Math.max(
+            ...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price),
+          );
           return maxSaveB - maxSaveA;
         }
       }
@@ -120,8 +127,12 @@ function getBotResponse(input: string, hospitalsList: any[]): Omit<Message, "id"
         scoreA -= priceA / 100;
         scoreB -= priceB / 100;
       } else if (wantsCheap) {
-        const saveA = Math.max(...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
-        const saveB = Math.max(...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price));
+        const saveA = Math.max(
+          ...a.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price),
+        );
+        const saveB = Math.max(
+          ...b.services.map((s: any) => getServiceAverage(s.name, hospitalsList) - s.price),
+        );
         scoreA += saveA / 100;
         scoreB += saveB / 100;
       }
@@ -193,10 +204,16 @@ function getBotResponse(input: string, hospitalsList: any[]): Omit<Message, "id"
           const details = [];
           if (wantsCheap) {
             const topSavingSvc = [...h.services].sort(
-              (a, b) => getServiceAverage(b.name, hospitalsList) - b.price - (getServiceAverage(a.name, hospitalsList) - a.price),
+              (a, b) =>
+                getServiceAverage(b.name, hospitalsList) -
+                b.price -
+                (getServiceAverage(a.name, hospitalsList) - a.price),
             )[0];
             if (topSavingSvc) {
-              const save = Math.max(getServiceAverage(topSavingSvc.name, hospitalsList) - topSavingSvc.price, 0);
+              const save = Math.max(
+                getServiceAverage(topSavingSvc.name, hospitalsList) - topSavingSvc.price,
+                0,
+              );
               if (save > 0) details.push(`Save ₹${save.toLocaleString()} on ${topSavingSvc.name}`);
               else details.push(`Great value for ${topSavingSvc.name}`);
             }

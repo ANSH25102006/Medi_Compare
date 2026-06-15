@@ -5,7 +5,6 @@ import {
   Star,
   Bookmark,
   Settings as SettingsIcon,
-  FileText,
   TrendingUp,
   Activity,
   Clock,
@@ -13,16 +12,21 @@ import {
   Wallet,
   Search as SearchIcon,
   Download,
-  Heart,
-  ShieldCheck,
-  Stethoscope,
-  ChevronRight,
   Plus,
+  RefreshCw,
+  Building,
+  User,
+  Sliders,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -32,17 +36,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  userAppointments,
-  getHospitalNameById,
-  recentSearches,
-  medicalRecords,
-  savingsTrend,
-  healthSpendingBreakdown,
-} from "@/lib/mock-data";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useHospitals } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -51,16 +57,10 @@ import {
   CartesianGrid,
   Area,
   AreaChart,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "My Dashboard — MediCompare" }] }),
+  head: () => ({ meta: [{ title: "Platform Dashboard — MediCompare" }] }),
   component: Dashboard,
 });
 
@@ -72,99 +72,207 @@ const navItems: NavItem[] = [
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
 ];
 
-const visitsData = [
-  { m: "Jan", v: 1 },
-  { m: "Feb", v: 2 },
-  { m: "Mar", v: 1 },
-  { m: "Apr", v: 3 },
-  { m: "May", v: 2 },
-  { m: "Jun", v: 4 },
+// High fidelity platform fallback bookings (recent)
+const platformMockBookings = [
+  {
+    id: "MC-8421",
+    patient: "Aarav Sharma",
+    hospital: "Apollo Specialty Hospital",
+    treatment: "MRI Scan",
+    paymentStatus: "Paid",
+    amount: 7500,
+    date: "2026-06-15",
+  },
+  {
+    id: "MC-7832",
+    patient: "Aditi Rao",
+    hospital: "Fortis Greens Medical Center",
+    treatment: "Cardiac Consultation",
+    paymentStatus: "Paid",
+    amount: 1000,
+    date: "2026-06-15",
+  },
+  {
+    id: "MC-9321",
+    patient: "Vikram Malhotra",
+    hospital: "Max Super Speciality Hospital",
+    treatment: "CT Scan",
+    paymentStatus: "Paid",
+    amount: 5400,
+    date: "2026-06-14",
+  },
+  {
+    id: "MC-4821",
+    patient: "Priya Patel",
+    hospital: "Manipal City Hospital",
+    treatment: "Full Body Health Checkup",
+    paymentStatus: "Paid",
+    amount: 4100,
+    date: "2026-06-14",
+  },
+  {
+    id: "MC-5921",
+    patient: "Rohan Das",
+    hospital: "Kokilaben Dhirubhai Ambani Hospital",
+    treatment: "Blood Test Panel",
+    paymentStatus: "Paid",
+    amount: 850,
+    date: "2026-06-13",
+  },
+  {
+    id: "MC-6712",
+    patient: "Neha Gupta",
+    hospital: "Medanta The Medicity",
+    treatment: "Orthopedic Consultation",
+    paymentStatus: "Paid",
+    amount: 1100,
+    date: "2026-06-13",
+  },
+  {
+    id: "MC-3290",
+    patient: "Suresh Kumar",
+    hospital: "Care Hospitals, Banjara Hills",
+    treatment: "Ultrasound",
+    paymentStatus: "Paid",
+    amount: 1200,
+    date: "2026-06-12",
+  },
+  {
+    id: "MC-2841",
+    patient: "Karan Johar",
+    hospital: "Continental Hospitals",
+    treatment: "Endoscopy",
+    paymentStatus: "Paid",
+    amount: 5800,
+    date: "2026-06-12",
+  },
+  {
+    id: "MC-1049",
+    patient: "Ananya Panday",
+    hospital: "Fortis Hospital, Bannerghatta Road",
+    treatment: "Full Body Health Checkup",
+    paymentStatus: "Paid",
+    amount: 4300,
+    date: "2026-06-11",
+  },
+  {
+    id: "MC-0951",
+    patient: "Ishaan Khatter",
+    hospital: "Apollo Specialty Hospital, OMR",
+    treatment: "Cardiac Consultation",
+    paymentStatus: "Refunded",
+    amount: 1100,
+    date: "2026-06-10",
+  },
 ];
 
-const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
-  Upcoming: { bg: "bg-primary/10", text: "text-primary", dot: "bg-primary" },
-  Confirmed: { bg: "bg-success/10", text: "text-success", dot: "bg-success" },
-  Completed: { bg: "bg-secondary", text: "text-foreground", dot: "bg-muted-foreground" },
-  Cancelled: { bg: "bg-destructive/10", text: "text-destructive", dot: "bg-destructive" },
+const chartData = {
+  daily: [
+    { name: "Mon", bookings: 42 },
+    { name: "Tue", bookings: 48 },
+    { name: "Wed", bookings: 51 },
+    { name: "Thu", bookings: 45 },
+    { name: "Fri", bookings: 49 },
+    { name: "Sat", bookings: 55 },
+    { name: "Sun", bookings: 58 },
+  ],
+  weekly: [
+    { name: "Wk 21", bookings: 280 },
+    { name: "Wk 22", bookings: 310 },
+    { name: "Wk 23", bookings: 295 },
+    { name: "Wk 24", bookings: 320 },
+    { name: "Wk 25", bookings: 340 },
+    { name: "Wk 26", bookings: 365 },
+  ],
+  monthly: [
+    { name: "Jan", bookings: 1120 },
+    { name: "Feb", bookings: 1240 },
+    { name: "Mar", bookings: 1180 },
+    { name: "Apr", bookings: 1350 },
+    { name: "May", bookings: 1480 },
+    { name: "Jun", bookings: 1590 },
+  ],
 };
 
-// Animated counter hook
-function useCountUp(target: number, duration = 1200) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(false);
-  useEffect(() => {
-    if (ref.current) return;
-    ref.current = true;
-    const start = Date.now();
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [target, duration]);
-  return count;
-}
+const mostViewedHospitals = [
+  {
+    id: "max-superspecialty",
+    name: "Max Super Speciality Hospital",
+    city: "New Delhi",
+    views: "8.4k",
+    rating: 4.9,
+  },
+  {
+    id: "apollo-central",
+    name: "Apollo Specialty Hospital",
+    city: "Bengaluru",
+    views: "7.2k",
+    rating: 4.8,
+  },
+  {
+    id: "kokilaben",
+    name: "Kokilaben Dhirubhai Ambani Hospital",
+    city: "Mumbai",
+    views: "6.8k",
+    rating: 4.8,
+  },
+  {
+    id: "fortis-greens",
+    name: "Fortis Greens Medical Center",
+    city: "Noida",
+    views: "5.9k",
+    rating: 4.7,
+  },
+  { id: "medanta", name: "Medanta The Medicity", city: "Gurugram", views: "5.5k", rating: 4.7 },
+];
 
-function StatCard({
-  label,
-  raw,
-  prefix = "",
-  suffix = "",
-  icon: Icon,
-  tone,
-  hint,
-}: {
-  label: string;
-  raw: number;
-  prefix?: string;
-  suffix?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tone: "primary" | "success" | "warning";
-  hint: string;
-}) {
-  const count = useCountUp(raw);
-  const toneMap = {
-    primary: { bg: "bg-primary-soft", icon: "text-primary", value: "" },
-    success: { bg: "bg-success/15", icon: "text-success", value: "text-success" },
-    warning: { bg: "bg-warning/15", icon: "text-warning", value: "text-warning" },
-  };
-  const t = toneMap[tone];
-
-  return (
-    <div className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated">
-      <div className="flex items-center justify-between">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${t.bg} ${t.icon}`}>
-          <Icon className="h-5 w-5" />
-        </span>
-        <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-      </div>
-      <p className={`mt-4 text-3xl font-bold ${t.value}`}>
-        {prefix}
-        {count.toLocaleString()}
-        {suffix}
-      </p>
-      <p className="text-sm font-medium text-foreground mt-0.5">{label}</p>
-      <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>
-    </div>
-  );
-}
-
-type Appointment = {
-  id: string;
-  date: string;
-  hospital: string;
-  service: string;
-  status: "Upcoming" | "Confirmed" | "Completed" | "Cancelled";
-};
+const mostBookedHospitals = [
+  {
+    id: "max-superspecialty",
+    name: "Max Super Speciality Hospital",
+    city: "New Delhi",
+    bookings: 642,
+    rating: 4.9,
+  },
+  {
+    id: "apollo-central",
+    name: "Apollo Specialty Hospital",
+    city: "Bengaluru",
+    bookings: 580,
+    rating: 4.8,
+  },
+  {
+    id: "manipal-city",
+    name: "Manipal City Hospital",
+    city: "Bengaluru",
+    bookings: 490,
+    rating: 4.6,
+  },
+  {
+    id: "fortis-greens",
+    name: "Fortis Greens Medical Center",
+    city: "Noida",
+    bookings: 430,
+    rating: 4.7,
+  },
+  {
+    id: "kokilaben",
+    name: "Kokilaben Dhirubhai Ambani Hospital",
+    city: "Mumbai",
+    bookings: 385,
+    rating: 4.8,
+  },
+];
 
 function Dashboard() {
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const { data: hospitalsList = [], isLoading } = useHospitals();
+  const queryClient = useQueryClient();
+  const { data: hospitalsList = [], isLoading: loadingHospitals } = useHospitals();
 
+  const bookingsRef = useRef<HTMLDivElement>(null);
+
+  // Authenticate user & role check
   useEffect(() => {
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard" } });
@@ -177,481 +285,872 @@ function Dashboard() {
     }
   }, [isLoggedIn, user, navigate]);
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [savedCount, setSavedCount] = useState(0);
+  // States
+  const [dbBookings, setDbBookings] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [chartTab, setChartTab] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  // Table state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Add Hospital Dialog states
+  const [isAddHospitalOpen, setIsAddHospitalOpen] = useState(false);
+  const [newHospName, setNewHospName] = useState("");
+  const [newHospCity, setNewHospCity] = useState("Bengaluru");
+  const [newHospType, setNewHospType] = useState("General Hospital");
+  const [newHospPhone, setNewHospPhone] = useState("");
+  const [newHospAddress, setNewHospAddress] = useState("");
+  const [newHospDesc, setNewHospDesc] = useState("");
+
+  const [currentDate, setCurrentDate] = useState(() =>
+    new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  );
+
+  // Load bookings from Supabase
+  const fetchDbBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDbBookings(data || []);
+    } catch (err) {
+      console.warn("Supabase bookings query failed. Using offline fallbacks.", err);
+    }
+  };
 
   useEffect(() => {
-    if (!isLoggedIn || !user?.email) return;
-
-    async function loadDashboardData() {
-      const localSaved = getItemSafe<string[]>(
-        "medicompare_saved_hospitals",
-        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
-      );
-      setSavedCount(localSaved.length);
-
-      const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
-      setAppointments(localAppts);
-
-      try {
-        const { data: favs, error: favsErr } = await supabase
-          .from("favorites")
-          .select("hospital_id")
-          .eq("user_email", user.email);
-
-        if (favsErr) throw favsErr;
-        const favIds = (favs || []).map((f: any) => f.hospital_id);
-        const mergedFavs = Array.from(new Set([...localSaved, ...favIds]));
-        setSavedCount(mergedFavs.length);
-        setItemSafe("medicompare_saved_hospitals", mergedFavs);
-
-        const { data: bookingsData, error: bookingsErr } = await supabase
-          .from("bookings")
-          .select("*")
-          .eq("user_email", user.email);
-
-        if (bookingsErr) throw bookingsErr;
-        const dbAppts = (bookingsData || []).map((b: any) => ({
-          id: b.id,
-          date: b.booking_date,
-          hospital: getHospitalNameById(b.hospital_id, hospitalsList),
-          service: b.service_name,
-          status: b.status as any,
-        }));
-
-        const seenIds = new Set(dbAppts.map((a) => a.id));
-        const uniqueLocal = localAppts.filter((la) => !seenIds.has(la.id));
-        const mergedAppts = [...dbAppts, ...uniqueLocal];
-        setAppointments(mergedAppts);
-        setItemSafe("medicompare_appointments", mergedAppts);
-      } catch (err) {
-        console.warn("Failed to load dashboard metrics from Supabase, using local fallback:", err);
-      }
+    if (isLoggedIn && user?.role === "Patient") {
+      fetchDbBookings();
     }
-
-    loadDashboardData();
-  }, [isLoggedIn, user?.email, hospitalsList]);
+  }, [isLoggedIn, user?.role]);
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
   }
 
+  // Refresh dashboard data
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setCurrentDate(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    );
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["hospitals"] }),
+      fetchDbBookings(),
+    ]);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.success("Dashboard refreshed successfully.");
+    }, 600);
+  };
+
+  // Add Hospital submit handler
+  const handleAddHospitalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHospName || !newHospAddress) {
+      toast.error("Please enter a name and address for the hospital.");
+      return;
+    }
+
+    const newHospId = `hosp-${Date.now()}`;
+    const newHospital = {
+      id: newHospId,
+      name: newHospName,
+      city: newHospCity,
+      type: newHospType,
+      rating: 4.8,
+      image_url:
+        "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80",
+      description:
+        newHospDesc || "A modern healthcare facility delivering top-tier healthcare programs.",
+      address: newHospAddress,
+      phone: newHospPhone || "+91 80 9876 5432",
+    };
+
+    try {
+      const { error } = await supabase.from("hospitals").insert([newHospital]);
+      if (error) throw error;
+      toast.success("Hospital listed in database!");
+    } catch (err) {
+      console.warn(
+        "Failed to write to database (RLS restricts writes). Writing to local sandbox environment.",
+        err,
+      );
+      // Fallback
+      const cached = getItemSafe<any[]>("medicompare_hospitals_cache", []);
+      setItemSafe("medicompare_hospitals_cache", [newHospital, ...cached]);
+      toast.success("Hospital successfully listed in local sandbox!");
+    } finally {
+      setNewHospName("");
+      setNewHospPhone("");
+      setNewHospAddress("");
+      setNewHospDesc("");
+      setIsAddHospitalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["hospitals"] });
+    }
+  };
+
+  // Export CSV
+  const handleExportCSV = () => {
+    const headers = ["Booking ID", "Patient", "Hospital", "Treatment", "Status", "Date", "Amount"];
+    const rows = allBookings.map((b) => [
+      b.id,
+      b.patient,
+      b.hospital,
+      b.treatment,
+      b.paymentStatus,
+      b.date,
+      `INR ${b.amount}`,
+    ]);
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `medicompare_bookings_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV export downloaded.");
+  };
+
+  // Scroll smooth to bookings table
+  const handleScrollViewBookings = () => {
+    bookingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Prepare bookings list
+  const dbBookingsMapped = dbBookings.map((b: any) => ({
+    id: b.id,
+    patient: b.user_name || "Anonymous Patient",
+    hospital: b.hospital_name || "Hospital",
+    treatment: b.service_name || "Consultation",
+    paymentStatus: b.payment_status || "Paid",
+    amount: b.amount || 1500,
+    date: b.booking_date || new Date(b.created_at).toISOString().slice(0, 10),
+  }));
+
+  const allBookings = [...dbBookingsMapped, ...platformMockBookings];
+
+  // Stats computation
+  const totalBookingsCount = 1248 + dbBookings.length;
+  const dbBookingsRevenue = dbBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const totalRevenue = 5624000 + dbBookingsRevenue;
+  const activeHospitalsCount = hospitalsList.length > 0 ? hospitalsList.length : 11;
+  const conversionRate = "4.2%";
+
+  // Filter Bookings Table
+  const filteredBookings = allBookings.filter((b) => {
+    const query = searchTerm.toLowerCase();
+    return (
+      b.patient.toLowerCase().includes(query) ||
+      b.hospital.toLowerCase().includes(query) ||
+      b.treatment.toLowerCase().includes(query)
+    );
+  });
+
+  // Paginated bookings
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
   const authUser = {
     name: user?.name ?? "Patient",
-    role: user?.role ?? "Patient",
+    role: "Patient Dashboard",
     avatar: user?.avatar ?? "https://i.pravatar.cc/120?img=25",
   };
 
-  const upcoming = appointments.filter((a) => a.status === "Upcoming" || a.status === "Confirmed");
-  const past = appointments.filter((a) => a.status === "Completed");
-  const totalSaved = savingsTrend.reduce((a, b) => a + b.saved, 0);
-
-  const stats = [
-    {
-      label: "Upcoming Appointments",
-      raw: upcoming.length,
-      icon: CalendarCheck,
-      hint: "Next slot reserved",
-      tone: "primary" as const,
-      prefix: "",
-      suffix: "",
-    },
-    {
-      label: "Money Saved",
-      raw: totalSaved,
-      icon: Wallet,
-      hint: "Lifetime savings vs. average",
-      tone: "success" as const,
-      prefix: "₹",
-      suffix: "",
-    },
-    {
-      label: "Saved Hospitals",
-      raw: savedCount,
-      icon: Bookmark,
-      hint: "Bookmarked providers",
-      tone: "primary" as const,
-      prefix: "",
-      suffix: "",
-    },
-    {
-      label: "Past Visits",
-      raw: past.length,
-      icon: Activity,
-      hint: "This year",
-      tone: "primary" as const,
-      prefix: "",
-      suffix: "",
-    },
-  ];
-
   return (
-    <DashboardShell items={navItems} label="Patient" user={authUser}>
-      {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-primary-gradient p-7 text-primary-foreground shadow-elevated md:p-10">
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -bottom-20 -left-8 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
+    <DashboardShell items={navItems} label="Operations" user={authUser}>
+      <div className="flex flex-col gap-6">
+        {/* SECTION 1 — HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5 order-1">
           <div>
-            <p className="text-sm opacity-80">Good morning,</p>
-            <h1 className="mt-1 text-3xl font-bold md:text-4xl">
-              {authUser.name.split(" ")[0]} 👋
+            <h1 className="text-2xl font-bold tracking-tight text-foreground font-display">
+              Welcome back, Ansh
             </h1>
-            <p className="mt-2 max-w-md text-sm opacity-80">
-              You have <strong>{upcoming.length} upcoming appointments</strong>. You've saved{" "}
-              <strong>₹{totalSaved.toLocaleString()}</strong> this year by comparing prices.
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Here's what's happening on MediCompare today.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-                <ShieldCheck className="h-3.5 w-3.5" /> Verified Patient
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-                <Heart className="h-3.5 w-3.5" /> Health Score: 78/100
-              </span>
-            </div>
           </div>
-          <Button asChild size="lg" variant="secondary" className="rounded-full shadow-elevated">
-            <Link to="/compare">
-              <Plus className="mr-1.5 h-4 w-4" /> Book New Appointment
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <StatCard key={s.label} {...s} />
-        ))}
-      </div>
-
-      {/* Upcoming appointments highlight */}
-      {upcoming.length > 0 && (
-        <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold">Upcoming Appointments</h2>
-            <Button asChild variant="ghost" size="sm" className="rounded-full text-xs">
-              <Link to="/dashboard/appointments">
-                View all <ChevronRight className="ml-1 h-3.5 w-3.5" />
-              </Link>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <span className="text-xs font-semibold text-muted-foreground bg-secondary px-3 py-1.5 rounded-full border border-border">
+              {currentDate}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full border border-border bg-card shadow-soft text-xs"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+              Refresh
             </Button>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {upcoming.map((a) => {
-              const st = statusConfig[a.status];
-              return (
-                <div
-                  key={a.id}
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-soft hover:shadow-elevated transition-all"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                    <Stethoscope className="h-5 w-5" />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-bold">{a.hospital}</p>
-                    <p className="text-xs text-muted-foreground">{a.service}</p>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" /> {a.date}
-                    </div>
-                  </div>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${st.bg} ${st.text}`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-                    {a.status}
-                  </span>
-                </div>
-              );
-            })}
+        </div>
+
+        {/* SECTION 2 — KPI GRID */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 order-2">
+          {/* Card 1 */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Total Bookings
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary">
+                <CalendarCheck className="h-4.5 w-4.5" />
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground mt-2">
+                {totalBookingsCount.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+                <TrendingUp className="h-3 w-3" />
+                <span>+12.4% this month</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Revenue Generated
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/5 text-success">
+                <Wallet className="h-4.5 w-4.5" />
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground mt-2">
+                ₹{totalRevenue.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+                <TrendingUp className="h-3 w-3" />
+                <span>+8.2% this month</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Hospitals Listed
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
+                <Building className="h-4.5 w-4.5" />
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground mt-2">{activeHospitalsCount}</p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-success inline-block"></span>
+                <span>Active & Verified</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Conversion Rate
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary">
+                <Activity className="h-4.5 w-4.5" />
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground mt-2">{conversionRate}</p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+                <TrendingUp className="h-3 w-3" />
+                <span>+0.3% vs last week</span>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Charts row 1 */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        {/* Visits chart */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
-          <div className="flex items-center justify-between">
+        {/* SECTION 3 — BOOKINGS OVERVIEW */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft order-6 md:order-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-base font-bold">Visits this year</h2>
-              <p className="text-sm text-muted-foreground">Your appointment activity.</p>
+              <h2 className="text-base font-bold text-foreground">Bookings Overview</h2>
+              <p className="text-xs text-muted-foreground">Total platform bookings over time.</p>
             </div>
-            <Badge variant="secondary" className="rounded-full">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +22%
-            </Badge>
+            <div className="flex rounded-lg bg-secondary p-1 text-xs font-medium self-start sm:self-auto">
+              {(["daily", "weekly", "monthly"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setChartTab(tab)}
+                  className={`rounded-md px-3 py-1.5 transition-all uppercase tracking-wider text-[10px] ${
+                    chartTab === tab
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="mt-6 h-56">
+
+          <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={visitsData}>
+              <AreaChart
+                data={chartData[chartTab]}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="oklch(0.56 0.17 250)" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="oklch(0.56 0.17 250)" stopOpacity={0} />
+                  <linearGradient id="primaryGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.93 0.01 250)" />
-                <XAxis dataKey="m" stroke="oklch(0.50 0.03 250)" fontSize={12} />
-                <YAxis stroke="oklch(0.50 0.03 250)" fontSize={12} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis
+                  dataKey="name"
+                  stroke="var(--muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  allowDecimals={false}
+                />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 12,
-                    border: "1px solid oklch(0.93 0.01 250)",
+                    border: "1px solid var(--border)",
+                    backgroundColor: "var(--card)",
                     fontSize: 12,
                   }}
+                  formatter={(value: any) => [`${value} bookings`, "Volume"]}
                 />
                 <Area
                   type="monotone"
-                  dataKey="v"
-                  stroke="oklch(0.56 0.17 250)"
+                  dataKey="bookings"
+                  stroke="var(--primary)"
                   strokeWidth={2.5}
-                  fill="url(#g1)"
+                  fill="url(#primaryGradient)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Health spending donut */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <h2 className="text-base font-bold">Health Spending</h2>
-          <p className="text-sm text-muted-foreground">Breakdown by category.</p>
-          <div className="mt-4 h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={healthSpendingBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={48}
-                  outerRadius={72}
-                  paddingAngle={3}
-                  dataKey="value"
-                >
-                  {healthSpendingBreakdown.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(v: number) => [`${v}%`, ""]}
-                  contentStyle={{ borderRadius: 12, fontSize: 12 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="mt-3 space-y-1.5">
-            {healthSpendingBreakdown.map((d) => (
-              <li key={d.name} className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                  {d.name}
-                </span>
-                <span className="font-semibold">{d.value}%</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Charts row 2 */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        {/* Money saved bar chart */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
-          <div className="flex items-center justify-between">
+        {/* SECTION 4 — RECENT BOOKINGS */}
+        <div
+          ref={bookingsRef}
+          className="rounded-2xl border border-border bg-card p-6 shadow-soft order-4 md:order-4 scroll-mt-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-base font-bold">Money saved by comparing</h2>
-              <p className="text-sm text-muted-foreground">
-                Total: <strong className="text-success">₹{totalSaved.toLocaleString()}</strong>
+              <h2 className="text-base font-bold text-foreground">Recent Bookings</h2>
+              <p className="text-xs text-muted-foreground">
+                Monitor platform booking traffic in real time.
               </p>
             </div>
-            <Badge className="rounded-full bg-success/15 text-success hover:bg-success/20">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +34%
-            </Badge>
-          </div>
-          <div className="mt-6 h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={savingsTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.93 0.01 250)" />
-                <XAxis dataKey="m" stroke="oklch(0.50 0.03 250)" fontSize={12} />
-                <YAxis stroke="oklch(0.50 0.03 250)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid oklch(0.93 0.01 250)",
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number) => [`₹${v.toLocaleString()}`, "Saved"]}
-                />
-                <Bar dataKey="saved" radius={[8, 8, 0, 0]} fill="oklch(0.65 0.16 160)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Recent searches */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <h2 className="text-base font-bold">Recent searches</h2>
-          <p className="text-sm text-muted-foreground">Pick up where you left off.</p>
-          <ul className="mt-4 space-y-2.5">
-            {recentSearches.map((s) => (
-              <li
-                key={s.id}
-                className="flex items-center gap-3 rounded-xl border border-border p-2.5 transition-colors hover:bg-secondary/40"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                  <SearchIcon className="h-4 w-4" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold">{s.query}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {s.location} · {s.when}
-                  </p>
-                </div>
-                <Button asChild size="sm" variant="ghost" className="rounded-full text-xs px-2">
-                  <Link to="/compare" search={{ q: s.query, city: s.location }}>
-                    →
-                  </Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Saved providers */}
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-base font-bold">Saved Hospitals</h2>
-            <p className="text-sm text-muted-foreground">Quick access to your favorites.</p>
-          </div>
-          <Button asChild variant="outline" size="sm" className="rounded-full text-xs">
-            <Link to="/dashboard/saved">View all</Link>
-          </Button>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse flex items-center gap-3 rounded-xl border border-border p-3">
-                <div className="h-10 w-10 rounded-lg bg-secondary shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-secondary rounded w-3/4" />
-                  <div className="h-2 bg-secondary rounded w-1/2" />
-                </div>
-              </div>
-            ))
-          ) : (
-            hospitalsList.slice(0, 4).map((h) => (
-              <div
-                key={h.id}
-                className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/30"
-              >
-                <img src={h.image} alt="" className="h-10 w-10 rounded-lg object-cover shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold">{h.name}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    ★ {h.rating} · {h.city}
-                  </p>
-                </div>
-                <Button asChild size="sm" variant="ghost" className="rounded-full px-2">
-                  <Link to="/hospitals/$hospitalId" params={{ hospitalId: h.id }}>
-                    →
-                  </Link>
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Medical records */}
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-base font-bold">Medical Records</h2>
-            <p className="text-sm text-muted-foreground">All your reports in one secure vault.</p>
-          </div>
-          <Button variant="outline" size="sm" className="rounded-full text-xs">
-            Upload new
-          </Button>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {medicalRecords.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-secondary/40"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                <FileText className="h-5 w-5" />
+            <div className="flex items-center gap-3 max-w-sm w-full sm:w-72">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary border border-border text-muted-foreground shrink-0">
+                <SearchIcon className="h-4 w-4" />
               </span>
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-semibold">{r.name}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {r.type} · {r.date} · {r.size}
-                </p>
-              </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="rounded-full h-8 w-8"
-                aria-label="Download"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
+              <Input
+                type="text"
+                placeholder="Search patient, hospital, treatment..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1); // Reset to first page
+                }}
+                className="h-9 rounded-xl border-border bg-card text-xs focus-visible:ring-primary"
+              />
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Appointments table */}
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold">All Appointments</h2>
-          <Button variant="outline" size="sm" className="rounded-full text-xs">
-            Export
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Hospital</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {appointments.map((a) => {
-                const st = statusConfig[a.status];
-                return (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {a.id}
-                    </TableCell>
-                    <TableCell className="flex items-center gap-1.5 text-sm">
-                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                      {a.date}
-                    </TableCell>
-                    <TableCell className="font-semibold">{a.hospital}</TableCell>
-                    <TableCell className="text-muted-foreground">{a.service}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${st.bg} ${st.text}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-                        {a.status}
-                      </span>
+          <div className="overflow-x-auto border border-border rounded-xl">
+            <Table>
+              <TableHeader className="bg-secondary/40">
+                <TableRow>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">
+                    Patient
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">
+                    Hospital
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">
+                    Treatment
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">
+                    Booking Date
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">
+                    Payment Status
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedBookings.length > 0 ? (
+                  paginatedBookings.map((b, i) => (
+                    <TableRow
+                      key={b.id + "-" + i}
+                      className="hover:bg-secondary/20 transition-colors"
+                    >
+                      <TableCell className="font-medium text-foreground text-xs py-3.5">
+                        {b.patient}
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground py-3.5">{b.hospital}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-3.5">
+                        {b.treatment}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-3.5 flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        {b.date}
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
+                            b.paymentStatus === "Paid"
+                              ? "bg-success/5 text-success border-success/20"
+                              : b.paymentStatus === "Refunded"
+                                ? "bg-muted text-muted-foreground border-border"
+                                : "bg-warning/5 text-warning border-warning/20"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              b.paymentStatus === "Paid"
+                                ? "bg-success"
+                                : b.paymentStatus === "Refunded"
+                                  ? "bg-muted-foreground"
+                                  : "bg-warning"
+                            }`}
+                          />
+                          {b.paymentStatus}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-xs text-muted-foreground py-8"
+                    >
+                      No matching bookings found.
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border pt-4 mt-4 text-xs">
+              <span className="text-muted-foreground">
+                Showing {Math.min(filteredBookings.length, (currentPage - 1) * itemsPerPage + 1)}-
+                {Math.min(filteredBookings.length, currentPage * itemsPerPage)} of{" "}
+                {filteredBookings.length} records
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="font-semibold text-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SECTION 5 — HOSPITAL PERFORMANCE */}
+        <div className="grid gap-6 md:grid-cols-2 order-5 md:order-5">
+          {/* Left Column: Views */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="mb-4">
+              <h2 className="text-base font-bold text-foreground">Most Viewed Hospitals</h2>
+              <p className="text-xs text-muted-foreground">
+                Most visited hospital profiles this month.
+              </p>
+            </div>
+            <div className="divide-y divide-border">
+              {mostViewedHospitals.map((h, index) => (
+                <div
+                  key={h.id}
+                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 group"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-semibold font-mono text-muted-foreground bg-secondary w-7 h-7 flex items-center justify-center rounded-lg">
+                      0{index + 1}
+                    </span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                        {h.name}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {h.city} · ★ {h.rating}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="rounded-full text-[10px] px-2.5 py-0.5">
+                    {h.views} views
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Bookings */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="mb-4">
+              <h2 className="text-base font-bold text-foreground">Most Booked Hospitals</h2>
+              <p className="text-xs text-muted-foreground">
+                Providers securing highest appointment counts.
+              </p>
+            </div>
+            <div className="divide-y divide-border">
+              {mostBookedHospitals.map((h, index) => (
+                <div
+                  key={h.id}
+                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 group"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-semibold font-mono text-muted-foreground bg-secondary w-7 h-7 flex items-center justify-center rounded-lg">
+                      0{index + 1}
+                    </span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                        {h.name}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {h.city} · ★ {h.rating}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-primary/5 border border-primary/10 text-primary rounded-full text-[10px] px-2.5 py-0.5 hover:bg-primary/10">
+                    {h.bookings} bookings
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 6 — SEARCH INSIGHTS */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft order-3 md:order-6">
+          <div className="mb-6">
+            <h2 className="text-base font-bold text-foreground">Search Insights</h2>
+            <p className="text-xs text-muted-foreground">
+              Most frequent user query topics and regions.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Treatments */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block"></span>
+                Treatments
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: "MRI Scan", count: "1.2k" },
+                  { name: "Full Body Checkup", count: "980" },
+                  { name: "Blood Test Panel", count: "850" },
+                  { name: "CT Scan", count: "720" },
+                  { name: "Cardiac Consultation", count: "610" },
+                ].map((item) => (
+                  <span
+                    key={item.name}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary/60 text-secondary-foreground border border-border/80 px-2.5 py-1 text-[11px] font-medium"
+                  >
+                    {item.name}
+                    <span className="text-[10px] text-muted-foreground bg-card border border-border px-1.5 py-0.2 rounded-md">
+                      {item.count}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Cities */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-success inline-block"></span>
+                Cities
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: "Bengaluru", count: "2.4k" },
+                  { name: "Mumbai", count: "1.9k" },
+                  { name: "New Delhi", count: "1.6k" },
+                  { name: "Hyderabad", count: "1.1k" },
+                  { name: "Chennai", count: "950" },
+                ].map((item) => (
+                  <span
+                    key={item.name}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary/60 text-secondary-foreground border border-border/80 px-2.5 py-1 text-[11px] font-medium"
+                  >
+                    {item.name}
+                    <span className="text-[10px] text-muted-foreground bg-card border border-border px-1.5 py-0.2 rounded-md">
+                      {item.count}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Specialties */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-warning inline-block"></span>
+                Specialties
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: "Cardiology", count: "1.5k" },
+                  { name: "Oncology", count: "1.2k" },
+                  { name: "Neurology", count: "980" },
+                  { name: "Orthopedics", count: "850" },
+                  { name: "Pediatrics", count: "720" },
+                ].map((item) => (
+                  <span
+                    key={item.name}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary/60 text-secondary-foreground border border-border/80 px-2.5 py-1 text-[11px] font-medium"
+                  >
+                    {item.name}
+                    <span className="text-[10px] text-muted-foreground bg-card border border-border px-1.5 py-0.2 rounded-md">
+                      {item.count}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 7 — QUICK ACTIONS */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft order-7">
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-foreground">Quick Actions</h2>
+            <p className="text-xs text-muted-foreground">
+              Standard operational quick utilities for the platform.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-semibold text-foreground flex items-center justify-center gap-2 shadow-soft transition-all duration-200 hover:-translate-y-0.5"
+              onClick={() => setIsAddHospitalOpen(true)}
+            >
+              <Plus className="h-4 w-4 text-primary" />
+              Add Hospital
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-semibold text-foreground flex items-center justify-center gap-2 shadow-soft transition-all duration-200 hover:-translate-y-0.5"
+              onClick={handleScrollViewBookings}
+            >
+              <Sliders className="h-4 w-4 text-muted-foreground" />
+              View Bookings
+            </Button>
+
+            <Button
+              variant="outline"
+              asChild
+              className="h-11 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-semibold text-foreground flex items-center justify-center gap-2 shadow-soft transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <Link to="/dashboard/reviews">
+                <Star className="h-4 w-4 text-warning" />
+                Manage Reviews
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-semibold text-foreground flex items-center justify-center gap-2 shadow-soft transition-all duration-200 hover:-translate-y-0.5"
+              onClick={handleExportCSV}
+            >
+              <Download className="h-4 w-4 text-success" />
+              Export Data
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Add Hospital Modal */}
+      <Dialog open={isAddHospitalOpen} onOpenChange={setIsAddHospitalOpen}>
+        <DialogContent className="sm:max-w-[480px] rounded-3xl border border-border bg-card shadow-elevated">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold font-display text-foreground">
+              Add Hospital
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Add a new hospital profile to the platform registry. Fill out the operational details
+              below.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddHospitalSubmit} className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="hosp-name" className="text-xs font-semibold">
+                Hospital Name
+              </Label>
+              <Input
+                id="hosp-name"
+                value={newHospName}
+                onChange={(e) => setNewHospName(e.target.value)}
+                placeholder="e.g. Apollo Super Specialty Hospital"
+                className="h-10 rounded-xl border border-input text-xs"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="hosp-city" className="text-xs font-semibold">
+                  City
+                </Label>
+                <select
+                  id="hosp-city"
+                  value={newHospCity}
+                  onChange={(e) => setNewHospCity(e.target.value)}
+                  className="w-full h-10 rounded-xl border border-input bg-card px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {[
+                    "Bengaluru",
+                    "Mumbai",
+                    "New Delhi",
+                    "Gurugram",
+                    "Noida",
+                    "Hyderabad",
+                    "Chennai",
+                  ].map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="hosp-type" className="text-xs font-semibold">
+                  Hospital Type
+                </Label>
+                <select
+                  id="hosp-type"
+                  value={newHospType}
+                  onChange={(e) => setNewHospType(e.target.value)}
+                  className="w-full h-10 rounded-xl border border-input bg-card px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {["General Hospital", "Specialty Hospital", "Super Speciality"].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="hosp-phone" className="text-xs font-semibold">
+                Phone Number
+              </Label>
+              <Input
+                id="hosp-phone"
+                value={newHospPhone}
+                onChange={(e) => setNewHospPhone(e.target.value)}
+                placeholder="e.g. +91 80 4567 8900"
+                className="h-10 rounded-xl border border-input text-xs"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="hosp-address" className="text-xs font-semibold">
+                Address
+              </Label>
+              <Input
+                id="hosp-address"
+                value={newHospAddress}
+                onChange={(e) => setNewHospAddress(e.target.value)}
+                placeholder="e.g. MG Road, Indiranagar, Bengaluru"
+                className="h-10 rounded-xl border border-input text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="hosp-desc" className="text-xs font-semibold">
+                Description
+              </Label>
+              <Textarea
+                id="hosp-desc"
+                value={newHospDesc}
+                onChange={(e) => setNewHospDesc(e.target.value)}
+                placeholder="Brief information about specialties, facilities, etc."
+                className="rounded-xl border border-input text-xs min-h-[72px]"
+              />
+            </div>
+
+            <DialogFooter className="pt-2 gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-full text-xs"
+                onClick={() => setIsAddHospitalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="rounded-full text-xs">
+                List Hospital
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }

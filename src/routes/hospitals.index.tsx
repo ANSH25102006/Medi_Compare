@@ -31,13 +31,13 @@ function HospitalsPage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <CardSkeleton key={i} />
-            ))
+            Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
           ) : error ? (
             <div className="col-span-full rounded-2xl border border-destructive/20 bg-destructive/5 p-8 text-center text-destructive">
               <p className="font-bold">Failed to load hospitals list</p>
-              <p className="text-sm mt-1">Please verify your environment credentials or internet connection.</p>
+              <p className="text-sm mt-1">
+                Please verify your environment credentials or internet connection.
+              </p>
             </div>
           ) : hospitalsList.length === 0 ? (
             <div className="col-span-full rounded-2xl border border-dashed border-border p-12 text-center">
@@ -47,13 +47,10 @@ function HospitalsPage() {
               </p>
             </div>
           ) : (
-            hospitalsList.map((h) => (
-              <HospitalCard key={h.id} hospital={h} />
-            ))
+            hospitalsList.map((h) => <HospitalCard key={h.id} hospital={h} />)
           )}
         </div>
       </section>
     </SiteShell>
   );
 }
-

@@ -2,7 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { Star, MapPin, Clock, ArrowRight, TrendingDown, BadgeCheck, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getCachedOrDefaultHospitals, getServiceAverage, getServiceMin, getHospitalRatingDetails, type Hospital } from "@/lib/mock-data";
+import {
+  getCachedOrDefaultHospitals,
+  getServiceAverage,
+  getServiceMin,
+  getHospitalRatingDetails,
+  type Hospital,
+} from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
@@ -54,7 +60,6 @@ export function buildRows(serviceName: string | "all", customList?: Hospital[]):
   });
   return rows;
 }
-
 
 export function sortRows(rows: Row[], sort: SortKey): Row[] {
   const sorted = [...rows];

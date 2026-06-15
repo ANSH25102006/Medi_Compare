@@ -163,7 +163,9 @@ export function HospitalCard({
           onClick={handleSaveToggle}
           className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-background/95 text-muted-foreground shadow-soft transition-all hover:scale-110 active:scale-95 cursor-pointer z-10"
         >
-          <Heart className={`h-4.5 w-4.5 ${isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+          <Heart
+            className={`h-4.5 w-4.5 ${isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+          />
         </button>
 
         {/* Savings Badge */}

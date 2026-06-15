@@ -56,7 +56,8 @@ export class ErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h1>
               <p className="mt-3 text-sm text-muted-foreground max-w-md">
-                We encountered an unexpected rendering error. To ensure stability, we've halted execution and loaded this recovery screen.
+                We encountered an unexpected rendering error. To ensure stability, we've halted
+                execution and loaded this recovery screen.
               </p>
 
               {/* Diagnostic Log Panel */}

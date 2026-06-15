@@ -6,7 +6,14 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getAllReviews, getHospitalIdByName, getHospitalNameById, defaultHospitalReviews, type PatientReview, testimonials } from "@/lib/mock-data";
+import {
+  getAllReviews,
+  getHospitalIdByName,
+  getHospitalNameById,
+  defaultHospitalReviews,
+  type PatientReview,
+  testimonials,
+} from "@/lib/mock-data";
 import { useHospitals } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
@@ -187,19 +194,17 @@ function ReviewsPage() {
 
     async function saveToSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .insert([
-            {
-              id: newReview.id,
-              hospital_id: newReview.hospitalId,
-              user_name: newReview.userName,
-              user_email: newReview.userEmail,
-              rating: newReview.rating,
-              review_text: newReview.text,
-              created_at: new Date().toISOString(),
-            },
-          ]);
+        const { error } = await supabase.from("reviews").insert([
+          {
+            id: newReview.id,
+            hospital_id: newReview.hospitalId,
+            user_name: newReview.userName,
+            user_email: newReview.userEmail,
+            rating: newReview.rating,
+            review_text: newReview.text,
+            created_at: new Date().toISOString(),
+          },
+        ]);
         if (error) throw error;
         toast.success("Review submitted! Thank you for your feedback 🙏");
       } catch (err) {
@@ -229,10 +234,7 @@ function ReviewsPage() {
 
     async function deleteFromSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .delete()
-          .eq("id", id);
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
         if (error) throw error;
         toast.success("Review deleted.");
       } catch (err) {
@@ -336,7 +338,9 @@ function ReviewsPage() {
                             >
                               <Star
                                 className={`h-4 w-4 ${
-                                  editRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                  editRating >= star
+                                    ? "fill-warning text-warning"
+                                    : "text-muted-foreground"
                                 }`}
                               />
                             </button>
@@ -404,7 +408,9 @@ function ReviewsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{t.userName}</p>
-                          <p className="text-xs text-muted-foreground">Patient — {t.hospitalName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Patient — {t.hospitalName}
+                          </p>
                         </div>
                         <CheckCircle2 className="ml-auto h-4 w-4 text-success" />
                       </figcaption>

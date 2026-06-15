@@ -14,5 +14,5 @@ export const isSupabaseConfigured = !!(
 // Single reusable client
 export const supabase = createClient(
   supabaseUrl || "https://wialpeheyvjdsmfcwuvn.supabase.co",
-  supabaseAnonKey || "dummy-key"
+  supabaseAnonKey || "dummy-key",
 );

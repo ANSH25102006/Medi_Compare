@@ -109,7 +109,7 @@ function DoctorDashboard() {
       const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
       const updatedLocal = localAppts.map((a) => (a.id === id ? { ...a, status: newStatus } : a));
       setItemSafe("medicompare_appointments", updatedLocal);
-      
+
       const updatedState = appointments.map((a) => (a.id === id ? { ...a, status: newStatus } : a));
       setAppointments(updatedState);
     } catch (err) {

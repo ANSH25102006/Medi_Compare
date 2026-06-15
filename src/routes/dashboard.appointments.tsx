@@ -109,10 +109,14 @@ function AppointmentsPage() {
   const cancelAppointment = (id: string) => {
     try {
       const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
-      const updatedLocal = localAppts.map((a) => (a.id === id ? { ...a, status: "Cancelled" as const } : a));
+      const updatedLocal = localAppts.map((a) =>
+        a.id === id ? { ...a, status: "Cancelled" as const } : a,
+      );
       setItemSafe("medicompare_appointments", updatedLocal);
-      
-      const updatedState = appointments.map((a) => (a.id === id ? { ...a, status: "Cancelled" as const } : a));
+
+      const updatedState = appointments.map((a) =>
+        a.id === id ? { ...a, status: "Cancelled" as const } : a,
+      );
       setAppointments(updatedState);
     } catch (err) {
       console.error("Local storage fallback cancel failed:", err);

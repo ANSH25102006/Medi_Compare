@@ -129,7 +129,10 @@ function DashboardReviewsPage() {
 
         setMyReviews([...supabaseReviews, ...localFilteredUnique]);
       } catch (err) {
-        console.warn("Failed to load user reviews from Supabase, falling back to localStorage", err);
+        console.warn(
+          "Failed to load user reviews from Supabase, falling back to localStorage",
+          err,
+        );
         const all = getItemSafe<PatientReview[]>("medicompare_reviews", []);
         setMyReviews(all.filter((r) => r.userEmail === user?.email));
       }
@@ -172,19 +175,17 @@ function DashboardReviewsPage() {
 
     async function saveToSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .insert([
-            {
-              id: newReview.id,
-              hospital_id: newReview.hospitalId,
-              user_name: newReview.userName,
-              user_email: newReview.userEmail,
-              rating: newReview.rating,
-              review_text: newReview.text,
-              created_at: new Date().toISOString(),
-            },
-          ]);
+        const { error } = await supabase.from("reviews").insert([
+          {
+            id: newReview.id,
+            hospital_id: newReview.hospitalId,
+            user_name: newReview.userName,
+            user_email: newReview.userEmail,
+            rating: newReview.rating,
+            review_text: newReview.text,
+            created_at: new Date().toISOString(),
+          },
+        ]);
         if (error) throw error;
         toast.success("Review published!");
       } catch (err) {
@@ -212,10 +213,7 @@ function DashboardReviewsPage() {
 
     async function deleteFromSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .delete()
-          .eq("id", id);
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
         if (error) throw error;
         toast.success("Review deleted.");
       } catch (err) {
@@ -296,11 +294,16 @@ function DashboardReviewsPage() {
             myReviews.map((r, i) => {
               const isEditing = editingReviewId === r.id;
               return (
-                <div key={r.id || i} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+                <div
+                  key={r.id || i}
+                  className="rounded-2xl border border-border bg-card p-6 shadow-soft"
+                >
                   {isEditing ? (
                     <form onSubmit={handleSaveEdit} className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-primary">Editing review for {r.hospitalName}</p>
+                        <p className="text-xs font-semibold text-primary">
+                          Editing review for {r.hospitalName}
+                        </p>
                         <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
@@ -311,7 +314,9 @@ function DashboardReviewsPage() {
                             >
                               <StarIcon
                                 className={`h-4 w-4 ${
-                                  editRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                  editRating >= star
+                                    ? "fill-warning text-warning"
+                                    : "text-muted-foreground"
                                 }`}
                               />
                             </button>
@@ -374,7 +379,9 @@ function DashboardReviewsPage() {
                           <StarIcon key={j} className="h-4 w-4 text-muted-foreground" />
                         ))}
                       </div>
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">"{r.text}"</p>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        "{r.text}"
+                      </p>
                     </>
                   )}
                 </div>

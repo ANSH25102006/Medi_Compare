@@ -232,8 +232,11 @@ export const handler: Handler = async (event) => {
         throw new Error(emailResponse.error.message || "Resend API error");
       }
     } catch (primaryError: any) {
-      console.warn("Primary email delivery failed. Retrying with sandbox developer email...", primaryError.message);
-      
+      console.warn(
+        "Primary email delivery failed. Retrying with sandbox developer email...",
+        primaryError.message,
+      );
+
       // Fallback to sandbox verified address to ensure successful testing
       emailResponse = await resend.emails.send({
         from: "MediCompare <onboarding@resend.dev>",

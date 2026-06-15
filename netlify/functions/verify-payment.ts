@@ -10,7 +10,9 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = JSON.parse(event.body || "{}");
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = JSON.parse(
+      event.body || "{}",
+    );
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return {

@@ -14,7 +14,10 @@ export function getItemSafe<T>(key: string, defaultValue: T): T {
     }
     return JSON.parse(item) as T;
   } catch (error) {
-    console.warn(`[Storage Utility] Failed to parse localStorage key "${key}". Returning default.`, error);
+    console.warn(
+      `[Storage Utility] Failed to parse localStorage key "${key}". Returning default.`,
+      error,
+    );
     return defaultValue;
   }
 }

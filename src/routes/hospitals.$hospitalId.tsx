@@ -1,5 +1,17 @@
 import { createFileRoute, Link, notFound, useNavigate, useLocation } from "@tanstack/react-router";
-import { Star, MapPin, Phone, ShieldCheck, Award, Calendar, Heart, ShieldAlert, Edit2, Trash2, Scale } from "lucide-react";
+import {
+  Star,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Award,
+  Calendar,
+  Heart,
+  ShieldAlert,
+  Edit2,
+  Trash2,
+  Scale,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -57,7 +69,6 @@ export const Route = createFileRoute("/hospitals/$hospitalId")({
   component: HospitalDetails,
 });
 
-
 function HospitalDetails() {
   const { hospitalId } = Route.useParams();
   const { data: hospital, isLoading, error } = useHospital(hospitalId);
@@ -97,74 +108,88 @@ function HospitalDetails() {
     }
   }, [hospital]);
 
-  const { trendData, sixMonthHigh, sixMonthLow, trendStatus, trendColor, selectedSvcPrice } = useMemo(() => {
-    if (!hospital) {
+  const { trendData, sixMonthHigh, sixMonthLow, trendStatus, trendColor, selectedSvcPrice } =
+    useMemo(() => {
+      if (!hospital) {
+        return {
+          trendData: [],
+          sixMonthHigh: 0,
+          sixMonthLow: 0,
+          trendStatus: "Stable",
+          trendColor: "text-muted-foreground",
+          selectedSvcPrice: 0,
+        };
+      }
+      const svc = hospital.services.find((s) => s.name === trendService) || hospital.services[0];
+      if (!svc) {
+        return {
+          trendData: [],
+          sixMonthHigh: 0,
+          sixMonthLow: 0,
+          trendStatus: "Stable",
+          trendColor: "text-muted-foreground",
+          selectedSvcPrice: 0,
+        };
+      }
+      const currentPrice = svc.price;
+
+      const seed = (hospital.id.charCodeAt(0) + (trendService.charCodeAt(0) || 0)) % 3;
+      let multipliers: number[];
+      let status: string;
+      let color: string;
+
+      if (seed === 0) {
+        multipliers = [1.06, 1.05, 1.03, 1.02, 1.01, 1.0];
+        status = "Downward";
+        color = "text-success";
+      } else if (seed === 1) {
+        multipliers = [0.93, 0.94, 0.97, 0.98, 0.99, 1.0];
+        status = "Upward";
+        color = "text-destructive";
+      } else {
+        multipliers = [0.99, 1.01, 0.98, 1.02, 0.99, 1.0];
+        status = "Stable";
+        color = "text-primary";
+      }
+
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      const currentMonthIdx = new Date().getMonth();
+      const lastSixMonths = Array.from({ length: 6 }, (_, i) => {
+        const idx = (currentMonthIdx - 5 + i + 12) % 12;
+        return monthNames[idx];
+      });
+
+      const data = lastSixMonths.map((m, idx) => ({
+        month: m,
+        price: Math.round(currentPrice * multipliers[idx]),
+      }));
+
+      const prices = data.map((d) => d.price);
+      const high = Math.max(...prices);
+      const low = Math.min(...prices);
+
       return {
-        trendData: [],
-        sixMonthHigh: 0,
-        sixMonthLow: 0,
-        trendStatus: "Stable",
-        trendColor: "text-muted-foreground",
-        selectedSvcPrice: 0,
+        trendData: data,
+        sixMonthHigh: high,
+        sixMonthLow: low,
+        trendStatus: status,
+        trendColor: color,
+        selectedSvcPrice: currentPrice,
       };
-    }
-    const svc = hospital.services.find((s) => s.name === trendService) || hospital.services[0];
-    if (!svc) {
-      return {
-        trendData: [],
-        sixMonthHigh: 0,
-        sixMonthLow: 0,
-        trendStatus: "Stable",
-        trendColor: "text-muted-foreground",
-        selectedSvcPrice: 0,
-      };
-    }
-    const currentPrice = svc.price;
-
-    const seed = (hospital.id.charCodeAt(0) + (trendService.charCodeAt(0) || 0)) % 3;
-    let multipliers: number[];
-    let status: string;
-    let color: string;
-
-    if (seed === 0) {
-      multipliers = [1.06, 1.05, 1.03, 1.02, 1.01, 1.0];
-      status = "Downward";
-      color = "text-success";
-    } else if (seed === 1) {
-      multipliers = [0.93, 0.94, 0.97, 0.98, 0.99, 1.0];
-      status = "Upward";
-      color = "text-destructive";
-    } else {
-      multipliers = [0.99, 1.01, 0.98, 1.02, 0.99, 1.0];
-      status = "Stable";
-      color = "text-primary";
-    }
-
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const currentMonthIdx = new Date().getMonth();
-    const lastSixMonths = Array.from({ length: 6 }, (_, i) => {
-      const idx = (currentMonthIdx - 5 + i + 12) % 12;
-      return monthNames[idx];
-    });
-
-    const data = lastSixMonths.map((m, idx) => ({
-      month: m,
-      price: Math.round(currentPrice * multipliers[idx]),
-    }));
-
-    const prices = data.map((d) => d.price);
-    const high = Math.max(...prices);
-    const low = Math.min(...prices);
-
-    return {
-      trendData: data,
-      sixMonthHigh: high,
-      sixMonthLow: low,
-      trendStatus: status,
-      trendColor: color,
-      selectedSvcPrice: currentPrice,
-    };
-  }, [hospital, trendService]);
+    }, [hospital, trendService]);
 
   useEffect(() => {
     setIsPageLoading(true);
@@ -185,10 +210,12 @@ function HospitalDetails() {
   useEffect(() => {
     async function checkSaved() {
       if (!hospital) return;
-      const ids = getItemSafe<string[]>(
-        "medicompare_saved_hospitals",
-        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
-      );
+      const ids = getItemSafe<string[]>("medicompare_saved_hospitals", [
+        "apollo-central",
+        "fortis-greens",
+        "max-superspecialty",
+        "manipal-city",
+      ]);
       setIsSaved(ids.includes(hospital.id));
 
       if (isLoggedIn && user?.email) {
@@ -215,7 +242,6 @@ function HospitalDetails() {
     checkSaved();
   }, [hospital?.id, isLoggedIn, user?.email]);
 
-
   const [isCompared, setIsCompared] = useState(false);
 
   const loadCompared = () => {
@@ -227,7 +253,6 @@ function HospitalDetails() {
   useEffect(() => {
     loadCompared();
   }, [hospital?.id]);
-
 
   const toggleSave = () => {
     if (!isLoggedIn) {
@@ -242,10 +267,12 @@ function HospitalDetails() {
     const nextSavedState = !isSaved;
 
     try {
-      let ids = getItemSafe<string[]>(
-        "medicompare_saved_hospitals",
-        ["apollo-central", "fortis-greens", "max-superspecialty", "manipal-city"]
-      );
+      let ids = getItemSafe<string[]>("medicompare_saved_hospitals", [
+        "apollo-central",
+        "fortis-greens",
+        "max-superspecialty",
+        "manipal-city",
+      ]);
       if (ids.includes(hospital.id)) {
         ids = ids.filter((id: string) => id !== hospital.id);
         toast.success("Removed from bookmarks.");
@@ -382,7 +409,8 @@ function HospitalDetails() {
             Hospital Not Found or Failed to Load
           </h1>
           <p className="mt-3 text-base text-muted-foreground max-w-md">
-            There was an error fetching details for this provider. Please make sure the ID is correct or try again.
+            There was an error fetching details for this provider. Please make sure the ID is
+            correct or try again.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild className="rounded-full bg-primary-gradient px-6">
@@ -396,7 +424,6 @@ function HospitalDetails() {
       </SiteShell>
     );
   }
-
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -437,19 +464,17 @@ function HospitalDetails() {
 
     async function saveToSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .insert([
-            {
-              id: newReview.id,
-              hospital_id: newReview.hospitalId,
-              user_name: newReview.userName,
-              user_email: newReview.userEmail,
-              rating: newReview.rating,
-              review_text: newReview.text,
-              created_at: new Date().toISOString(),
-            },
-          ]);
+        const { error } = await supabase.from("reviews").insert([
+          {
+            id: newReview.id,
+            hospital_id: newReview.hospitalId,
+            user_name: newReview.userName,
+            user_email: newReview.userEmail,
+            rating: newReview.rating,
+            review_text: newReview.text,
+            created_at: new Date().toISOString(),
+          },
+        ]);
         if (error) throw error;
         toast.success("Review posted successfully!");
       } catch (err) {
@@ -476,10 +501,7 @@ function HospitalDetails() {
 
     async function deleteFromSupabase() {
       try {
-        const { error } = await supabase
-          .from("reviews")
-          .delete()
-          .eq("id", id);
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
         if (error) throw error;
         toast.success("Review deleted.");
       } catch (err) {
@@ -582,7 +604,9 @@ function HospitalDetails() {
               <Button
                 variant={isCompared ? "secondary" : "outline"}
                 className={`rounded-full gap-1.5 transition-all ${
-                  isCompared ? "border-primary text-primary bg-primary-soft/50 hover:bg-primary-soft/60" : ""
+                  isCompared
+                    ? "border-primary text-primary bg-primary-soft/50 hover:bg-primary-soft/60"
+                    : ""
                 }`}
                 onClick={toggleCompare}
               >
@@ -666,10 +690,7 @@ function HospitalDetails() {
               </div>
             </TabsContent>
 
-            <TabsContent
-              value="services"
-              className="mt-6 space-y-8 outline-none"
-            >
+            <TabsContent value="services" className="mt-6 space-y-8 outline-none">
               <div className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-6">
                 <h3 className="text-lg font-bold mb-4 px-2">Services & Procedures</h3>
                 <Table>
@@ -711,10 +732,7 @@ function HospitalDetails() {
                       Monitor cost changes for procedures at this hospital over the last 6 months
                     </p>
                   </div>
-                  <Select
-                    value={trendService}
-                    onValueChange={setTrendService}
-                  >
+                  <Select value={trendService} onValueChange={setTrendService}>
                     <SelectTrigger className="w-56 rounded-xl">
                       <SelectValue placeholder="Select procedure" />
                     </SelectTrigger>
@@ -732,7 +750,9 @@ function HospitalDetails() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
                   <div className="rounded-xl bg-secondary/50 p-4">
                     <p className="text-xs text-muted-foreground">Current Cost</p>
-                    <p className="text-xl font-bold text-primary mt-1">₹{selectedSvcPrice.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-primary mt-1">
+                      ₹{selectedSvcPrice.toLocaleString()}
+                    </p>
                   </div>
                   <div className="rounded-xl bg-secondary/50 p-4">
                     <p className="text-xs text-muted-foreground">6-Month High</p>
@@ -744,8 +764,14 @@ function HospitalDetails() {
                   </div>
                   <div className="rounded-xl bg-secondary/50 p-4">
                     <p className="text-xs text-muted-foreground">Trend Status</p>
-                    <p className={`text-lg font-bold mt-1.5 flex items-center gap-1.5 ${trendColor}`}>
-                      {trendStatus === "Upward" ? "↗ Upward" : trendStatus === "Downward" ? "↘ Downward" : "→ Stable"}
+                    <p
+                      className={`text-lg font-bold mt-1.5 flex items-center gap-1.5 ${trendColor}`}
+                    >
+                      {trendStatus === "Upward"
+                        ? "↗ Upward"
+                        : trendStatus === "Downward"
+                          ? "↘ Downward"
+                          : "→ Stable"}
                     </p>
                   </div>
                 </div>
@@ -753,8 +779,15 @@ function HospitalDetails() {
                 {/* Line Chart */}
                 <div className="h-72 w-full pt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendData} margin={{ left: 10, right: 10, top: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226,232,240,0.3)" />
+                    <LineChart
+                      data={trendData}
+                      margin={{ left: 10, right: 10, top: 10, bottom: 5 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="rgba(226,232,240,0.3)"
+                      />
                       <XAxis
                         dataKey="month"
                         stroke="#888888"
@@ -768,7 +801,7 @@ function HospitalDetails() {
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
-                        domain={['auto', 'auto']}
+                        domain={["auto", "auto"]}
                       />
                       <Tooltip
                         formatter={(value: any) => [`₹${value.toLocaleString()}`, "Price"]}
@@ -814,7 +847,9 @@ function HospitalDetails() {
                         {isEditing ? (
                           <form onSubmit={handleSaveEdit} className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <p className="text-xs font-semibold text-primary">Editing your review</p>
+                              <p className="text-xs font-semibold text-primary">
+                                Editing your review
+                              </p>
                               <div className="flex gap-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <button
@@ -825,7 +860,9 @@ function HospitalDetails() {
                                   >
                                     <Star
                                       className={`h-4 w-4 ${
-                                        editRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                        editRating >= star
+                                          ? "fill-warning text-warning"
+                                          : "text-muted-foreground"
                                       }`}
                                     />
                                   </button>
@@ -892,7 +929,9 @@ function HospitalDetails() {
                                 )}
                               </div>
                             </div>
-                            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">"{r.text}"</p>
+                            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                              "{r.text}"
+                            </p>
                           </>
                         )}
                       </div>
@@ -907,7 +946,9 @@ function HospitalDetails() {
                 {isLoggedIn ? (
                   <form onSubmit={handleAddReview} className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground">Your Rating:</span>
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        Your Rating:
+                      </span>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -918,7 +959,9 @@ function HospitalDetails() {
                           >
                             <Star
                               className={`h-5 w-5 ${
-                                userRating >= star ? "fill-warning text-warning" : "text-muted-foreground"
+                                userRating >= star
+                                  ? "fill-warning text-warning"
+                                  : "text-muted-foreground"
                               }`}
                             />
                           </button>
@@ -926,7 +969,10 @@ function HospitalDetails() {
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="review-textarea" className="text-xs font-semibold text-muted-foreground">
+                      <label
+                        htmlFor="review-textarea"
+                        className="text-xs font-semibold text-muted-foreground"
+                      >
                         Your experience
                       </label>
                       <textarea

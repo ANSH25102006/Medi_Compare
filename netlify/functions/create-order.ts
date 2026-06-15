@@ -21,7 +21,12 @@ export const handler: Handler = async (event) => {
     const key_id = process.env.VITE_RAZORPAY_KEY_ID;
     const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
-    if (!key_id || !key_secret || key_id === "YOUR_RAZORPAY_KEY_ID_HERE" || key_secret === "YOUR_RAZORPAY_KEY_SECRET_HERE") {
+    if (
+      !key_id ||
+      !key_secret ||
+      key_id === "YOUR_RAZORPAY_KEY_ID_HERE" ||
+      key_secret === "YOUR_RAZORPAY_KEY_SECRET_HERE"
+    ) {
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },

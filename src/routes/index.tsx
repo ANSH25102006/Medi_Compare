@@ -155,7 +155,6 @@ function Landing() {
   const [city, setCity] = useState("");
   const { data: hospitalsList = [], isLoading, error } = useHospitals();
 
-
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
   const howItWorksRef = useRef<HTMLOListElement>(null);
 
@@ -452,23 +451,23 @@ function Landing() {
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <CardSkeleton key={i} />
-            ))
+            Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
           ) : error ? (
             <div className="col-span-full rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center text-destructive">
               <p className="font-bold">Failed to load featured hospitals</p>
-              <p className="text-xs mt-1">Please check your internet connection or database configuration.</p>
+              <p className="text-xs mt-1">
+                Please check your internet connection or database configuration.
+              </p>
             </div>
           ) : hospitalsList.length === 0 ? (
             <div className="col-span-full rounded-2xl border border-dashed border-border p-8 text-center">
               <p className="font-bold text-muted-foreground">No hospitals available</p>
-              <p className="text-xs text-muted-foreground mt-1">There are no hospitals registered in the database yet.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                There are no hospitals registered in the database yet.
+              </p>
             </div>
           ) : (
-            hospitalsList.slice(0, 3).map((h) => (
-              <HospitalCard key={h.id} hospital={h} />
-            ))
+            hospitalsList.slice(0, 3).map((h) => <HospitalCard key={h.id} hospital={h} />)
           )}
         </div>
       </section>

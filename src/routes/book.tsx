@@ -111,9 +111,9 @@ function BookPage() {
   // Sync user values if they load asynchronously
   useEffect(() => {
     if (user) {
-      setName(prev => prev || user.name || "");
-      setEmail(prev => prev || user.email || "");
-      setCardHolder(prev => prev || user.name || "");
+      setName((prev) => prev || user.name || "");
+      setEmail((prev) => prev || user.email || "");
+      setCardHolder((prev) => prev || user.name || "");
     }
   }, [user]);
 
@@ -135,9 +135,14 @@ function BookPage() {
     }
   }, [slot, hospital.slots]);
 
-  const selectedService = hospital?.services?.find((s) => s.name === service) ?? hospital?.services?.[0] ?? { name: "General Service", price: 0 };
+  const selectedService = hospital?.services?.find((s) => s.name === service) ??
+    hospital?.services?.[0] ?? { name: "General Service", price: 0 };
 
-  const saveBookingRecord = async (paymentId: string, paymentStatus: string, finalAmount: number) => {
+  const saveBookingRecord = async (
+    paymentId: string,
+    paymentStatus: string,
+    finalAmount: number,
+  ) => {
     const id = `MC-${Math.floor(Math.random() * 9000) + 1000}`;
     setBookingId(id);
 
@@ -180,7 +185,7 @@ function BookPage() {
         .select();
 
       if (error) throw error;
-      
+
       if (data && data[0]) {
         setSavedBooking(data[0]);
       } else {
@@ -316,8 +321,8 @@ function BookPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: selectedService.price,
-          receipt: `receipt_${Date.now()}`
-        })
+          receipt: `receipt_${Date.now()}`,
+        }),
       });
 
       if (!response.ok) {
@@ -327,9 +332,16 @@ function BookPage() {
       const orderData = await response.json();
       const keyId = orderData.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-      if (orderData.mock || !(window as any).Razorpay || !keyId || keyId === "YOUR_RAZORPAY_KEY_ID_HERE") {
+      if (
+        orderData.mock ||
+        !(window as any).Razorpay ||
+        !keyId ||
+        keyId === "YOUR_RAZORPAY_KEY_ID_HERE"
+      ) {
         console.warn("Razorpay keys or script not available. Falling back to mock card payment.");
-        toast.warning("Razorpay Test Mode is not configured on the server/client. Switching to Mock Sandbox Card.");
+        toast.warning(
+          "Razorpay Test Mode is not configured on the server/client. Switching to Mock Sandbox Card.",
+        );
         setPaymentMethod("mock");
         setIsPaying(false);
         return;
@@ -345,16 +357,16 @@ function BookPage() {
         prefill: {
           name: name.trim(),
           email: email.trim(),
-          contact: phone.trim()
+          contact: phone.trim(),
         },
         theme: {
-          color: "#3B82F6"
+          color: "#3B82F6",
         },
         modal: {
           ondismiss: () => {
             setIsPaying(false);
             toast.error("Payment cancelled.");
-          }
+          },
         },
         handler: async function (paymentRes: any) {
           try {
@@ -364,8 +376,8 @@ function BookPage() {
               body: JSON.stringify({
                 razorpay_order_id: paymentRes.razorpay_order_id,
                 razorpay_payment_id: paymentRes.razorpay_payment_id,
-                razorpay_signature: paymentRes.razorpay_signature
-              })
+                razorpay_signature: paymentRes.razorpay_signature,
+              }),
             });
 
             if (!verifyResponse.ok) {
@@ -374,7 +386,11 @@ function BookPage() {
 
             const verifyData = await verifyResponse.json();
             if (verifyData.verified) {
-              await saveBookingRecord(paymentRes.razorpay_payment_id, "Paid", selectedService.price);
+              await saveBookingRecord(
+                paymentRes.razorpay_payment_id,
+                "Paid",
+                selectedService.price,
+              );
             } else {
               throw new Error("Verification signature invalid");
             }
@@ -383,11 +399,11 @@ function BookPage() {
             toast.error("Payment verification failed. Booking aborted.");
             setIsPaying(false);
           }
-        }
+        },
       };
 
       const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (resp: any) {
+      rzp.on("payment.failed", function (resp: any) {
         toast.error(`Payment failed: ${resp.error.description || "Unknown error"}`);
         setIsPaying(false);
       });
@@ -623,7 +639,13 @@ function BookPage() {
               {paymentMethod === "razorpay" ? (
                 <div className="rounded-2xl border border-border bg-primary-soft/30 p-6 text-center space-y-4 animate-fade-in mt-4">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary">
-                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      className="h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
@@ -645,7 +667,9 @@ function BookPage() {
                     <Input
                       id="card-number"
                       value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
+                      onChange={(e) =>
+                        setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))
+                      }
                       placeholder="4111 2222 3333 4444"
                       className="mt-1.5"
                     />
@@ -758,10 +782,7 @@ function BookPage() {
                 <Clock className="h-4 w-4" /> Step {step + 1} of {total}
               </div>
               {step === 4 ? (
-                <Button
-                  onClick={handlePayAndConfirm}
-                  disabled={isPaying}
-                >
+                <Button onClick={handlePayAndConfirm} disabled={isPaying}>
                   {isPaying ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
@@ -789,7 +810,10 @@ function BookPage() {
 
                       // Check for duplicate booking before proceeding to payment
                       try {
-                        const currentList = getItemSafe<any[]>("medicompare_appointments", userAppointments);
+                        const currentList = getItemSafe<any[]>(
+                          "medicompare_appointments",
+                          userAppointments,
+                        );
                         const isDuplicate = currentList.some(
                           (a: {
                             hospital: string;

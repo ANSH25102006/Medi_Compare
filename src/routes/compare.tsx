@@ -94,8 +94,8 @@ const getFacilities = (hospital: Hospital) => {
     "fortis-greens": ["24/7 Emergency", "ICU", "Diagnostics", "NABL Accredited", "Parking"],
     "max-superspecialty": ["24/7 Emergency", "ICU", "Organ Transplant", "Blood Bank", "Ambulance"],
     "manipal-city": ["ICU", "Pharmacy", "Diagnostics", "Parking", "Cafeteria"],
-    "kokilaben": ["24/7 Emergency", "ICU", "Robotic Surgery", "Blood Bank", "Ambulance"],
-    "medanta": ["24/7 Emergency", "ICU", "Blood Bank", "Ambulance", "Helipad"],
+    kokilaben: ["24/7 Emergency", "ICU", "Robotic Surgery", "Blood Bank", "Ambulance"],
+    medanta: ["24/7 Emergency", "ICU", "Blood Bank", "Ambulance", "Helipad"],
     "apollo-chennai": ["24/7 Emergency", "ICU", "NABL Accredited", "Pharmacy", "Parking"],
     "fortis-malar-chennai": ["ICU", "Pharmacy", "Diagnostics", "Ambulance", "Cafeteria"],
     "care-hyderabad": ["24/7 Emergency", "ICU", "Pharmacy", "NABL Accredited", "Ambulance"],
@@ -137,7 +137,11 @@ function ComparePage() {
   const [isSimulatingLoading, setIsSimulatingLoading] = useState(false);
   const [dbReviews, setDbReviews] = useState<any[]>([]);
 
-  const { data: hospitalsList = [], isLoading: isHospitalsLoading, error: hospitalsError } = useHospitals();
+  const {
+    data: hospitalsList = [],
+    isLoading: isHospitalsLoading,
+    error: hospitalsError,
+  } = useHospitals();
 
   useEffect(() => {
     async function loadAllReviews() {
@@ -244,7 +248,7 @@ function ComparePage() {
     return hospitalsList
       .map((h) => {
         const customReviews = dbReviews.filter(
-          (r) => r.hospital_id === h.id || r.hospitalId === h.id || r.hospitalName === h.name
+          (r) => r.hospital_id === h.id || r.hospitalId === h.id || r.hospitalName === h.name,
         );
         const N_0 = h.reviews;
         const R_0 = h.rating;
@@ -286,53 +290,64 @@ function ComparePage() {
           }
         }
 
-      // 2. City Matching
-      if (city) {
-        const locLower = city.toLowerCase();
-        const hospitalCityLower = h.city.toLowerCase();
+        // 2. City Matching
+        if (city) {
+          const locLower = city.toLowerCase();
+          const hospitalCityLower = h.city.toLowerCase();
 
-        const isMatch =
-          hospitalCityLower.includes(locLower) ||
-          locLower.includes(hospitalCityLower) ||
-          (locLower === "bangalore" && hospitalCityLower === "bengaluru") ||
-          (locLower === "bengaluru" && hospitalCityLower === "bangalore") ||
-          (locLower === "delhi" && hospitalCityLower === "new delhi") ||
-          (locLower === "new delhi" && hospitalCityLower === "delhi");
+          const isMatch =
+            hospitalCityLower.includes(locLower) ||
+            locLower.includes(hospitalCityLower) ||
+            (locLower === "bangalore" && hospitalCityLower === "bengaluru") ||
+            (locLower === "bengaluru" && hospitalCityLower === "bangalore") ||
+            (locLower === "delhi" && hospitalCityLower === "new delhi") ||
+            (locLower === "new delhi" && hospitalCityLower === "delhi");
 
-        if (!isMatch) return false;
-      }
+          if (!isMatch) return false;
+        }
 
-      // 3. Specialty Matching
-      if (specialty) {
-        const matchesSpecialty = h.specialties.some(
-          (s) => s.toLowerCase() === specialty.toLowerCase()
-        );
-        if (!matchesSpecialty) return false;
-      }
+        // 3. Specialty Matching
+        if (specialty) {
+          const matchesSpecialty = h.specialties.some(
+            (s) => s.toLowerCase() === specialty.toLowerCase(),
+          );
+          if (!matchesSpecialty) return false;
+        }
 
-      // 4. Hospital Type Matching
-      if (hospitalType) {
-        if (h.type.toLowerCase() !== hospitalType.toLowerCase()) return false;
-      }
+        // 4. Hospital Type Matching
+        if (hospitalType) {
+          if (h.type.toLowerCase() !== hospitalType.toLowerCase()) return false;
+        }
 
-      // 5. Min Rating Matching
-      if (h.rating < minRating) return false;
+        // 5. Min Rating Matching
+        if (h.rating < minRating) return false;
 
-      // 6. Max Distance Matching
-      if (h.distance > maxDistance) return false;
+        // 6. Max Distance Matching
+        if (h.distance > maxDistance) return false;
 
-      // 7. Service matching and Max Price matching
-      const svc = service !== "all" ? h.services.find((s) => s.name === service) : h.services[0];
-      if (service !== "all" && !svc) return false;
+        // 7. Service matching and Max Price matching
+        const svc = service !== "all" ? h.services.find((s) => s.name === service) : h.services[0];
+        if (service !== "all" && !svc) return false;
 
-      if (svc && svc.price > maxPrice) return false;
+        if (svc && svc.price > maxPrice) return false;
 
-      // 8. Availability matching
-      if (availableOnly && h.slots.length < 3) return false;
+        // 8. Availability matching
+        if (availableOnly && h.slots.length < 3) return false;
 
-      return true;
-    });
-  }, [q, city, specialty, hospitalType, service, minRating, maxDistance, maxPrice, availableOnly, dbReviews]);
+        return true;
+      });
+  }, [
+    q,
+    city,
+    specialty,
+    hospitalType,
+    service,
+    minRating,
+    maxDistance,
+    maxPrice,
+    availableOnly,
+    dbReviews,
+  ]);
 
   const tableRows = useMemo(() => {
     const all = buildRows(service, hospitalsList);
@@ -379,15 +394,15 @@ function ComparePage() {
 
       const ratingScore = Math.max(0, Math.min(100, ((h.rating - 3) / 2) * 100));
       const affordabilityScore = getAffordabilityScore(price, maxP, minP);
-      
+
       const facilities = getFacilities(h);
       const facilitiesScore = Math.min(100, (facilities.length / 5) * 100);
-      
+
       const slotsCount = h.slots.length;
       const waitTimeScore = Math.min(100, (slotsCount / 6) * 100);
 
       const overallScore = Math.round(
-        0.4 * ratingScore + 0.3 * affordabilityScore + 0.2 * facilitiesScore + 0.1 * waitTimeScore
+        0.4 * ratingScore + 0.3 * affordabilityScore + 0.2 * facilitiesScore + 0.1 * waitTimeScore,
       );
 
       return {
@@ -481,7 +496,8 @@ function ComparePage() {
               </Button>
               <h2 className="mt-2 text-2xl font-bold md:text-3xl">Side-by-Side Comparison</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Comparing {comparedHospitals.length} hospitals for {service === "all" ? "General Services" : service}
+                Comparing {comparedHospitals.length} hospitals for{" "}
+                {service === "all" ? "General Services" : service}
               </p>
             </div>
             <Button variant="outline" className="rounded-full" onClick={clearComparison}>
@@ -503,123 +519,171 @@ function ComparePage() {
 
             {/* Side by side columns */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {comparisonData.map(({ hospital: h, price, serviceName, rating, reviews, distance, city, address, slots, facilities, specialties, overallScore, isHighestRated, isCheapest, isBestValue }) => (
-                <div
-                  key={h.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-elevated relative flex flex-col justify-between"
-                >
-                  <button
-                    onClick={() => removeComparedId(h.id)}
-                    className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer"
+              {comparisonData.map(
+                ({
+                  hospital: h,
+                  price,
+                  serviceName,
+                  rating,
+                  reviews,
+                  distance,
+                  city,
+                  address,
+                  slots,
+                  facilities,
+                  specialties,
+                  overallScore,
+                  isHighestRated,
+                  isCheapest,
+                  isBestValue,
+                }) => (
+                  <div
+                    key={h.id}
+                    className="rounded-3xl border border-border bg-card p-6 shadow-elevated relative flex flex-col justify-between"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
+                    <button
+                      onClick={() => removeComparedId(h.id)}
+                      className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
 
-                  <div className="pb-4 border-b border-border">
-                    <img
-                      src={h.image}
-                      alt={h.name}
-                      className="h-28 w-full rounded-2xl object-cover mb-4"
-                    />
-                    <h3 className="font-bold text-foreground truncate">{h.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{h.type}</p>
+                    <div className="pb-4 border-b border-border">
+                      <img
+                        src={h.image}
+                        alt={h.name}
+                        className="h-28 w-full rounded-2xl object-cover mb-4"
+                      />
+                      <h3 className="font-bold text-foreground truncate">{h.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{h.type}</p>
 
-                    <div className="mt-3 flex flex-wrap gap-1.5 h-6">
-                      {isBestValue && (
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
-                          Best Value
-                        </span>
-                      )}
-                      {isCheapest && (
-                        <span className="inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-bold text-success">
-                          Cheapest
-                        </span>
-                      )}
-                      {isHighestRated && (
-                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
-                          Highest Rated
-                        </span>
-                      )}
+                      <div className="mt-3 flex flex-wrap gap-1.5 h-6">
+                        {isBestValue && (
+                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
+                            Best Value
+                          </span>
+                        )}
+                        {isCheapest && (
+                          <span className="inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-bold text-success">
+                            Cheapest
+                          </span>
+                        )}
+                        {isHighestRated && (
+                          <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
+                            Highest Rated
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Attributes */}
-                  <div className="py-4 space-y-6 flex-1 text-sm">
-                    {/* Overall Score */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Overall Score</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-black text-foreground">{overallScore}%</span>
-                        <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="h-full bg-primary-gradient rounded-full"
-                            style={{ width: `${overallScore}%` }}
-                          />
+                    {/* Attributes */}
+                    <div className="py-4 space-y-6 flex-1 text-sm">
+                      {/* Overall Score */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Overall Score
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-black text-foreground">
+                            {overallScore}%
+                          </span>
+                          <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                            <div
+                              className="h-full bg-primary-gradient rounded-full"
+                              style={{ width: `${overallScore}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Price */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Price</span>
-                      <p className="text-2xl font-black text-primary">₹{price.toLocaleString()}</p>
-                      <span className="text-[10px] text-muted-foreground">{serviceName}</span>
-                    </div>
+                      {/* Price */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Price
+                        </span>
+                        <p className="text-2xl font-black text-primary">
+                          ₹{price.toLocaleString()}
+                        </p>
+                        <span className="text-[10px] text-muted-foreground">{serviceName}</span>
+                      </div>
 
-                    {/* Ratings */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Ratings</span>
-                      <div className="flex items-center gap-1.5 font-bold">
-                        <Star className="h-4 w-4 fill-warning text-warning" />
-                        {rating}
-                        <span className="text-xs text-muted-foreground font-medium">({reviews} reviews)</span>
+                      {/* Ratings */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Ratings
+                        </span>
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <Star className="h-4 w-4 fill-warning text-warning" />
+                          {rating}
+                          <span className="text-xs text-muted-foreground font-medium">
+                            ({reviews} reviews)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Location */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Location
+                        </span>
+                        <p className="font-semibold text-foreground truncate">{city}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {address} ({distance} km)
+                        </p>
+                      </div>
+
+                      {/* Wait Time */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Wait Time
+                        </span>
+                        <p className="font-semibold text-foreground flex items-center gap-1.5">
+                          <Clock className="h-4 w-4 text-primary" /> {getWaitTime(h)} avg wait
+                        </p>
+                        <span className="text-xs text-muted-foreground">
+                          {slots.length} slots available today
+                        </span>
+                      </div>
+
+                      {/* Facilities */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Facilities
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {facilities.slice(0, 3).map((f) => (
+                            <Badge
+                              key={f}
+                              variant="secondary"
+                              className="rounded-full text-[10px] font-medium"
+                            >
+                              {f}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Specialties */}
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
+                          Specialties
+                        </span>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {specialties.join(", ")}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Location */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Location</span>
-                      <p className="font-semibold text-foreground truncate">{city}</p>
-                      <p className="text-xs text-muted-foreground truncate">{address} ({distance} km)</p>
-                    </div>
-
-                    {/* Wait Time */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Wait Time</span>
-                      <p className="font-semibold text-foreground flex items-center gap-1.5">
-                        <Clock className="h-4 w-4 text-primary" /> {getWaitTime(h)} avg wait
-                      </p>
-                      <span className="text-xs text-muted-foreground">{slots.length} slots available today</span>
-                    </div>
-
-                    {/* Facilities */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Facilities</span>
-                      <div className="flex flex-wrap gap-1">
-                        {facilities.slice(0, 3).map((f) => (
-                          <Badge key={f} variant="secondary" className="rounded-full text-[10px] font-medium">
-                            {f}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Specialties */}
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">Specialties</span>
-                      <p className="text-xs text-muted-foreground truncate">{specialties.join(", ")}</p>
+                    <div className="pt-4 border-t border-border mt-auto">
+                      <Button asChild className="w-full rounded-full bg-primary-gradient">
+                        <Link to="/book" search={{ hospital: h.id, service: serviceName }}>
+                          Book Appointment
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="pt-4 border-t border-border mt-auto">
-                    <Button asChild className="w-full rounded-full bg-primary-gradient">
-                      <Link to="/book" search={{ hospital: h.id, service: serviceName }}>
-                        Book Appointment
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -1040,7 +1104,7 @@ function ComparePage() {
                         >
                           {term}
                         </button>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -1068,7 +1132,7 @@ function ComparePage() {
                   </Button>
                 </div>
               </div>
-            ) : (isHospitalsLoading || isSimulatingLoading) ? (
+            ) : isHospitalsLoading || isSimulatingLoading ? (
               view === "table" ? (
                 <TableSkeleton />
               ) : (

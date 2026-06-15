@@ -23,16 +23,19 @@ const img = (seed: string) =>
 
 const avatar = (n: number) => `https://i.pravatar.cc/120?img=${n}`;
 
-export const hospitalDefaults: Record<string, {
-  type: string;
-  distance: number;
-  specialties: string[];
-  services: { name: string; price: number; duration: string }[];
-  doctors: { name: string; specialty: string; experience: number; avatar: string }[];
-  slots: string[];
-  reviewsCount: number;
-  rating: number;
-}> = {
+export const hospitalDefaults: Record<
+  string,
+  {
+    type: string;
+    distance: number;
+    specialties: string[];
+    services: { name: string; price: number; duration: string }[];
+    doctors: { name: string; specialty: string; experience: number; avatar: string }[];
+    slots: string[];
+    reviewsCount: number;
+    rating: number;
+  }
+> = {
   "apollo-central": {
     type: "Specialty Hospital",
     distance: 1.2,
@@ -64,7 +67,12 @@ export const hospitalDefaults: Record<string, {
       { name: "Ultrasound", price: 1500, duration: "25 min" },
     ],
     doctors: [
-      { name: "Dr. Vikram Shah", specialty: "Orthopedic Surgeon", experience: 22, avatar: avatar(33) },
+      {
+        name: "Dr. Vikram Shah",
+        specialty: "Orthopedic Surgeon",
+        experience: 22,
+        avatar: avatar(33),
+      },
       { name: "Dr. Neha Iyer", specialty: "Pediatrician", experience: 11, avatar: avatar(45) },
     ],
     slots: ["08:30", "10:00", "11:30", "15:00", "16:30"],
@@ -100,12 +108,17 @@ export const hospitalDefaults: Record<string, {
       { name: "Lipid Profile", price: 600, duration: "10 min" },
     ],
     doctors: [
-      { name: "Dr. Karthik Reddy", specialty: "Gastroenterologist", experience: 13, avatar: avatar(15) },
+      {
+        name: "Dr. Karthik Reddy",
+        specialty: "Gastroenterologist",
+        experience: 13,
+        avatar: avatar(15),
+      },
       { name: "Dr. Aisha Khan", specialty: "Dermatologist", experience: 9, avatar: avatar(32) },
     ],
     slots: ["09:00", "10:30", "12:30", "14:00", "16:00"],
   },
-  "kokilaben": {
+  kokilaben: {
     type: "Super Speciality",
     distance: 5.4,
     reviewsCount: 2580,
@@ -123,7 +136,7 @@ export const hospitalDefaults: Record<string, {
     ],
     slots: ["08:00", "09:30", "11:30", "14:00", "16:30"],
   },
-  "medanta": {
+  medanta: {
     type: "Super Speciality",
     distance: 6.2,
     reviewsCount: 1980,
@@ -155,7 +168,12 @@ export const hospitalDefaults: Record<string, {
     ],
     doctors: [
       { name: "Dr. Suresh Raman", specialty: "Oncologist", experience: 19, avatar: avatar(51) },
-      { name: "Dr. Priya Vasudevan", specialty: "Cardiologist", experience: 15, avatar: avatar(36) },
+      {
+        name: "Dr. Priya Vasudevan",
+        specialty: "Cardiologist",
+        experience: 15,
+        avatar: avatar(36),
+      },
     ],
     slots: ["09:00", "10:30", "14:00", "15:30", "17:00"],
   },
@@ -191,7 +209,12 @@ export const hospitalDefaults: Record<string, {
     ],
     doctors: [
       { name: "Dr. K. S. Rao", specialty: "Cardiologist", experience: 15, avatar: avatar(59) },
-      { name: "Dr. V. Srinivas", specialty: "Orthopedic Surgeon", experience: 17, avatar: avatar(18) },
+      {
+        name: "Dr. V. Srinivas",
+        specialty: "Orthopedic Surgeon",
+        experience: 17,
+        avatar: avatar(18),
+      },
     ],
     slots: ["09:00", "10:30", "12:00", "14:30", "16:00"],
   },
@@ -208,7 +231,12 @@ export const hospitalDefaults: Record<string, {
       { name: "Endoscopy", price: 5800, duration: "40 min" },
     ],
     doctors: [
-      { name: "Dr. Sandeep Prasad", specialty: "Gastroenterologist", experience: 12, avatar: avatar(42) },
+      {
+        name: "Dr. Sandeep Prasad",
+        specialty: "Gastroenterologist",
+        experience: 12,
+        avatar: avatar(42),
+      },
       { name: "Dr. Arundhati Sen", specialty: "Oncologist", experience: 14, avatar: avatar(31) },
     ],
     slots: ["09:30", "11:00", "13:00", "15:30", "17:00"],
@@ -226,11 +254,21 @@ export const hospitalDefaults: Record<string, {
       { name: "Ultrasound", price: 1450, duration: "25 min" },
     ],
     doctors: [
-      { name: "Dr. Vivek Jawali", specialty: "Cardiothoracic Surgeon", experience: 32, avatar: avatar(54) },
-      { name: "Dr. Sandeep Vaishya", specialty: "Neurosurgeon", experience: 21, avatar: avatar(55) },
+      {
+        name: "Dr. Vivek Jawali",
+        specialty: "Cardiothoracic Surgeon",
+        experience: 32,
+        avatar: avatar(54),
+      },
+      {
+        name: "Dr. Sandeep Vaishya",
+        specialty: "Neurosurgeon",
+        experience: 21,
+        avatar: avatar(55),
+      },
     ],
     slots: ["09:00", "10:00", "12:00", "14:30", "16:00"],
-  }
+  },
 };
 
 export function getFallbackHospitalDefaults(id: string, name: string, city: string) {
@@ -238,7 +276,7 @@ export function getFallbackHospitalDefaults(id: string, name: string, city: stri
   const distance = Math.round((1.0 + (hash % 80) / 10) * 10) / 10;
   const rating = Math.round((4.0 + (hash % 10) / 10) * 10) / 10;
   const reviewsCount = 100 + (hash % 900);
-  
+
   return {
     type: "General Hospital",
     distance,
@@ -252,7 +290,12 @@ export function getFallbackHospitalDefaults(id: string, name: string, city: stri
       { name: "Blood Test Panel", price: 500 + (hash % 10) * 30, duration: "15 min" },
     ],
     doctors: [
-      { name: "Dr. Rajesh Sen", specialty: "General Physician", experience: 10 + (hash % 15), avatar: avatar(hash % 70) },
+      {
+        name: "Dr. Rajesh Sen",
+        specialty: "General Physician",
+        experience: 10 + (hash % 15),
+        avatar: avatar(hash % 70),
+      },
     ],
     slots: ["09:00", "10:30", "14:00", "16:00"],
   };
@@ -261,7 +304,8 @@ export function getFallbackHospitalDefaults(id: string, name: string, city: stri
 export function getSlugFromName(name: string): string {
   const n = name.toLowerCase();
   if (n.includes("omr")) return "apollo-chennai";
-  if (n.includes("apollo specialty") || n.includes("apollo specialty hospital")) return "apollo-central";
+  if (n.includes("apollo specialty") || n.includes("apollo specialty hospital"))
+    return "apollo-central";
   if (n.includes("fortis greens")) return "fortis-greens";
   if (n.includes("max super speciality") || n.includes("saket")) return "max-superspecialty";
   if (n.includes("manipal city")) return "manipal-city";
@@ -270,7 +314,8 @@ export function getSlugFromName(name: string): string {
   if (n.includes("fortis malar")) return "fortis-malar-chennai";
   if (n.includes("care hospital")) return "care-hyderabad";
   if (n.includes("continental")) return "continental-hyderabad";
-  if (n.includes("fortis hospital") && (n.includes("bannerghatta") || n.includes("bangalore"))) return "fortis-bangalore";
+  if (n.includes("fortis hospital") && (n.includes("bannerghatta") || n.includes("bangalore")))
+    return "fortis-bangalore";
   return n.replace(/[^a-z0-9]+/g, "-");
 }
 
@@ -280,13 +325,16 @@ export function mapSupabaseHospital(db: any): Hospital {
   const name = db.name || "Unnamed Hospital";
   const city = db.city || "Unknown";
   const rating = db.rating ? Number(db.rating) : 4.5;
-  const image = db.image_url || "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80";
+  const image =
+    db.image_url ||
+    "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80";
   const about = db.description || "Healthcare facility delivering quality care.";
   const address = db.address || "Main Street, " + city;
   const phone = db.phone || "+91 80 1234 5678";
 
   const slug = getSlugFromName(name);
-  const defaults = hospitalDefaults[id] || hospitalDefaults[slug] || getFallbackHospitalDefaults(id, name, city);
+  const defaults =
+    hospitalDefaults[id] || hospitalDefaults[slug] || getFallbackHospitalDefaults(id, name, city);
 
   return {
     id,
@@ -306,7 +354,6 @@ export function mapSupabaseHospital(db: any): Hospital {
     slots: defaults.slots,
   };
 }
-
 
 export const services = [
   "Full Body Health Checkup",
@@ -782,24 +829,36 @@ export function getCachedOrDefaultHospitals(customList?: Hospital[]): Hospital[]
     "fortis-greens": "Fortis Greens Medical Center",
     "max-superspecialty": "Max Super Speciality Hospital",
     "manipal-city": "Manipal City Hospital",
-    "kokilaben": "Kokilaben Dhirubhai Ambani Hospital",
-    "medanta": "Medanta The Medicity",
+    kokilaben: "Kokilaben Dhirubhai Ambani Hospital",
+    medanta: "Medanta The Medicity",
     "apollo-chennai": "Apollo Specialty Hospital, OMR",
     "fortis-malar-chennai": "Fortis Malar Hospital",
     "care-hyderabad": "Care Hospitals, Banjara Hills",
     "continental-hyderabad": "Continental Hospitals",
-    "fortis-bangalore": "Fortis Hospital, Bannerghatta Road"
+    "fortis-bangalore": "Fortis Hospital, Bannerghatta Road",
   };
   return baseKeys.map((id) => {
     return mapSupabaseHospital({
       id,
       name: defaultNames[id] || id,
-      city: id.includes("chennai") ? "Chennai" : id.includes("hyderabad") ? "Hyderabad" : id.includes("greens") ? "Noida" : id.includes("superspecialty") ? "New Delhi" : id.includes("medanta") ? "Gurugram" : id.includes("kokilaben") ? "Mumbai" : "Bengaluru",
+      city: id.includes("chennai")
+        ? "Chennai"
+        : id.includes("hyderabad")
+          ? "Hyderabad"
+          : id.includes("greens")
+            ? "Noida"
+            : id.includes("superspecialty")
+              ? "New Delhi"
+              : id.includes("medanta")
+                ? "Gurugram"
+                : id.includes("kokilaben")
+                  ? "Mumbai"
+                  : "Bengaluru",
       rating: hospitalDefaults[id].rating,
       image_url: `https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80`,
       description: "Default mock hospital information.",
       address: "Main Street",
-      phone: "+91 80 1234 5678"
+      phone: "+91 80 1234 5678",
     });
   });
 }
@@ -816,7 +875,10 @@ export function getHospitalNameById(id: string, customList?: Hospital[]): string
   return h ? h.name : "Unknown Hospital";
 }
 
-export function getHospitalRatingDetails(hospitalId: string, customList?: Hospital[]): {
+export function getHospitalRatingDetails(
+  hospitalId: string,
+  customList?: Hospital[],
+): {
   rating: number;
   reviewsCount: number;
 } {
@@ -826,7 +888,7 @@ export function getHospitalRatingDetails(hospitalId: string, customList?: Hospit
 
   const storedReviews = getItemSafe<PatientReview[]>("medicompare_reviews", []);
   const customReviews = storedReviews.filter(
-    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name,
   );
 
   const N_0 = h.reviews;
@@ -841,20 +903,25 @@ export function getHospitalRatingDetails(hospitalId: string, customList?: Hospit
   return { rating: averageRating, reviewsCount: totalReviews };
 }
 
-export function getReviewsForHospital(hospitalId: string, customList?: Hospital[]): PatientReview[] {
+export function getReviewsForHospital(
+  hospitalId: string,
+  customList?: Hospital[],
+): PatientReview[] {
   const list = getCachedOrDefaultHospitals(customList);
   const h = list.find((x) => x.id === hospitalId);
   if (!h) return [];
 
   // 1. Get base reviews
-  const base = (defaultHospitalReviews[hospitalId] || [
-    {
-      name: "Priya S.",
-      text: "Great consultation and clean facility. Verified pricing.",
-      rating: 5,
-      date: "10 Jun 2026",
-    },
-  ]).map((r, i) => ({
+  const base = (
+    defaultHospitalReviews[hospitalId] || [
+      {
+        name: "Priya S.",
+        text: "Great consultation and clean facility. Verified pricing.",
+        rating: 5,
+        date: "10 Jun 2026",
+      },
+    ]
+  ).map((r, i) => ({
     id: `default-${hospitalId}-${i}`,
     hospitalId,
     hospitalName: h.name,
@@ -868,7 +935,7 @@ export function getReviewsForHospital(hospitalId: string, customList?: Hospital[
   // 2. Get custom reviews
   const storedReviews = getItemSafe<PatientReview[]>("medicompare_reviews", []);
   const custom = storedReviews.filter(
-    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name
+    (r: PatientReview) => r.hospitalId === hospitalId || r.hospitalName === h.name,
   );
 
   return [...custom, ...base];
@@ -904,5 +971,3 @@ export function getAllReviews(customList?: Hospital[]): PatientReview[] {
 
   return [...custom, ...base];
 }
-
-

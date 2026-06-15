@@ -52,7 +52,10 @@ export function AIRecommendation() {
   }, [hospitalsList, rec.hospitalId]);
 
   const svc = useMemo(() => {
-    return h?.services?.find((s) => s.name === rec.service) ?? h?.services?.[0] ?? { name: "General Service", price: 0 };
+    return (
+      h?.services?.find((s) => s.name === rec.service) ??
+      h?.services?.[0] ?? { name: "General Service", price: 0 }
+    );
   }, [h, rec.service]);
 
   const avg = useMemo(() => {

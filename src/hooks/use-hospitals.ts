@@ -21,7 +21,7 @@ export function useHospitals() {
           console.warn("Supabase hospitals table is empty. Falling back to mock data.");
           return getCachedOrDefaultHospitals();
         }
-        
+
         const mapped = data.map(mapSupabaseHospital);
         // Cache in localStorage to support synchronous fallback helpers
         setItemSafe("medicompare_hospitals_cache", mapped);
@@ -53,7 +53,10 @@ export function useHospital(hospitalId: string | undefined) {
 
         return mapSupabaseHospital(data);
       } catch (err) {
-        console.warn(`Supabase fetch for hospital ${hospitalId} failed. Falling back to mock data:`, err);
+        console.warn(
+          `Supabase fetch for hospital ${hospitalId} failed. Falling back to mock data:`,
+          err,
+        );
         const list = getCachedOrDefaultHospitals();
         return list.find((h) => h.id === hospitalId) ?? null;
       }
