@@ -304,7 +304,7 @@ type Hospital = {
 
 ## 👨‍💻 Developed By
 
-**Ansh Pandey**
+**[Ansh Pandey](https://github.com/ANSH25102006)**
 
 *Passionate about building technology solutions that solve real-world problems through AI, data visualization, and modern web development.*
 
