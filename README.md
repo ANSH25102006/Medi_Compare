@@ -50,11 +50,11 @@ The application is built as a client-side SPA powered by TanStack Start (SSR-rea
 
 Healthcare pricing in India is often fragmented and difficult for patients to understand before seeking treatment. Patients frequently struggle to:
 
-* Compare treatment costs across different hospitals.
-* Find affordable care options suited to their budgets.
-* Access transparent pricing information without hidden costs.
-* Discover quality healthcare providers nearby.
-* Make informed decisions based on ratings and verified reviews.
+- Compare treatment costs across different hospitals.
+- Find affordable care options suited to their budgets.
+- Access transparent pricing information without hidden costs.
+- Discover quality healthcare providers nearby.
+- Make informed decisions based on ratings and verified reviews.
 
 This lack of transparency can lead to unexpected medical expenses and poor decision-making during critical times.
 
@@ -64,39 +64,44 @@ This lack of transparency can lead to unexpected medical expenses and poor decis
 
 MediCompare offers a transparent healthcare discovery experience where users can:
 
-* **Compare Prices:** Search and compare costs for scans (MRI, CT, Ultrasound) and treatments side by side.
-* **Filter Dynamically:** Refine searches by city, service type, maximum price, minimum rating, and distance.
-* **Consult Doctor Profiles:** Review credentials, experience, and slots for active specialists.
-* **Book Instantly:** Confirm appointments in a few clicks with real-time slot availability.
-* **Track Analytics:** Monitor healthcare spending, trends, and patient savings in a visual dashboard.
-* **AI Assistance:** Get recommendations on the best value (price-to-rating ratio) hospitals.
+- **Compare Prices:** Search and compare costs for scans (MRI, CT, Ultrasound) and treatments side by side.
+- **Filter Dynamically:** Refine searches by city, service type, maximum price, minimum rating, and distance.
+- **Consult Doctor Profiles:** Review credentials, experience, and slots for active specialists.
+- **Book Instantly:** Confirm appointments in a few clicks with real-time slot availability.
+- **Track Analytics:** Monitor healthcare spending, trends, and patient savings in a visual dashboard.
+- **AI Assistance:** Get recommendations on the best value (price-to-rating ratio) hospitals.
 
 ---
 
 ## ✨ Live Features
 
 ### 🔍 Search & Compare
+
 - **Price Comparison Table** — sort dynamically by price, rating, distance, or earliest slot.
 - **Advanced Filters** — max price slider, min rating, max distance, city, specialty, hospital type, and availability toggles.
 - **Visual Layouts** — switch between dense Table view and rich Grid view.
 - **Synonym Normalization** — transparently maps search terms like "Delhi" -> "New Delhi" and "Bangalore" -> "Bengaluru".
 
 ### 🏥 Hospital Profiles & Details
+
 - Specialized hospital landing pages displaying ratings, coordinates, and contact details.
 - **Tabbed Interface** — Overview, Services & Pricing, Reviews, and Doctors.
 - **Sticky Booking Sidebar** — choose a date and slot directly from the hospital's page.
 
 ### 📅 Multi-Step Booking Flow
+
 - 5-step wizard: Service Selection → Date selection → Slot selection → Patient Details → Mock Payment/Confirmation.
 - Pre-fills patient data from user context; generates a unique confirmation ID upon completion.
 
 ### 👤 Patient Dashboard
+
 - **Overview:** Displays metrics, spending breakdowns (Area chart), savings trends (Bar chart), bookmarked hospitals, and recent searches.
 - **Appointments:** Manage past and upcoming bookings, and initiate cancellations.
 - **Reviews:** Leave ratings and feedback for hospitals.
 - **Settings:** Manage profiles, update credentials, toggle notifications, or delete accounts.
 
 ### 🏨 Hospital Admin Panel (`/admin`)
+
 - Operations overview showing appointments, revenue trends, and service popularity charts.
 - Live service management to add, update, or remove services instantly.
 
@@ -306,7 +311,7 @@ type Hospital = {
 
 **[Ansh Pandey](https://github.com/ANSH25102006)**
 
-*Passionate about building technology solutions that solve real-world problems through AI, data visualization, and modern web development.*
+_Passionate about building technology solutions that solve real-world problems through AI, data visualization, and modern web development._
 
 ---
 

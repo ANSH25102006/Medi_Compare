@@ -13,8 +13,6 @@
     "verbatimModuleSyntax": false,
     "noEmit": true,
 
-    
-
     /* Linting */
     "skipLibCheck": true,
     "strict": true,

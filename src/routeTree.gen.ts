@@ -8,162 +8,162 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ReviewsRouteImport } from './routes/reviews'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DoctorRouteImport } from './routes/doctor'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as BookRouteImport } from './routes/book'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as HospitalsIndexRouteImport } from './routes/hospitals.index'
-import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
-import { Route as DashboardSavedRouteImport } from './routes/dashboard.saved'
-import { Route as DashboardReviewsRouteImport } from './routes/dashboard.reviews'
-import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard.appointments'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as SignupRouteImport } from './routes/signup';
+import { Route as ReviewsRouteImport } from './routes/reviews';
+import { Route as LoginRouteImport } from './routes/login';
+import { Route as DoctorRouteImport } from './routes/doctor';
+import { Route as DashboardRouteImport } from './routes/dashboard';
+import { Route as ContactRouteImport } from './routes/contact';
+import { Route as CompareRouteImport } from './routes/compare';
+import { Route as BookRouteImport } from './routes/book';
+import { Route as AdminRouteImport } from './routes/admin';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as HospitalsIndexRouteImport } from './routes/hospitals.index';
+import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId';
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings';
+import { Route as DashboardSavedRouteImport } from './routes/dashboard.saved';
+import { Route as DashboardReviewsRouteImport } from './routes/dashboard.reviews';
+import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard.appointments';
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ReviewsRoute = ReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DoctorRoute = DoctorRouteImport.update({
   id: '/doctor',
   path: '/doctor',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const HospitalsIndexRoute = HospitalsIndexRouteImport.update({
   id: '/hospitals/',
   path: '/hospitals/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const HospitalsHospitalIdRoute = HospitalsHospitalIdRouteImport.update({
   id: '/hospitals/$hospitalId',
   path: '/hospitals/$hospitalId',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => DashboardRoute,
-} as any)
+} as any);
 const DashboardSavedRoute = DashboardSavedRouteImport.update({
   id: '/saved',
   path: '/saved',
   getParentRoute: () => DashboardRoute,
-} as any)
+} as any);
 const DashboardReviewsRoute = DashboardReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
   getParentRoute: () => DashboardRoute,
-} as any)
+} as any);
 const DashboardAppointmentsRoute = DashboardAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
   getParentRoute: () => DashboardRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/book': typeof BookRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/doctor': typeof DoctorRoute
-  '/login': typeof LoginRoute
-  '/reviews': typeof ReviewsRoute
-  '/signup': typeof SignupRoute
-  '/dashboard/appointments': typeof DashboardAppointmentsRoute
-  '/dashboard/reviews': typeof DashboardReviewsRoute
-  '/dashboard/saved': typeof DashboardSavedRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
-  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
-  '/hospitals/': typeof HospitalsIndexRoute
+  '/': typeof IndexRoute;
+  '/admin': typeof AdminRoute;
+  '/book': typeof BookRoute;
+  '/compare': typeof CompareRoute;
+  '/contact': typeof ContactRoute;
+  '/dashboard': typeof DashboardRouteWithChildren;
+  '/doctor': typeof DoctorRoute;
+  '/login': typeof LoginRoute;
+  '/reviews': typeof ReviewsRoute;
+  '/signup': typeof SignupRoute;
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute;
+  '/dashboard/reviews': typeof DashboardReviewsRoute;
+  '/dashboard/saved': typeof DashboardSavedRoute;
+  '/dashboard/settings': typeof DashboardSettingsRoute;
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
+  '/hospitals/': typeof HospitalsIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/book': typeof BookRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/doctor': typeof DoctorRoute
-  '/login': typeof LoginRoute
-  '/reviews': typeof ReviewsRoute
-  '/signup': typeof SignupRoute
-  '/dashboard/appointments': typeof DashboardAppointmentsRoute
-  '/dashboard/reviews': typeof DashboardReviewsRoute
-  '/dashboard/saved': typeof DashboardSavedRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
-  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
-  '/hospitals': typeof HospitalsIndexRoute
+  '/': typeof IndexRoute;
+  '/admin': typeof AdminRoute;
+  '/book': typeof BookRoute;
+  '/compare': typeof CompareRoute;
+  '/contact': typeof ContactRoute;
+  '/dashboard': typeof DashboardRouteWithChildren;
+  '/doctor': typeof DoctorRoute;
+  '/login': typeof LoginRoute;
+  '/reviews': typeof ReviewsRoute;
+  '/signup': typeof SignupRoute;
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute;
+  '/dashboard/reviews': typeof DashboardReviewsRoute;
+  '/dashboard/saved': typeof DashboardSavedRoute;
+  '/dashboard/settings': typeof DashboardSettingsRoute;
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
+  '/hospitals': typeof HospitalsIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/book': typeof BookRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/doctor': typeof DoctorRoute
-  '/login': typeof LoginRoute
-  '/reviews': typeof ReviewsRoute
-  '/signup': typeof SignupRoute
-  '/dashboard/appointments': typeof DashboardAppointmentsRoute
-  '/dashboard/reviews': typeof DashboardReviewsRoute
-  '/dashboard/saved': typeof DashboardSavedRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
-  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
-  '/hospitals/': typeof HospitalsIndexRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/admin': typeof AdminRoute;
+  '/book': typeof BookRoute;
+  '/compare': typeof CompareRoute;
+  '/contact': typeof ContactRoute;
+  '/dashboard': typeof DashboardRouteWithChildren;
+  '/doctor': typeof DoctorRoute;
+  '/login': typeof LoginRoute;
+  '/reviews': typeof ReviewsRoute;
+  '/signup': typeof SignupRoute;
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute;
+  '/dashboard/reviews': typeof DashboardReviewsRoute;
+  '/dashboard/saved': typeof DashboardSavedRoute;
+  '/dashboard/settings': typeof DashboardSettingsRoute;
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
+  '/hospitals/': typeof HospitalsIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
     | '/admin'
@@ -180,8 +180,8 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals/'
-  fileRoutesByTo: FileRoutesByTo
+    | '/hospitals/';
+  fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
     | '/admin'
@@ -198,7 +198,7 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals'
+    | '/hospitals';
   id:
     | '__root__'
     | '/'
@@ -216,146 +216,146 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals/'
-  fileRoutesById: FileRoutesById
+    | '/hospitals/';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
-  BookRoute: typeof BookRoute
-  CompareRoute: typeof CompareRoute
-  ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
-  DoctorRoute: typeof DoctorRoute
-  LoginRoute: typeof LoginRoute
-  ReviewsRoute: typeof ReviewsRoute
-  SignupRoute: typeof SignupRoute
-  HospitalsHospitalIdRoute: typeof HospitalsHospitalIdRoute
-  HospitalsIndexRoute: typeof HospitalsIndexRoute
+  IndexRoute: typeof IndexRoute;
+  AdminRoute: typeof AdminRoute;
+  BookRoute: typeof BookRoute;
+  CompareRoute: typeof CompareRoute;
+  ContactRoute: typeof ContactRoute;
+  DashboardRoute: typeof DashboardRouteWithChildren;
+  DoctorRoute: typeof DoctorRoute;
+  LoginRoute: typeof LoginRoute;
+  ReviewsRoute: typeof ReviewsRoute;
+  SignupRoute: typeof SignupRoute;
+  HospitalsHospitalIdRoute: typeof HospitalsHospitalIdRoute;
+  HospitalsIndexRoute: typeof HospitalsIndexRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/signup';
+      path: '/signup';
+      fullPath: '/signup';
+      preLoaderRoute: typeof SignupRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/reviews': {
-      id: '/reviews'
-      path: '/reviews'
-      fullPath: '/reviews'
-      preLoaderRoute: typeof ReviewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/reviews';
+      path: '/reviews';
+      fullPath: '/reviews';
+      preLoaderRoute: typeof ReviewsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/login';
+      path: '/login';
+      fullPath: '/login';
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/doctor': {
-      id: '/doctor'
-      path: '/doctor'
-      fullPath: '/doctor'
-      preLoaderRoute: typeof DoctorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/doctor';
+      path: '/doctor';
+      fullPath: '/doctor';
+      preLoaderRoute: typeof DoctorRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/dashboard';
+      path: '/dashboard';
+      fullPath: '/dashboard';
+      preLoaderRoute: typeof DashboardRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/contact';
+      path: '/contact';
+      fullPath: '/contact';
+      preLoaderRoute: typeof ContactRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/compare';
+      path: '/compare';
+      fullPath: '/compare';
+      preLoaderRoute: typeof CompareRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/book': {
-      id: '/book'
-      path: '/book'
-      fullPath: '/book'
-      preLoaderRoute: typeof BookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/book';
+      path: '/book';
+      fullPath: '/book';
+      preLoaderRoute: typeof BookRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/admin';
+      path: '/admin';
+      fullPath: '/admin';
+      preLoaderRoute: typeof AdminRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/hospitals/': {
-      id: '/hospitals/'
-      path: '/hospitals'
-      fullPath: '/hospitals/'
-      preLoaderRoute: typeof HospitalsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/hospitals/';
+      path: '/hospitals';
+      fullPath: '/hospitals/';
+      preLoaderRoute: typeof HospitalsIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/hospitals/$hospitalId': {
-      id: '/hospitals/$hospitalId'
-      path: '/hospitals/$hospitalId'
-      fullPath: '/hospitals/$hospitalId'
-      preLoaderRoute: typeof HospitalsHospitalIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/hospitals/$hospitalId';
+      path: '/hospitals/$hospitalId';
+      fullPath: '/hospitals/$hospitalId';
+      preLoaderRoute: typeof HospitalsHospitalIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
+      id: '/dashboard/settings';
+      path: '/settings';
+      fullPath: '/dashboard/settings';
+      preLoaderRoute: typeof DashboardSettingsRouteImport;
+      parentRoute: typeof DashboardRoute;
+    };
     '/dashboard/saved': {
-      id: '/dashboard/saved'
-      path: '/saved'
-      fullPath: '/dashboard/saved'
-      preLoaderRoute: typeof DashboardSavedRouteImport
-      parentRoute: typeof DashboardRoute
-    }
+      id: '/dashboard/saved';
+      path: '/saved';
+      fullPath: '/dashboard/saved';
+      preLoaderRoute: typeof DashboardSavedRouteImport;
+      parentRoute: typeof DashboardRoute;
+    };
     '/dashboard/reviews': {
-      id: '/dashboard/reviews'
-      path: '/reviews'
-      fullPath: '/dashboard/reviews'
-      preLoaderRoute: typeof DashboardReviewsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
+      id: '/dashboard/reviews';
+      path: '/reviews';
+      fullPath: '/dashboard/reviews';
+      preLoaderRoute: typeof DashboardReviewsRouteImport;
+      parentRoute: typeof DashboardRoute;
+    };
     '/dashboard/appointments': {
-      id: '/dashboard/appointments'
-      path: '/appointments'
-      fullPath: '/dashboard/appointments'
-      preLoaderRoute: typeof DashboardAppointmentsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
+      id: '/dashboard/appointments';
+      path: '/appointments';
+      fullPath: '/dashboard/appointments';
+      preLoaderRoute: typeof DashboardAppointmentsRouteImport;
+      parentRoute: typeof DashboardRoute;
+    };
   }
 }
 
 interface DashboardRouteChildren {
-  DashboardAppointmentsRoute: typeof DashboardAppointmentsRoute
-  DashboardReviewsRoute: typeof DashboardReviewsRoute
-  DashboardSavedRoute: typeof DashboardSavedRoute
-  DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardAppointmentsRoute: typeof DashboardAppointmentsRoute;
+  DashboardReviewsRoute: typeof DashboardReviewsRoute;
+  DashboardSavedRoute: typeof DashboardSavedRoute;
+  DashboardSettingsRoute: typeof DashboardSettingsRoute;
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -363,11 +363,11 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSavedRoute: DashboardSavedRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
-}
+};
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
-)
+);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -382,17 +382,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   HospitalsHospitalIdRoute: HospitalsHospitalIdRoute,
   HospitalsIndexRoute: HospitalsIndexRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
+  ._addFileTypes<FileRouteTypes>();
