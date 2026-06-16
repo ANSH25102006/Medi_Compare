@@ -242,26 +242,60 @@ async function importHospitalProcedures() {
 
   const relationKeys = new Set(existingRelations.map((r) => `${r.hospital_id}_${r.procedure_id}`));
 
+  // Load static templates to map older UUID schemas back to names
+  const templateHospitalsPath = path.resolve(__dirname, "../public/templates/hospitals.csv");
+  const templateProceduresPath = path.resolve(__dirname, "../public/templates/procedures.csv");
+
+  const staticHospitalIdToName = {};
+  if (fs.existsSync(templateHospitalsPath)) {
+    try {
+      const templateHospitalsContent = fs.readFileSync(templateHospitalsPath, "utf-8");
+      const { rows: templateHospitalsRows } = parseCSV(templateHospitalsContent);
+      templateHospitalsRows.forEach((row) => {
+        if (row.id && row.name) {
+          staticHospitalIdToName[row.id.toLowerCase()] = row.name.toLowerCase();
+        }
+      });
+    } catch (e) {
+      console.warn("Failed to load static hospitals template:", e.message);
+    }
+  }
+
+  const staticProcedureIdToName = {};
+  if (fs.existsSync(templateProceduresPath)) {
+    try {
+      const templateProceduresContent = fs.readFileSync(templateProceduresPath, "utf-8");
+      const { rows: templateProceduresRows } = parseCSV(templateProceduresContent);
+      templateProceduresRows.forEach((row) => {
+        if (row.id && row.name) {
+          staticProcedureIdToName[row.id.toLowerCase()] = row.name.toLowerCase();
+        }
+      });
+    } catch (e) {
+      console.warn("Failed to load static procedures template:", e.message);
+    }
+  }
+
   // Fetch hospitals and procedures mapping to resolve human-readable names if IDs are missing or are names
   const { data: dbHospitals } = await supabase.from("hospitals").select("id, name");
   const { data: dbProcedures } = await supabase.from("procedures").select("id, name");
 
   const hospitalMap = {};
   dbHospitals?.forEach((h) => {
-    hospitalMap[h.id] = h.id;
-    hospitalMap[h.name.toLowerCase()] = h.id;
+    hospitalMap[h.id.toLowerCase()] = h.id;
+    hospitalMap[h.name.trim().toLowerCase()] = h.id;
   });
 
   const procedureMap = {};
   dbProcedures?.forEach((p) => {
-    procedureMap[p.id] = p.id;
-    procedureMap[p.name.toLowerCase()] = p.id;
+    procedureMap[p.id.toLowerCase()] = p.id;
+    procedureMap[p.name.trim().toLowerCase()] = p.id;
   });
 
   const toInsert = [];
   for (const row of rows) {
-    const rawHospital = row.hospital_id || row.hospital_name || "";
-    const rawProcedure = row.procedure_id || row.procedure_name || "";
+    const rawHospital = (row.hospital_id || row.hospital_name || "").trim();
+    const rawProcedure = (row.procedure_id || row.procedure_name || "").trim();
     const priceStr = row.price || "";
 
     if (!rawHospital || !rawProcedure || !priceStr) {
@@ -269,10 +303,33 @@ async function importHospitalProcedures() {
       continue;
     }
 
-    const hospitalId = hospitalMap[rawHospital.toLowerCase()] || rawHospital;
-    const procedureId = procedureMap[rawProcedure.toLowerCase()] || rawProcedure;
-    const price = parseFloat(priceStr);
+    // Resolve hospital UUID
+    let hospitalId = hospitalMap[rawHospital.toLowerCase()];
+    if (!hospitalId) {
+      // If rawHospital is an old static UUID not in database, check if it maps to a name, then look up that name
+      const name = staticHospitalIdToName[rawHospital.toLowerCase()];
+      if (name) {
+        hospitalId = hospitalMap[name];
+      }
+    }
+    if (!hospitalId) {
+      hospitalId = rawHospital; // fallback
+    }
 
+    // Resolve procedure UUID
+    let procedureId = procedureMap[rawProcedure.toLowerCase()];
+    if (!procedureId) {
+      // If rawProcedure is an old static UUID not in database, check if it maps to a name, then look up that name
+      const name = staticProcedureIdToName[rawProcedure.toLowerCase()];
+      if (name) {
+        procedureId = procedureMap[name];
+      }
+    }
+    if (!procedureId) {
+      procedureId = rawProcedure; // fallback
+    }
+
+    const price = parseFloat(priceStr);
     if (isNaN(price)) {
       console.warn(`Skipping row with invalid price "${priceStr}":`, row);
       continue;

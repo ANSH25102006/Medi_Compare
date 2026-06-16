@@ -1,81 +1,81 @@
-hospital_id,procedure_id,price,currency
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7800,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5800,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1600,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,28000,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,145000,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,180000,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,320000,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,110000,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4500,INR
-d0b5e94b-4a5f-4a30-8a4d-91b61bdc2522,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,850,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7200,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5500,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1400,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,25000,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,135000,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,165000,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,290000,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,98000,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,3900,INR
-e67ff862-2a91-477c-a496-ecdf9a3f4c6e,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,600,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,8000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,6000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1800,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,32000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,160000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,195000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,350000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,125000,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4900,INR
-38d781b0-2b18-47bc-96b6-89bf154dfc2f,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,950,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7600,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5600,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1500,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,26000,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,140000,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,170000,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,300000,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,105000,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4200,INR
-5cb311d4-8d96-41b1-a6e5-22d7ba4e13cd,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,750,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,8500,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,6200,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,2000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,35000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,175000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,210000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,380000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,135000,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,5200,INR
-bd5b3644-42b6-4bd1-8a45-6677ba4d6c7b,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,950,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7800,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5900,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1750,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,30000,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,150000,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,185000,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,330000,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,115000,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4800,INR
-ca4d71b5-6f91-419b-b0b2-bbdb45ac6a10,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,850,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7500,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5700,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1550,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,29000,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,148000,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,182000,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,325000,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,112000,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4400,INR
-ad4b786c-4b5f-42e1-a20c-7b0ac0cd2025,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,820,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,7400,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,5600,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,1500,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,27000,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,142000,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,178000,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,315000,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,108000,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,4100,INR
-ed8b4305-dbf5-4d05-b2c2-59cd7ba4e412,9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,780,INR
+hospital_name,procedure_name,price,currency
+"Apollo Specialty Hospital","MRI Scan",7800,INR
+"Apollo Specialty Hospital","CT Scan",5800,INR
+"Apollo Specialty Hospital","Ultrasound",1600,INR
+"Apollo Specialty Hospital","Cataract Surgery",28000,INR
+"Apollo Specialty Hospital","Knee Replacement",145000,INR
+"Apollo Specialty Hospital","Hip Replacement",180000,INR
+"Apollo Specialty Hospital","Heart Bypass",320000,INR
+"Apollo Specialty Hospital","Angioplasty",110000,INR
+"Apollo Specialty Hospital","Full Body Health Checkup",4500,INR
+"Apollo Specialty Hospital","Blood Test Panel",850,INR
+"Fortis Greens Medical Center","MRI Scan",7200,INR
+"Fortis Greens Medical Center","CT Scan",5500,INR
+"Fortis Greens Medical Center","Ultrasound",1400,INR
+"Fortis Greens Medical Center","Cataract Surgery",25000,INR
+"Fortis Greens Medical Center","Knee Replacement",135000,INR
+"Fortis Greens Medical Center","Hip Replacement",165000,INR
+"Fortis Greens Medical Center","Heart Bypass",290000,INR
+"Fortis Greens Medical Center","Angioplasty",98000,INR
+"Fortis Greens Medical Center","Full Body Health Checkup",3900,INR
+"Fortis Greens Medical Center","Blood Test Panel",600,INR
+"Max Super Speciality Hospital","MRI Scan",8000,INR
+"Max Super Speciality Hospital","CT Scan",6000,INR
+"Max Super Speciality Hospital","Ultrasound",1800,INR
+"Max Super Speciality Hospital","Cataract Surgery",32000,INR
+"Max Super Speciality Hospital","Knee Replacement",160000,INR
+"Max Super Speciality Hospital","Hip Replacement",195000,INR
+"Max Super Speciality Hospital","Heart Bypass",350000,INR
+"Max Super Speciality Hospital","Angioplasty",125000,INR
+"Max Super Speciality Hospital","Full Body Health Checkup",4900,INR
+"Max Super Speciality Hospital","Blood Test Panel",950,INR
+"Manipal City Hospital","MRI Scan",7600,INR
+"Manipal City Hospital","CT Scan",5600,INR
+"Manipal City Hospital","Ultrasound",1500,INR
+"Manipal City Hospital","Cataract Surgery",26000,INR
+"Manipal City Hospital","Knee Replacement",140000,INR
+"Manipal City Hospital","Hip Replacement",170000,INR
+"Manipal City Hospital","Heart Bypass",300000,INR
+"Manipal City Hospital","Angioplasty",105000,INR
+"Manipal City Hospital","Full Body Health Checkup",4200,INR
+"Manipal City Hospital","Blood Test Panel",750,INR
+"Kokilaben Dhirubhai Ambani Hospital","MRI Scan",8500,INR
+"Kokilaben Dhirubhai Ambani Hospital","CT Scan",6200,INR
+"Kokilaben Dhirubhai Ambani Hospital","Ultrasound",2000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Cataract Surgery",35000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Knee Replacement",175000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Hip Replacement",210000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Heart Bypass",380000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Angioplasty",135000,INR
+"Kokilaben Dhirubhai Ambani Hospital","Full Body Health Checkup",5200,INR
+"Kokilaben Dhirubhai Ambani Hospital","Blood Test Panel",1000,INR
+"Medanta The Medicity","MRI Scan",7800,INR
+"Medanta The Medicity","CT Scan",5900,INR
+"Medanta The Medicity","Ultrasound",1750,INR
+"Medanta The Medicity","Cataract Surgery",30000,INR
+"Medanta The Medicity","Knee Replacement",150000,INR
+"Medanta The Medicity","Hip Replacement",185000,INR
+"Medanta The Medicity","Heart Bypass",330000,INR
+"Medanta The Medicity","Angioplasty",115000,INR
+"Medanta The Medicity","Full Body Health Checkup",4800,INR
+"Medanta The Medicity","Blood Test Panel",850,INR
+"Apollo Specialty Hospital, OMR","MRI Scan",7500,INR
+"Apollo Specialty Hospital, OMR","CT Scan",5700,INR
+"Apollo Specialty Hospital, OMR","Ultrasound",1550,INR
+"Apollo Specialty Hospital, OMR","Cataract Surgery",29000,INR
+"Apollo Specialty Hospital, OMR","Knee Replacement",148000,INR
+"Apollo Specialty Hospital, OMR","Hip Replacement",182000,INR
+"Apollo Specialty Hospital, OMR","Heart Bypass",325000,INR
+"Apollo Specialty Hospital, OMR","Angioplasty",112000,INR
+"Apollo Specialty Hospital, OMR","Full Body Health Checkup",4400,INR
+"Apollo Specialty Hospital, OMR","Blood Test Panel",820,INR
+"Fortis Hospital, Bannerghatta Road","MRI Scan",7400,INR
+"Fortis Hospital, Bannerghatta Road","CT Scan",5600,INR
+"Fortis Hospital, Bannerghatta Road","Ultrasound",1500,INR
+"Fortis Hospital, Bannerghatta Road","Cataract Surgery",27000,INR
+"Fortis Hospital, Bannerghatta Road","Knee Replacement",142000,INR
+"Fortis Hospital, Bannerghatta Road","Hip Replacement",178000,INR
+"Fortis Hospital, Bannerghatta Road","Heart Bypass",315000,INR
+"Fortis Hospital, Bannerghatta Road","Angioplasty",108000,INR
+"Fortis Hospital, Bannerghatta Road","Full Body Health Checkup",4100,INR
+"Fortis Hospital, Bannerghatta Road","Blood Test Panel",780,INR
