@@ -88,7 +88,7 @@ function DoctorDashboard() {
           date: b.booking_date,
           hospital: getHospitalNameById(b.hospital_id),
           service: b.service_name,
-          status: b.status as any,
+          status: (b.booking_status || b.status) as any,
         }));
 
         const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
@@ -121,7 +121,7 @@ function DoctorDashboard() {
       try {
         const { error } = await supabase
           .from("bookings")
-          .update({ status: newStatus })
+          .update({ booking_status: newStatus })
           .eq("id", id);
 
         if (error) throw error;

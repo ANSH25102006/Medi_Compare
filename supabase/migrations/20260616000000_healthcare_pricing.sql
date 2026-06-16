@@ -127,12 +127,19 @@ order by hp.procedure_id, hp.price asc;
 -- 9. TRIGGERS TO SYNC AUTH SIGNUPS TO PROFILES
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  user_role text;
 begin
+  user_role := lower(coalesce(new.raw_user_meta_data->>'role', 'patient'));
+  if user_role = 'admin' then
+    user_role := 'hospital_admin';
+  end if;
+
   insert into public.profiles (id, full_name, role, phone)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', ''),
-    lower(coalesce(new.raw_user_meta_data->>'role', 'patient')),
+    user_role,
     coalesce(new.raw_user_meta_data->>'phone', '')
   );
   return new;
@@ -145,12 +152,19 @@ create or replace trigger on_auth_user_created
 
 create or replace function public.handle_user_update()
 returns trigger as $$
+declare
+  user_role text;
 begin
+  user_role := lower(coalesce(new.raw_user_meta_data->>'role', 'patient'));
+  if user_role = 'admin' then
+    user_role := 'hospital_admin';
+  end if;
+
   update public.profiles
   set 
     full_name = coalesce(new.raw_user_meta_data->>'name', full_name),
     phone = coalesce(new.raw_user_meta_data->>'phone', phone),
-    role = lower(coalesce(new.raw_user_meta_data->>'role', role))
+    role = user_role
   where id = new.id;
   return new;
 end;

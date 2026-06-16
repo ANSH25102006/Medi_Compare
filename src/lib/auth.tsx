@@ -32,11 +32,21 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const mapUser = (supabaseUser: any): AuthUser | null => {
   if (!supabaseUser) return null;
+  const rawRole = supabaseUser.user_metadata?.role || "Patient";
+  const normalizedRole = 
+    rawRole.toLowerCase() === "admin" || 
+    rawRole.toLowerCase() === "hospital_admin" || 
+    rawRole.toLowerCase() === "super_admin" 
+      ? "Admin" 
+      : rawRole.toLowerCase() === "doctor" 
+        ? "Doctor" 
+        : "Patient";
+
   return {
     name: supabaseUser.user_metadata?.name || supabaseUser.email?.split("@")[0] || "User",
     email: supabaseUser.email || "",
     avatar: supabaseUser.user_metadata?.avatar || generateAvatar(supabaseUser.email || ""),
-    role: (supabaseUser.user_metadata?.role as "Patient" | "Doctor" | "Admin") || "Patient",
+    role: normalizedRole,
   };
 };
 
@@ -47,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check active session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("[Auth Context] Initial session restoration check:", session?.user ? "Session found" : "No active session");
       setUser(mapUser(session?.user));
       setLoading(false);
     });
@@ -54,7 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen to session changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(`[Auth Context] Auth state change event: ${event}, user email: ${session?.user?.email || "none"}`);
       setUser(mapUser(session?.user));
       setLoading(false);
     });
@@ -68,13 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!email || !password) {
       throw new Error("Email and password are required.");
     }
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log(`[Auth Context] Initiating login for: ${email}`);
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
+      console.error("[Auth Context] Supabase sign-in error details:", error);
       throw new Error(error.message);
     }
+    console.log("[Auth Context] Sign-in successful. User:", data.user?.email);
   }, []);
 
   const signup = useCallback(
@@ -87,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!name || !email || !password) {
         throw new Error("Name, email, and password are required.");
       }
+      console.log(`[Auth Context] Initiating signup for email: ${email}, role: ${role}`);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -99,10 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
       if (error) {
+        console.error("[Auth Context] Supabase signup error details:", error);
         throw new Error(error.message);
       }
+      console.log("[Auth Context] Signup response data:", data);
+      
       // Notify the user if email verification is enabled and session was not created
       if (data.user && !data.session) {
+        console.log("[Auth Context] Account created, but email verification link was sent.");
         throw new Error("Verification email sent! Please check your inbox to confirm your email.");
       }
     },
@@ -110,10 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    console.log("[Auth Context] Initiating logout...");
     const { error } = await supabase.auth.signOut();
     if (error) {
+      console.error("[Auth Context] Supabase logout error:", error);
       throw new Error(error.message);
     }
+    console.log("[Auth Context] Logout successful");
     setUser(null);
   }, []);
 

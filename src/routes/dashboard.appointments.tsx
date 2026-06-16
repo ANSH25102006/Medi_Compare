@@ -90,7 +90,7 @@ function AppointmentsPage() {
           date: b.booking_date,
           hospital: getHospitalNameById(b.hospital_id),
           service: b.service_name,
-          status: b.status as any,
+          status: (b.booking_status || b.status) as any,
         }));
 
         const localAppts = getItemSafe<Appointment[]>("medicompare_appointments", userAppointments);
@@ -127,7 +127,7 @@ function AppointmentsPage() {
       try {
         const { error } = await supabase
           .from("bookings")
-          .update({ status: "Cancelled" })
+          .update({ booking_status: "Cancelled" })
           .eq("id", id);
 
         if (error) throw error;
