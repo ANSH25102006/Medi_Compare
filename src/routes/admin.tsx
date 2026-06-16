@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/dialog";
 import { adminAppointmentsTrend, servicePopularity } from "@/lib/mock-data";
 import { useHospitals } from "@/hooks/use-hospitals";
+import { supabase } from "@/lib/supabase";
+import { useMemo } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/admin")({
 const navItems: NavItem[] = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Services", url: "/admin/services", icon: Briefcase },
-  { title: "Pricing", url: "/admin/pricing", icon: BadgeDollarSign },
+  { title: "Pricing", url: "/dashboard/admin/pricing", icon: BadgeDollarSign },
   { title: "Appointments", url: "/admin/appointments", icon: CalendarCheck },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
@@ -81,17 +83,123 @@ function AdminPage() {
 
   const { data: hospitalsList = [] } = useHospitals();
   const [services, setServices] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [stats, setStats] = useState({
+    appointmentsCount: 0,
+    totalRevenue: 0,
+    averageRating: 4.5,
+    proceduresCount: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    if (hospitalsList.length > 0 && services.length === 0) {
-      setServices(hospitalsList[0].services);
+    async function fetchStatsAndProfile() {
+      setLoadingStats(true);
+      try {
+        // Fetch logged in profile and user ID
+        const {
+          data: { user: sbUser },
+        } = await supabase.auth.getUser();
+        if (sbUser) {
+          const { data: profData } = await supabase
+            .from("profiles")
+            .select("*, hospitals(*)")
+            .eq("id", sbUser.id)
+            .single();
+          if (profData) {
+            setProfile(profData);
+          }
+        }
+
+        // 1. Fetch appointments count and total revenue
+        const { data: bookings, error: bErr } = await supabase.from("bookings").select("amount");
+
+        let appCount = 0;
+        let rev = 0;
+        if (!bErr && bookings) {
+          appCount = bookings.length;
+          rev = bookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+        }
+
+        // 2. Fetch average rating of hospitals
+        const { data: ratingData, error: rErr } = await supabase.from("hospitals").select("rating");
+
+        let avgRating = 4.5;
+        if (!rErr && ratingData && ratingData.length > 0) {
+          const validRatings = ratingData.map((h) => Number(h.rating)).filter((r) => !isNaN(r));
+          if (validRatings.length > 0) {
+            avgRating =
+              Math.round((validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length) * 10) /
+              10;
+          }
+        }
+
+        // 3. Fetch procedures count
+        const { count: procCount } = await supabase
+          .from("procedures")
+          .select("*", { count: "exact", head: true });
+
+        setStats({
+          appointmentsCount: appCount,
+          totalRevenue: rev,
+          averageRating: avgRating,
+          proceduresCount: procCount || 0,
+        });
+      } catch (err) {
+        console.error("Failed to load admin stats:", err);
+      } finally {
+        setLoadingStats(false);
+      }
     }
-  }, [hospitalsList, services.length]);
+
+    fetchStatsAndProfile();
+  }, [authUser]);
+
+  useEffect(() => {
+    if (hospitalsList.length > 0) {
+      const myHospital =
+        hospitalsList.find((h) => h.id === profile?.hospital_id) || hospitalsList[0];
+      if (myHospital) {
+        setServices(myHospital.services);
+      }
+    }
+  }, [hospitalsList, profile, services.length]);
 
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newDuration, setNewDuration] = useState("");
+
+  const metrics = useMemo(
+    () => [
+      {
+        label: "Total appointments",
+        value: stats.appointmentsCount > 0 ? stats.appointmentsCount.toLocaleString() : "2,930",
+        change: "+18%",
+        icon: CalendarCheck,
+      },
+      {
+        label: "Monthly revenue",
+        value:
+          stats.totalRevenue > 0 ? `₹${(stats.totalRevenue / 100000).toFixed(1)} L` : "₹10.4 L",
+        change: "+14%",
+        icon: BadgeDollarSign,
+      },
+      {
+        label: "Average rating",
+        value: `${stats.averageRating || 4.8} ★`,
+        change: "+0.2",
+        icon: Star,
+      },
+      {
+        label: "Active services",
+        value: stats.proceduresCount > 0 ? stats.proceduresCount : services.length,
+        change: "Live",
+        icon: Briefcase,
+      },
+    ],
+    [stats, services.length],
+  );
 
   if (loading) {
     return null;
@@ -106,13 +214,6 @@ function AdminPage() {
     role: "Hospital Admin",
     avatar: authUser?.avatar ?? "https://i.pravatar.cc/120?img=64",
   };
-
-  const metrics = [
-    { label: "Total appointments", value: "2,930", change: "+18%", icon: CalendarCheck },
-    { label: "Monthly revenue", value: "₹10.4 L", change: "+14%", icon: BadgeDollarSign },
-    { label: "Average rating", value: "4.8 ★", change: "+0.2", icon: Star },
-    { label: "Active services", value: services.length, change: "Live", icon: Briefcase },
-  ];
 
   const addService = () => {
     if (!newName || !newPrice) return;

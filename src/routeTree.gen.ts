@@ -25,6 +25,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardSavedRouteImport } from './routes/dashboard.saved';
 import { Route as DashboardReviewsRouteImport } from './routes/dashboard.reviews';
 import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard.appointments';
+import { Route as DashboardAdminPricingRouteImport } from './routes/dashboard.admin.pricing';
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -106,6 +107,11 @@ const DashboardAppointmentsRoute = DashboardAppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => DashboardRoute,
 } as any);
+const DashboardAdminPricingRoute = DashboardAdminPricingRouteImport.update({
+  id: '/admin/pricing',
+  path: '/admin/pricing',
+  getParentRoute: () => DashboardRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute;
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
   '/hospitals/': typeof HospitalsIndexRoute;
+  '/dashboard/admin/pricing': typeof DashboardAdminPricingRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute;
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
   '/hospitals': typeof HospitalsIndexRoute;
+  '/dashboard/admin/pricing': typeof DashboardAdminPricingRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/dashboard/settings': typeof DashboardSettingsRoute;
   '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute;
   '/hospitals/': typeof HospitalsIndexRoute;
+  '/dashboard/admin/pricing': typeof DashboardAdminPricingRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -180,7 +189,8 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals/';
+    | '/hospitals/'
+    | '/dashboard/admin/pricing';
   fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
@@ -198,7 +208,8 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals';
+    | '/hospitals'
+    | '/dashboard/admin/pricing';
   id:
     | '__root__'
     | '/'
@@ -216,7 +227,8 @@ export interface FileRouteTypes {
     | '/dashboard/saved'
     | '/dashboard/settings'
     | '/hospitals/$hospitalId'
-    | '/hospitals/';
+    | '/hospitals/'
+    | '/dashboard/admin/pricing';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -348,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAppointmentsRouteImport;
       parentRoute: typeof DashboardRoute;
     };
+    '/dashboard/admin/pricing': {
+      id: '/dashboard/admin/pricing';
+      path: '/admin/pricing';
+      fullPath: '/dashboard/admin/pricing';
+      preLoaderRoute: typeof DashboardAdminPricingRouteImport;
+      parentRoute: typeof DashboardRoute;
+    };
   }
 }
 
@@ -356,6 +375,7 @@ interface DashboardRouteChildren {
   DashboardReviewsRoute: typeof DashboardReviewsRoute;
   DashboardSavedRoute: typeof DashboardSavedRoute;
   DashboardSettingsRoute: typeof DashboardSettingsRoute;
+  DashboardAdminPricingRoute: typeof DashboardAdminPricingRoute;
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -363,6 +383,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardReviewsRoute: DashboardReviewsRoute,
   DashboardSavedRoute: DashboardSavedRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardAdminPricingRoute: DashboardAdminPricingRoute,
 };
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

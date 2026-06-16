@@ -45,7 +45,7 @@ import {
   getHospitalRatingDetails,
   type Hospital,
 } from "@/lib/mock-data";
-import { useHospitals } from "@/hooks/use-hospitals";
+import { useHospitals, useProcedures } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
 import { CardSkeleton, TableSkeleton } from "@/components/site/SkeletonLoader";
 import { toast } from "sonner";
@@ -152,6 +152,15 @@ function ComparePage() {
     isLoading: isHospitalsLoading,
     error: hospitalsError,
   } = useHospitals();
+
+  const { data: dbProcedures = [], isLoading: isProceduresLoading } = useProcedures();
+
+  const servicesList = useMemo(() => {
+    if (dbProcedures.length > 0) {
+      return dbProcedures.map((p) => p.name);
+    }
+    return services;
+  }, [dbProcedures]);
 
   useEffect(() => {
     async function loadAllReviews() {
@@ -766,7 +775,7 @@ function ComparePage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All services</SelectItem>
-                    {services.map((s) => (
+                    {servicesList.map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
                       </SelectItem>

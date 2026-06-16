@@ -3,6 +3,14 @@ import { supabase } from "@/lib/supabase";
 import { type Hospital, mapSupabaseHospital, getCachedOrDefaultHospitals } from "@/lib/mock-data";
 import { setItemSafe } from "@/lib/storage";
 
+export interface Procedure {
+  id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  created_at: string;
+}
+
 export function useHospitals() {
   return useQuery<Hospital[]>({
     queryKey: ["hospitals"],
@@ -10,7 +18,22 @@ export function useHospitals() {
       try {
         const { data, error } = await supabase
           .from("hospitals")
-          .select("*")
+          .select(
+            `
+            *,
+            hospital_procedures (
+              id,
+              price,
+              currency,
+              procedures (
+                id,
+                name,
+                category,
+                description
+              )
+            )
+          `,
+          )
           .order("name", { ascending: true });
 
         if (error) {
@@ -43,7 +66,22 @@ export function useHospital(hospitalId: string | undefined) {
       try {
         const { data, error } = await supabase
           .from("hospitals")
-          .select("*")
+          .select(
+            `
+            *,
+            hospital_procedures (
+              id,
+              price,
+              currency,
+              procedures (
+                id,
+                name,
+                category,
+                description
+              )
+            )
+          `,
+          )
           .eq("id", hospitalId)
           .single();
 
@@ -62,6 +100,25 @@ export function useHospital(hospitalId: string | undefined) {
       }
     },
     enabled: !!hospitalId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useProcedures() {
+  return useQuery<Procedure[]>({
+    queryKey: ["procedures"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("procedures")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    },
     staleTime: 5 * 60 * 1000,
   });
 }

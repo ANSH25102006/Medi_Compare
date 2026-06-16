@@ -1,0 +1,11 @@
+id,name,category,description
+9a9b7e71-4a5f-4a30-8a4d-91b61bdc2533,"MRI Scan",Radiology,"Magnetic resonance imaging scan to visualize internal structures."
+1a9b7e71-4a5f-4a30-8a4d-91b61bdc2534,"CT Scan",Radiology,"Computed tomography scan for cross-sectional internal imaging."
+2a9b7e71-4a5f-4a30-8a4d-91b61bdc2535,Ultrasound,Radiology,Diagnostic ultrasound imaging.
+3a9b7e71-4a5f-4a30-8a4d-91b61bdc2536,"Cataract Surgery",Surgery,Surgical replacement of natural lens with intraocular lens.
+4a9b7e71-4a5f-4a30-8a4d-91b61bdc2537,"Knee Replacement",Orthopedics,Total knee replacement surgery to restore joint function.
+5a9b7e71-4a5f-4a30-8a4d-91b61bdc2538,"Hip Replacement",Orthopedics,Total hip replacement surgery.
+6a9b7e71-4a5f-4a30-8a4d-91b61bdc2539,"Heart Bypass",Cardiology,Coronary artery bypass graft (CABG) surgery.
+7a9b7e71-4a5f-4a30-8a4d-91b61bdc2540,Angioplasty,Cardiology,Minimally invasive procedure to open narrowed coronary arteries.
+8a9b7e71-4a5f-4a30-8a4d-91b61bdc2541,"Full Body Health Checkup",Diagnostics,Comprehensive general health checkup screening panel.
+9a9b7e71-4a5f-4a30-8a4d-91b61bdc2542,"Blood Test Panel",Diagnostics,Routine blood chemistry and count screening panels.

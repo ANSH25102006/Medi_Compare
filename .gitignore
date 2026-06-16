@@ -34,3 +34,6 @@ dist-ssr
 
 # Nested duplicate repo
 health-compare-hub/
+
+# Scratch scripts
+scratch/

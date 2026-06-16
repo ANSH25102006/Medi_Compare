@@ -336,6 +336,29 @@ export function mapSupabaseHospital(db: any): Hospital {
   const defaults =
     hospitalDefaults[id] || hospitalDefaults[slug] || getFallbackHospitalDefaults(id, name, city);
 
+  // Dynamically map services (procedures) from public.hospital_procedures
+  const services = (db.hospital_procedures || []).map((hp: any) => {
+    const pName = hp.procedures?.name || "Unknown Procedure";
+    let duration = "30 min";
+    if (pName.includes("Checkup") || pName.includes("Check-up")) duration = "2 hrs";
+    else if (pName.includes("Scan")) duration = "45 min";
+    else if (pName.includes("Surgery") || pName.includes("Bypass") || pName.includes("Replacement"))
+      duration = "2-4 hrs";
+
+    return {
+      name: pName,
+      price: Number(hp.price),
+      duration,
+    };
+  });
+
+  // Dynamically map specialties from public.hospital_procedures categories
+  const specialties = Array.from(
+    new Set(
+      (db.hospital_procedures || []).map((hp: any) => hp.procedures?.category).filter(Boolean),
+    ),
+  ) as string[];
+
   return {
     id,
     name,
@@ -345,11 +368,11 @@ export function mapSupabaseHospital(db: any): Hospital {
     about,
     address,
     phone,
-    reviews: defaults.reviewsCount,
-    type: defaults.type,
+    reviews: db.total_reviews ?? defaults.reviewsCount,
+    type: db.hospital_type ?? defaults.type,
     distance: defaults.distance,
-    specialties: defaults.specialties,
-    services: defaults.services,
+    specialties: specialties.length > 0 ? specialties : defaults.specialties,
+    services: services.length > 0 ? services : defaults.services,
     doctors: defaults.doctors,
     slots: defaults.slots,
   };
