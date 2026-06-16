@@ -37,7 +37,7 @@ const steps = ["Service", "Date", "Time", "Details", "Payment", "Confirm"];
 
 function BookPage() {
   const sp = Route.useSearch();
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { data: hospitalsList = [], isLoading } = useHospitals();
@@ -87,6 +87,7 @@ function BookPage() {
 
   // Synchronous redirect if not logged in
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       toast.error("Please sign in to book an appointment.");
       navigate({
@@ -94,19 +95,7 @@ function BookPage() {
         search: { redirect: location.href },
       });
     }
-  }, [isLoggedIn, navigate, location]);
-
-  // Handle loading skeletons before rendering core UI
-  if (isLoading || !hospital) {
-    return (
-      <SiteShell>
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading booking details...</p>
-        </div>
-      </SiteShell>
-    );
-  }
+  }, [isLoggedIn, navigate, location, loading]);
 
   // Sync user values if they load asynchronously
   useEffect(() => {
@@ -129,11 +118,23 @@ function BookPage() {
 
   // Validate query parameter/state: slot must exist in hospital slots
   useEffect(() => {
-    if (slot && !hospital.slots.includes(slot)) {
+    if (slot && hospital && !hospital.slots.includes(slot)) {
       setSlot("");
       toast.warning("Selected time slot is unavailable. Please choose another.");
     }
-  }, [slot, hospital.slots]);
+  }, [slot, hospital?.slots]);
+
+  // Handle loading skeletons before rendering core UI
+  if (loading || isLoading || !hospital) {
+    return (
+      <SiteShell>
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading booking details...</p>
+        </div>
+      </SiteShell>
+    );
+  }
 
   const selectedService = hospital?.services?.find((s) => s.name === service) ??
     hospital?.services?.[0] ?? { name: "General Service", price: 0 };

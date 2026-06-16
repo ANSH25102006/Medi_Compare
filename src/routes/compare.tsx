@@ -46,6 +46,7 @@ import {
   type Hospital,
 } from "@/lib/mock-data";
 import { useHospitals } from "@/hooks/use-hospitals";
+import { useAuth } from "@/lib/auth";
 import { CardSkeleton, TableSkeleton } from "@/components/site/SkeletonLoader";
 import { toast } from "sonner";
 
@@ -116,6 +117,15 @@ const getWaitTime = (hospital: Hospital) => {
 function ComparePage() {
   const navigate = useNavigate();
   const searchParams = Route.useSearch();
+  const { isLoggedIn, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading) return;
+    if (!isLoggedIn) {
+      toast.error("Please sign in to view the comparison page.");
+      navigate({ to: "/login", search: { redirect: "/compare" } });
+    }
+  }, [isLoggedIn, loading, navigate]);
 
   const {
     q = "",
@@ -220,7 +230,9 @@ function ComparePage() {
       setComparedIds([]);
       setShowCompareView(false);
       toast.success("Comparison cleared.");
-    } catch {}
+    } catch {
+      // ignore storage access errors
+    }
   };
 
   const removeComparedId = (id: string) => {
@@ -232,7 +244,9 @@ function ComparePage() {
         setShowCompareView(false);
       }
       toast.success("Hospital removed from comparison.");
-    } catch {}
+    } catch {
+      // ignore storage access errors
+    }
   };
 
   const allSpecialties = useMemo(() => {
@@ -438,6 +452,20 @@ function ComparePage() {
       };
     });
   }, [comparedHospitals, service]);
+
+  if (loading) {
+    return (
+      <SiteShell>
+        <div className="mx-auto max-w-7xl px-4 py-20 text-center">
+          <p className="text-muted-foreground">Loading comparison page...</p>
+        </div>
+      </SiteShell>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <SiteShell>

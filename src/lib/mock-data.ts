@@ -821,7 +821,9 @@ export function getCachedOrDefaultHospitals(customList?: Hospital[]): Hospital[]
     if (cached && cached.length > 0) {
       return cached.map(mapSupabaseHospital);
     }
-  } catch (e) {}
+  } catch (e) {
+    // ignore cache retrieval errors
+  }
 
   const baseKeys = Object.keys(hospitalDefaults);
   const defaultNames: Record<string, string> = {

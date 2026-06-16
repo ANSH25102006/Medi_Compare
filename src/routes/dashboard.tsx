@@ -76,7 +76,7 @@ function getWeekNumber(d: Date) {
 }
 
 function Dashboard() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: hospitalsList = [], isLoading: loadingHospitals } = useHospitals();
@@ -85,6 +85,7 @@ function Dashboard() {
 
   // Authenticate user & role check
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard" } });
       return;
@@ -94,7 +95,7 @@ function Dashboard() {
     } else if (user?.role === "Doctor") {
       navigate({ to: "/doctor" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   // Operational states
   const [dbBookings, setDbBookings] = useState<any[]>([]);
@@ -170,6 +171,10 @@ function Dashboard() {
       fetchDbFavorites();
     }
   }, [isLoggedIn, user?.role]);
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;

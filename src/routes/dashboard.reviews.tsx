@@ -63,10 +63,11 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
 }
 
 function DashboardReviewsPage() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard/reviews" } });
       return;
@@ -76,7 +77,7 @@ function DashboardReviewsPage() {
     } else if (user?.role === "Doctor") {
       navigate({ to: "/doctor" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   const authUser = {
     name: user?.name ?? "Patient",
@@ -140,6 +141,10 @@ function DashboardReviewsPage() {
 
     loadMyReviews();
   }, [user?.email, refreshReviews]);
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;

@@ -29,10 +29,11 @@ const navItems: NavItem[] = [
 ];
 
 function SettingsPage() {
-  const { user, isLoggedIn, logout, updateProfile } = useAuth();
+  const { user, isLoggedIn, loading, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard/settings" } });
       return;
@@ -42,7 +43,7 @@ function SettingsPage() {
     } else if (user?.role === "Doctor") {
       navigate({ to: "/doctor" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   const authUser = {
     name: user?.name ?? "Patient",
@@ -54,6 +55,10 @@ function SettingsPage() {
   const [email, setEmail] = useState(user?.email ?? "");
   const [notifications, setNotifications] = useState(true);
   const [marketing, setMarketing] = useState(false);
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;

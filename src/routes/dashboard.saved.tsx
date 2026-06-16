@@ -31,10 +31,11 @@ const navItems: NavItem[] = [
 ];
 
 function SavedPage() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard/saved" } });
       return;
@@ -44,7 +45,7 @@ function SavedPage() {
     } else if (user?.role === "Doctor") {
       navigate({ to: "/doctor" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
@@ -75,6 +76,12 @@ function SavedPage() {
     loadSaved();
   }, [user?.email, isLoggedIn]);
 
+  const { data: hospitalsList = [], isLoading } = useHospitals();
+
+  if (loading) {
+    return null;
+  }
+
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;
   }
@@ -85,7 +92,6 @@ function SavedPage() {
     avatar: user?.avatar ?? "https://i.pravatar.cc/120?img=25",
   };
 
-  const { data: hospitalsList = [], isLoading } = useHospitals();
   const saved = hospitalsList.filter((h) => savedIds.includes(h.id));
 
   return (

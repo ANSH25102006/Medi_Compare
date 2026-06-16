@@ -55,10 +55,11 @@ type Appointment = {
 };
 
 function DoctorDashboard() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/doctor" } });
       return;
@@ -67,7 +68,7 @@ function DoctorDashboard() {
       toast.error("Access denied. Doctor dashboard is restricted.");
       navigate({ to: "/dashboard" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -135,6 +136,10 @@ function DoctorDashboard() {
 
     updateInSupabase();
   };
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || user?.role !== "Doctor") {
     return null;

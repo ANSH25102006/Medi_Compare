@@ -64,10 +64,11 @@ const navItems: NavItem[] = [
 ];
 
 function AdminPage() {
-  const { user: authUser, isLoggedIn } = useAuth();
+  const { user: authUser, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/admin" } });
       return;
@@ -76,7 +77,7 @@ function AdminPage() {
       toast.error("Access denied. Admin portal is restricted.");
       navigate({ to: "/dashboard" });
     }
-  }, [isLoggedIn, authUser, navigate]);
+  }, [isLoggedIn, authUser, navigate, loading]);
 
   const { data: hospitalsList = [] } = useHospitals();
   const [services, setServices] = useState<any[]>([]);
@@ -91,6 +92,10 @@ function AdminPage() {
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newDuration, setNewDuration] = useState("");
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || authUser?.role !== "Admin") {
     return null;

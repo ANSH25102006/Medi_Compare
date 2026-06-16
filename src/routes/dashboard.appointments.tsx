@@ -54,10 +54,11 @@ type Appointment = {
 };
 
 function AppointmentsPage() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
     if (!isLoggedIn) {
       navigate({ to: "/login", search: { redirect: "/dashboard/appointments" } });
       return;
@@ -67,7 +68,7 @@ function AppointmentsPage() {
     } else if (user?.role === "Doctor") {
       navigate({ to: "/doctor" });
     }
-  }, [isLoggedIn, user, navigate]);
+  }, [isLoggedIn, user, navigate, loading]);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -141,6 +142,10 @@ function AppointmentsPage() {
 
     cancelInSupabase();
   };
+
+  if (loading) {
+    return null;
+  }
 
   if (!isLoggedIn || user?.role !== "Patient") {
     return null;

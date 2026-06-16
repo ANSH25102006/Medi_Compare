@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { getItemSafe, setItemSafe, removeItemSafe } from "./storage";
+import { supabase } from "./supabase";
 
 export type AuthUser = {
   name: string;
@@ -11,6 +11,7 @@ export type AuthUser = {
 type AuthContextValue = {
   user: AuthUser | null;
   isLoggedIn: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (
     name: string,
@@ -18,62 +19,62 @@ type AuthContextValue = {
     password: string,
     role?: "Patient" | "Doctor" | "Admin",
   ) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (name: string, email: string) => Promise<void>;
 };
 
-const STORAGE_KEY = "medicompare_user";
-
 function generateAvatar(email: string) {
-  // Generate a deterministic pravatar based on email hash
   const n = Math.abs(email.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 70);
   return `https://i.pravatar.cc/120?img=${n + 1}`;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    return getItemSafe<AuthUser | null>(STORAGE_KEY, null);
-  });
+const mapUser = (supabaseUser: any): AuthUser | null => {
+  if (!supabaseUser) return null;
+  return {
+    name: supabaseUser.user_metadata?.name || supabaseUser.email?.split("@")[0] || "User",
+    email: supabaseUser.email || "",
+    avatar: supabaseUser.user_metadata?.avatar || generateAvatar(supabaseUser.email || ""),
+    role: (supabaseUser.user_metadata?.role as "Patient" | "Doctor" | "Admin") || "Patient",
+  };
+};
 
-  // Keep localStorage in sync whenever user changes
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (user) {
-      setItemSafe(STORAGE_KEY, user);
-    } else {
-      removeItemSafe(STORAGE_KEY);
-    }
-  }, [user]);
+    // Check active session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(mapUser(session?.user));
+      setLoading(false);
+    });
+
+    // Listen to session changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(mapUser(session?.user));
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    if (!email || password.length < 6) {
-      throw new Error("Invalid credentials. Password must be at least 6 characters.");
+    if (!email || !password) {
+      throw new Error("Email and password are required.");
     }
-    // Try to retrieve a previously registered name and role for this email
-    let name = "Patient";
-    let role: "Patient" | "Doctor" | "Admin" = "Patient";
-
-    // Check email suffix/prefix defaults
-    if (email.toLowerCase().includes("admin")) {
-      role = "Admin";
-      name = "Hospital Admin";
-    } else if (email.toLowerCase().includes("doctor")) {
-      role = "Doctor";
-      name = "Doctor";
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      throw new Error(error.message);
     }
-
-    const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
-    if (accounts[email]) {
-      if (typeof accounts[email] === "object") {
-        name = accounts[email].name || name;
-        role = accounts[email].role || role;
-      } else {
-        name = accounts[email];
-      }
-    }
-    const newUser: AuthUser = { name, email, avatar: generateAvatar(email), role };
-    setUser(newUser);
   }, []);
 
   const signup = useCallback(
@@ -83,45 +84,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: string,
       role: "Patient" | "Doctor" | "Admin" = "Patient",
     ) => {
-      if (!name || !email || password.length < 6) {
-        throw new Error("Please fill all fields. Password must be at least 6 characters.");
+      if (!name || !email || !password) {
+        throw new Error("Name, email, and password are required.");
       }
-      // Store name and role keyed by email
-      const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
-      accounts[email] = { name, role };
-      setItemSafe("medicompare_accounts", accounts);
-
-      const newUser: AuthUser = { name, email, avatar: generateAvatar(email), role };
-      setUser(newUser);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role,
+            avatar: generateAvatar(email),
+          },
+        },
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      // Notify the user if email verification is enabled and session was not created
+      if (data.user && !data.session) {
+        throw new Error("Verification email sent! Please check your inbox to confirm your email.");
+      }
     },
     [],
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw new Error(error.message);
+    }
     setUser(null);
   }, []);
 
-  const updateProfile = useCallback(
-    async (newName: string, newEmail: string) => {
-      if (!user) return;
-      const accounts = getItemSafe<Record<string, any>>("medicompare_accounts", {});
-      if (accounts[user.email]) {
-        delete accounts[user.email];
-      }
-      accounts[newEmail] = { name: newName, role: user.role };
-      setItemSafe("medicompare_accounts", accounts);
-
-      setUser((prev) => {
-        if (!prev) return null;
-        return { ...prev, name: newName, email: newEmail, avatar: generateAvatar(newEmail) };
-      });
-    },
-    [user],
-  );
+  const updateProfile = useCallback(async (newName: string, newEmail: string) => {
+    const { error } = await supabase.auth.updateUser({
+      email: newEmail,
+      data: {
+        name: newName,
+      },
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+  }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn: !!user, login, signup, logout, updateProfile }}
+      value={{ user, isLoggedIn: !!user, loading, login, signup, logout, updateProfile }}
     >
       {children}
     </AuthContext.Provider>
