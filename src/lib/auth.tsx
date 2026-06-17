@@ -33,13 +33,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const mapUser = (supabaseUser: any): AuthUser | null => {
   if (!supabaseUser) return null;
   const rawRole = supabaseUser.user_metadata?.role || "Patient";
-  const normalizedRole = 
-    rawRole.toLowerCase() === "admin" || 
-    rawRole.toLowerCase() === "hospital_admin" || 
-    rawRole.toLowerCase() === "super_admin" 
-      ? "Admin" 
-      : rawRole.toLowerCase() === "doctor" 
-        ? "Doctor" 
+  const normalizedRole =
+    rawRole.toLowerCase() === "admin" ||
+    rawRole.toLowerCase() === "hospital_admin" ||
+    rawRole.toLowerCase() === "super_admin"
+      ? "Admin"
+      : rawRole.toLowerCase() === "doctor"
+        ? "Doctor"
         : "Patient";
 
   return {
@@ -57,7 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check active session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[Auth Context] Initial session restoration check:", session?.user ? "Session found" : "No active session");
+      console.log(
+        "[Auth Context] Initial session restoration check:",
+        session?.user ? "Session found" : "No active session",
+      );
       setUser(mapUser(session?.user));
       setLoading(false);
     });
@@ -66,7 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`[Auth Context] Auth state change event: ${event}, user email: ${session?.user?.email || "none"}`);
+      console.log(
+        `[Auth Context] Auth state change event: ${event}, user email: ${session?.user?.email || "none"}`,
+      );
       setUser(mapUser(session?.user));
       setLoading(false);
     });
@@ -119,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.message);
       }
       console.log("[Auth Context] Signup response data:", data);
-      
+
       // Notify the user if email verification is enabled and session was not created
       if (data.user && !data.session) {
         console.log("[Auth Context] Account created, but email verification link was sent.");

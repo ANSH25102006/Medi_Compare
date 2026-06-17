@@ -300,7 +300,34 @@ function Dashboard() {
   // Aggregated data for Bookings Overview Chart
   const getAggregatedChartData = () => {
     if (dbBookings.length === 0) {
-      return chartData[chartTab].map((d) => ({ name: d.name, bookings: 0 }));
+      if (chartTab === "daily") {
+        const data = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const label = d.toLocaleDateString("en-US", { weekday: "short" });
+          data.push({ name: label, bookings: 0 });
+        }
+        return data;
+      } else if (chartTab === "weekly") {
+        const data = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i * 7);
+          const label = `Wk ${getWeekNumber(d)}`;
+          data.push({ name: label, bookings: 0 });
+        }
+        return data;
+      } else {
+        const data = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const label = d.toLocaleDateString("en-US", { month: "short" });
+          data.push({ name: label, bookings: 0 });
+        }
+        return data;
+      }
     }
 
     if (chartTab === "daily") {
