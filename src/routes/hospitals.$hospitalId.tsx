@@ -255,6 +255,8 @@ function HospitalDetails() {
   }, [hospital?.id]);
 
   const toggleSave = () => {
+    if (!hospital) return;
+    const hospitalId = hospital.id;
     if (!isLoggedIn) {
       toast.error("Please sign in to save hospitals.");
       navigate({
@@ -273,12 +275,12 @@ function HospitalDetails() {
         "max-superspecialty",
         "manipal-city",
       ]);
-      if (ids.includes(hospital.id)) {
-        ids = ids.filter((id: string) => id !== hospital.id);
+      if (ids.includes(hospitalId)) {
+        ids = ids.filter((id: string) => id !== hospitalId);
         toast.success("Removed from bookmarks.");
         setIsSaved(false);
       } else {
-        ids.push(hospital.id);
+        ids.push(hospitalId);
         toast.success("Hospital bookmarked!");
         setIsSaved(true);
       }
@@ -293,13 +295,13 @@ function HospitalDetails() {
         if (nextSavedState) {
           const { error } = await supabase
             .from("favorites")
-            .insert([{ hospital_id: hospital.id, user_email: user.email }]);
+            .insert([{ hospital_id: hospitalId, user_email: user.email }]);
           if (error) throw error;
         } else {
           const { error } = await supabase
             .from("favorites")
             .delete()
-            .eq("hospital_id", hospital.id)
+            .eq("hospital_id", hospitalId)
             .eq("user_email", user.email);
           if (error) throw error;
         }
@@ -312,6 +314,7 @@ function HospitalDetails() {
   };
 
   const toggleCompare = () => {
+    if (!hospital) return;
     try {
       let ids = getItemSafe<string[]>("medicompare_compared_hospitals", []);
       if (isCompared) {
@@ -1008,17 +1011,17 @@ function HospitalDetails() {
               {hospital.doctors.map((d) => (
                 <div
                   key={d.name}
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft"
+                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift cursor-pointer"
                 >
                   <img
                     src={d.avatar}
                     alt={d.name}
-                    className="h-14 w-14 rounded-full object-cover"
+                    className="h-16 w-16 rounded-full object-cover border-2 border-primary/20 shrink-0"
                   />
                   <div>
-                    <p className="font-semibold">{d.name}</p>
-                    <p className="text-sm text-muted-foreground">{d.specialty}</p>
-                    <p className="text-xs text-muted-foreground">{d.experience} yrs experience</p>
+                    <p className="font-bold text-foreground leading-tight">{d.name}</p>
+                    <p className="text-sm font-semibold text-primary mt-1">{d.specialty}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-medium">{d.experience} yrs experience</p>
                   </div>
                 </div>
               ))}
@@ -1028,8 +1031,13 @@ function HospitalDetails() {
 
         {/* Booking sidebar */}
         <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-soft lg:sticky lg:top-20">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Book quickly</p>
-          <h3 className="mt-1 text-xl font-semibold">Reserve a slot</h3>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">Book quickly</p>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/15 px-2 py-0.5 text-[9px] font-extrabold text-success border border-success/20">
+              🔒 SECURE CHECKOUT
+            </span>
+          </div>
+          <h3 className="mt-2 text-xl font-bold text-foreground">Reserve a slot</h3>
 
           <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Date
@@ -1049,10 +1057,10 @@ function HospitalDetails() {
               <button
                 key={s}
                 onClick={() => setSlot(s)}
-                className={`rounded-xl border px-2 py-2 text-sm transition-all ${
+                className={`rounded-xl border px-2 py-2 text-sm transition-all btn-interactive cursor-pointer ${
                   slot === s
-                    ? "border-primary bg-primary text-primary-foreground shadow-soft"
-                    : "border-border bg-background hover:border-primary/40"
+                    ? "border-primary bg-primary text-primary-foreground shadow-soft font-bold"
+                    : "border-border bg-background hover:border-primary/40 text-muted-foreground font-semibold"
                 }`}
               >
                 {s}
@@ -1061,7 +1069,7 @@ function HospitalDetails() {
           </div>
 
           <Button
-            className="mt-6 w-full rounded-full"
+            className="mt-6 w-full rounded-full bg-primary-gradient text-primary-foreground font-bold btn-interactive shadow-soft"
             disabled={!slot}
             onClick={() => {
               navigate({
@@ -1077,9 +1085,14 @@ function HospitalDetails() {
           >
             Book Appointment
           </Button>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
+          <p className="mt-3 text-center text-xs font-semibold text-muted-foreground">
             Free cancellation up to 4 hrs before
           </p>
+          <div className="mt-4 border-t border-border/60 pt-4 flex items-center justify-center gap-1.5 text-[10px] font-extrabold tracking-wider text-muted-foreground/80 uppercase">
+            <span>🛡️ HIPAA Compliant</span>
+            <span>•</span>
+            <span>🔒 SSL Encrypted</span>
+          </div>
         </aside>
       </section>
     </SiteShell>

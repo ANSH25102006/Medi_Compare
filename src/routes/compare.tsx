@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
   SlidersHorizontal,
@@ -596,17 +596,17 @@ function ComparePage() {
 
                       <div className="mt-3 flex flex-wrap gap-1.5 h-6">
                         {isBestValue && (
-                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
+                          <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-[9px] font-extrabold text-primary uppercase tracking-wide">
                             Best Value
                           </span>
                         )}
                         {isCheapest && (
-                          <span className="inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-bold text-success">
+                          <span className="inline-flex items-center rounded-full bg-success/10 border border-success/20 px-2.5 py-0.5 text-[9px] font-extrabold text-success uppercase tracking-wide">
                             Cheapest
                           </span>
                         )}
                         {isHighestRated && (
-                          <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold text-amber-600">
+                          <span className="inline-flex items-center rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[9px] font-extrabold text-amber-700 dark:text-amber-500 uppercase tracking-wide">
                             Highest Rated
                           </span>
                         )}
@@ -633,15 +633,40 @@ function ComparePage() {
                         </div>
                       </div>
 
-                      {/* Price */}
+                      {/* Price & Savings Progress Bar */}
                       <div>
                         <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:hidden mb-1">
                           Price
                         </span>
-                        <p className="text-2xl font-black text-primary">
-                          ₹{price.toLocaleString()}
-                        </p>
-                        <span className="text-[10px] text-muted-foreground">{serviceName}</span>
+                        <div className="flex items-baseline justify-between">
+                          <p className="text-2.5xl font-black text-primary">
+                            ₹{price.toLocaleString()}
+                          </p>
+                          {avgPrice > 0 && price < avgPrice && (
+                            <span className="text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full border border-success/20 animate-pulse">
+                              -{Math.round(((avgPrice - price) / avgPrice) * 100)}% Saved
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-semibold">{serviceName}</span>
+                        
+                        {/* Elegant Progress Bar Visualization */}
+                        {avgPrice > 0 && (
+                          <div className="mt-3.5 space-y-1.5">
+                            <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden dark:bg-secondary/40">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  price < avgPrice ? "bg-success" : price === avgPrice ? "bg-primary" : "bg-destructive/80"
+                                }`}
+                                style={{ width: `${Math.min(100, (price / avgPrice) * 100)}%` }}
+                              />
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
+                              <span>₹{price.toLocaleString()}</span>
+                              <span className="text-[9px] uppercase tracking-wider">Avg: ₹{avgPrice.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Ratings */}
@@ -924,7 +949,7 @@ function ComparePage() {
 
               <label className="flex items-center gap-2.5 rounded-xl border border-border bg-secondary/40 px-3 py-3 text-sm cursor-pointer hover:bg-secondary transition-colors">
                 <Checkbox
-                  checked={availableOnly}
+                  checked={availableOnly === true || availableOnly === "true"}
                   onCheckedChange={(v) => updateSearch({ availableOnly: !!v })}
                 />
                 <span className="font-medium">Available today only</span>

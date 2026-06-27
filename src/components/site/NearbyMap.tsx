@@ -193,21 +193,21 @@ export function NearbyMap() {
                   onMouseEnter={() => setHoveredPin(p.id)}
                   onMouseLeave={() => setHoveredPin(null)}
                   onClick={() => setSelectedHospital(isSelected ? null : p.id)}
-                  className="group flex flex-col items-center"
+                  className="group flex flex-col items-center btn-interactive"
                 >
                   <div
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold shadow-elevated ring-1 transition-all duration-200 ${
+                    className={`rounded-full px-2.5 py-1 text-xs font-bold shadow-elevated ring-2 transition-all duration-200 ${
                       isSelected
-                        ? "scale-110 bg-primary text-primary-foreground ring-primary"
+                        ? "scale-110 bg-primary text-primary-foreground ring-primary shadow-[0_4px_12px_rgba(59,130,246,0.45)]"
                         : isHovered
-                          ? "scale-105 bg-primary text-primary-foreground ring-primary"
+                          ? "scale-105 bg-primary text-primary-foreground ring-primary shadow-[0_4px_12px_rgba(59,130,246,0.3)]"
                           : "bg-background text-foreground ring-border hover:bg-primary hover:text-primary-foreground hover:ring-primary"
                     }`}
                   >
                     ₹{svc.price.toLocaleString()}
                   </div>
                   <span
-                    className={`-mt-1 h-2 w-2 rotate-45 ring-1 transition-colors ${
+                    className={`-mt-1 h-2 w-2 rotate-45 ring-2 transition-colors ${
                       isSelected || isHovered
                         ? "bg-primary ring-primary"
                         : "bg-background ring-border"
@@ -266,17 +266,17 @@ export function NearbyMap() {
             return (
               <div
                 key={h.id}
-                className={`flex items-center gap-3 rounded-2xl border bg-card p-3.5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
-                  isSelected ? "border-primary/40 bg-primary/[0.03]" : "border-border"
+                className={`flex items-center gap-3 rounded-2xl border bg-card p-3.5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer hover:border-primary/25 ${
+                  isSelected ? "border-primary/45 bg-primary/[0.04] shadow-md" : "border-border"
                 }`}
                 onClick={() => setSelectedHospital(isSelected ? null : h.id)}
               >
-                <img src={h.image} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                <img src={h.image} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover border border-border/40" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold">{h.name}</p>
+                  <p className="truncate text-sm font-bold text-foreground">{h.name}</p>
                   <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-0.5">
-                      <MapPin className="h-3 w-3" /> {h.distance} km
+                      <MapPin className="h-3 w-3 text-muted-foreground/80" /> {h.distance} km
                     </span>
                     <span className="flex items-center gap-0.5 text-warning font-semibold">
                       <Star className="h-3 w-3 fill-current" /> {h.rating}
@@ -290,8 +290,8 @@ export function NearbyMap() {
                       ₹{svc.price.toLocaleString()}
                     </span>
                     {savings > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-bold text-success">
-                        <TrendingDown className="h-3 w-3" /> Save ₹{savings.toLocaleString()}
+                      <span className="flex items-center gap-0.5 text-[10px] font-bold text-success bg-success/5 px-1.5 py-0.2 rounded border border-success/10">
+                        Save ₹{savings.toLocaleString()}
                       </span>
                     )}
                   </div>
@@ -299,7 +299,7 @@ export function NearbyMap() {
                 <Button
                   asChild
                   size="sm"
-                  className="rounded-full bg-primary-gradient text-xs shadow-soft hover:shadow-elevated shrink-0"
+                  className="rounded-full bg-primary-gradient text-xs shadow-soft hover:shadow-elevated shrink-0 btn-interactive text-primary-foreground font-semibold"
                 >
                   <Link to="/book" search={{ hospital: h.id, service: svc.name }}>
                     Book <ArrowRight className="ml-1 h-3 w-3" />

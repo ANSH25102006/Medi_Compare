@@ -242,18 +242,18 @@ function AdminPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
-          <div key={m.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+          <div key={m.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift">
             <div className="flex items-center justify-between">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                 <m.icon className="h-5 w-5" />
               </span>
-              <Badge variant="secondary" className="rounded-full text-xs">
-                <TrendingUp className="mr-1 h-3 w-3" />
+              <Badge variant="secondary" className="rounded-full text-xs font-semibold">
+                <TrendingUp className="mr-1 h-3 w-3 text-success" />
                 {m.change}
               </Badge>
             </div>
-            <p className="mt-4 text-2xl font-bold">{m.value}</p>
-            <p className="text-sm text-muted-foreground">{m.label}</p>
+            <p className="mt-4 text-2.5xl font-bold tracking-tight text-foreground">{m.value}</p>
+            <p className="text-sm text-muted-foreground mt-0.5 font-medium">{m.label}</p>
           </div>
         ))}
       </div>

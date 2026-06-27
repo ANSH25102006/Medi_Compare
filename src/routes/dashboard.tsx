@@ -617,7 +617,7 @@ function Dashboard() {
         {/* SECTION 2 — KPI GRID */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 order-2">
           {/* Card 1: Total Bookings */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Total Bookings
@@ -642,7 +642,7 @@ function Dashboard() {
           </div>
 
           {/* Card 2: Revenue Generated */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Revenue Generated
@@ -667,7 +667,7 @@ function Dashboard() {
           </div>
 
           {/* Card 3: Hospitals Listed */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Hospitals Listed
@@ -692,7 +692,7 @@ function Dashboard() {
           </div>
 
           {/* Card 4: Conversion Rate */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-[135px]">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Conversion Rate
@@ -923,11 +923,13 @@ function Dashboard() {
                       colSpan={5}
                       className="text-center text-xs text-muted-foreground py-12"
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-xl">📋</span>
-                        <p className="font-semibold text-foreground">No bookings recorded yet</p>
-                        <p className="text-[11px] text-muted-foreground max-w-sm mt-0.5">
-                          Create a patient booking in Compare to see live records in the database.
+                      <div className="flex flex-col items-center p-6 text-center max-w-sm mx-auto">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground/80 mb-3 border border-border/40">
+                          <CalendarCheck className="h-5 w-5" />
+                        </span>
+                        <p className="font-bold text-foreground text-sm">No bookings recorded yet</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                          We couldn't find any bookings matching your account. Find a procedure in search to book an appointment.
                         </p>
                       </div>
                     </TableCell>

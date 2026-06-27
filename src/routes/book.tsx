@@ -179,7 +179,7 @@ function BookPage() {
             payment_status: paymentStatus,
             user_name: name.trim(),
             user_email: email.trim(),
-            user_id: user?.email || user?.id || "anonymous",
+            user_id: user?.email || "anonymous",
             created_at: new Date().toISOString(),
           },
         ])

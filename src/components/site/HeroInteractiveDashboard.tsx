@@ -115,7 +115,7 @@ export function HeroInteractiveDashboard() {
 
             <div className="grid gap-3 relative">
               {/* Hospital A: Expensive Alternative */}
-              <div className="flex justify-between items-center bg-background/50 p-3 rounded-xl border border-border/40 transition-all duration-500 transform translate-x-0">
+              <div className="flex justify-between items-center bg-background/60 p-3.5 rounded-xl border border-border/40 transition-all duration-500 transform translate-x-0 shadow-sm">
                 <div>
                   <h5 className="text-[11px] font-extrabold text-foreground leading-none">
                     Royal Specialty
@@ -136,7 +136,7 @@ export function HeroInteractiveDashboard() {
               </div>
 
               {/* Hospital B: Value Deal */}
-              <div className="flex justify-between items-center bg-success/[0.02] p-3 rounded-xl border border-success/30 transition-all duration-500 transform translate-x-0 relative overflow-hidden">
+              <div className="flex justify-between items-center bg-success/[0.03] p-3.5 rounded-xl border border-success/30 transition-all duration-500 transform translate-x-0 relative overflow-hidden shadow-sm">
                 <div className="absolute top-0 right-0 w-8 h-8 bg-success/15 rounded-bl-full flex items-center justify-center">
                   <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                 </div>
@@ -164,12 +164,12 @@ export function HeroInteractiveDashboard() {
               <div
                 className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-500 transform ${
                   showSavingsBadge
-                    ? "scale-100 opacity-100"
+                    ? "scale-100 opacity-100 rotate-3"
                     : "scale-50 opacity-0 pointer-events-none"
                 }`}
               >
-                <div className="flex flex-col items-center justify-center rounded-full bg-success p-3 text-center text-success-foreground shadow-lg border-4 border-background dark:border-zinc-950 h-22 w-22">
-                  <span className="text-[8px] font-extrabold uppercase tracking-widest leading-none text-success-foreground/85">
+                <div className="flex flex-col items-center justify-center rounded-full bg-success p-3 text-center text-success-foreground shadow-[0_8px_30px_rgba(34,197,94,0.4)] border-4 border-background dark:border-zinc-950 h-22 w-22">
+                  <span className="text-[8px] font-extrabold uppercase tracking-widest leading-none text-success-foreground/90">
                     You Save
                   </span>
                   <span className="text-lg font-black tracking-tight mt-0.5 leading-none tabular-nums">
@@ -189,9 +189,9 @@ export function HeroInteractiveDashboard() {
             >
               <button
                 type="button"
-                className={`w-full rounded-full py-2.5 text-xs font-bold shadow-soft transition-all duration-300 ${
+                className={`w-full rounded-full py-2.5 text-xs font-extrabold shadow-soft transition-all duration-300 btn-interactive ${
                   showBookCTAActive
-                    ? "bg-success hover:bg-success/90 text-success-foreground ring-4 ring-success/20 animate-pulse-soft"
+                    ? "bg-success hover:bg-success/90 text-success-foreground ring-4 ring-success/20 active:scale-95 cursor-pointer"
                     : "bg-secondary text-muted-foreground border border-border"
                 }`}
               >

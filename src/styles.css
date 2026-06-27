@@ -169,6 +169,16 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+  
+  /* Focus-visible accessibility indicators */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-primary) !important;
+    outline-offset: 2px !important;
+  }
 }
 
 @layer utilities {
@@ -216,6 +226,30 @@
     transition:
       opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
       transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .hover-card-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .hover-card-lift:hover {
+    transform: translateY(-5px) scale(1.005);
+    box-shadow: var(--shadow-elevated);
+    border-color: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+  }
+  .btn-interactive {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-interactive:active {
+    transform: scale(0.97);
+  }
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .text-gradient-hero {
+    background: linear-gradient(135deg, oklch(0.56 0.17 250) 0%, oklch(0.7 0.16 250) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .marquee-content {
     animation: marquee-scroll 55s linear infinite;
