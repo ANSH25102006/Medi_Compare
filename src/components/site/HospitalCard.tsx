@@ -186,7 +186,11 @@ export function HospitalCard({
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {hospital.specialties.slice(0, 3).map((s) => (
-            <Badge key={s} variant="secondary" className="rounded-full font-medium px-2.5 py-0.5 text-[11px]">
+            <Badge
+              key={s}
+              variant="secondary"
+              className="rounded-full font-medium px-2.5 py-0.5 text-[11px]"
+            >
               {s}
             </Badge>
           ))}
@@ -204,7 +208,9 @@ export function HospitalCard({
             )}
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <p className="text-2.5xl font-black text-primary tracking-tight">₹{service.price.toLocaleString()}</p>
+            <p className="text-2.5xl font-black text-primary tracking-tight">
+              ₹{service.price.toLocaleString()}
+            </p>
             <span className="text-xs text-muted-foreground line-through opacity-80 font-medium">
               ₹{avg.toLocaleString()} avg
             </span>
@@ -238,7 +244,10 @@ export function HospitalCard({
               View Details
             </Link>
           </Button>
-          <Button asChild className="flex-1 rounded-full bg-primary-gradient hover:shadow-md btn-interactive text-primary-foreground font-semibold">
+          <Button
+            asChild
+            className="flex-1 rounded-full bg-primary-gradient hover:shadow-md btn-interactive text-primary-foreground font-semibold"
+          >
             <Link to="/book" search={{ hospital: hospital.id, service: service.name }}>
               Book <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>

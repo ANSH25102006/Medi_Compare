@@ -47,7 +47,9 @@ export function Footer() {
           </div>
           {groups.map((g) => (
             <div key={g.title}>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">{g.title}</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                {g.title}
+              </h4>
               <ul className="mt-4 space-y-2.5">
                 {g.links.map(([label, href]) => (
                   <li key={label}>
@@ -66,7 +68,8 @@ export function Footer() {
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 text-xs font-semibold text-muted-foreground/80 sm:flex-row">
           <p>© {new Date().getFullYear()} MediCompare Health Technologies. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Made for better healthcare decisions.
+            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Made for better healthcare
+            decisions.
           </p>
         </div>
       </div>

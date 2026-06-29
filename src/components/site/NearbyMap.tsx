@@ -271,7 +271,11 @@ export function NearbyMap() {
                 }`}
                 onClick={() => setSelectedHospital(isSelected ? null : h.id)}
               >
-                <img src={h.image} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover border border-border/40" />
+                <img
+                  src={h.image}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-xl object-cover border border-border/40"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-foreground">{h.name}</p>
                   <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">

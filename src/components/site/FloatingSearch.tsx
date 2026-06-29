@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Search, MapPin, CalendarDays, Stethoscope, History, TrendingUp, Sparkles, X } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  CalendarDays,
+  Stethoscope,
+  History,
+  TrendingUp,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { services, cities } from "@/lib/mock-data";
 
@@ -53,10 +62,20 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
 
   // Filter suggestion list dynamically
   const filteredServices = services
-    .filter((s) => s.toLowerCase().includes(service.toLowerCase()) && s.toLowerCase() !== service.toLowerCase())
+    .filter(
+      (s) =>
+        s.toLowerCase().includes(service.toLowerCase()) &&
+        s.toLowerCase() !== service.toLowerCase(),
+    )
     .slice(0, 5);
 
-  const popularSearches = ["MRI Scan", "CT Scan", "Ultrasound", "Full Body Checkup", "Dental Care"].slice(0, 4);
+  const popularSearches = [
+    "MRI Scan",
+    "CT Scan",
+    "Ultrasound",
+    "Full Body Checkup",
+    "Dental Care",
+  ].slice(0, 4);
 
   // Combine visible options to build keyboard mapping list
   const allOptions = [...filteredServices, ...recentSearches, ...popularSearches];
@@ -134,7 +153,10 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
       className={`grid grid-cols-1 items-stretch overflow-visible rounded-2xl border border-border bg-background/95 shadow-elevated backdrop-blur md:grid-cols-[1.3fr_1fr_1fr_auto] ${className} relative z-40`}
     >
       {/* Medical Service Selector */}
-      <div ref={containerRef} className="relative group flex flex-col border-b border-border md:border-b-0 md:border-r">
+      <div
+        ref={containerRef}
+        className="relative group flex flex-col border-b border-border md:border-b-0 md:border-r"
+      >
         <label className="flex items-center gap-3 px-5 py-3 h-full cursor-pointer">
           <Stethoscope className="h-4 w-4 text-primary shrink-0" />
           <div className="flex-1">
@@ -158,7 +180,7 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
 
         {/* Suggestion Dropdown */}
         {showSuggestions && (
-          <div className="absolute top-full left-0 w-full md:w-[420px] mt-2 rounded-2xl border border-border bg-card p-4 shadow-elevated animate-fade-in z-50 text-foreground">
+          <div className="absolute top-full left-0 w-full md:w-[420px] mt-2.5 rounded-2xl border border-border bg-card/98 p-4 shadow-elevated animate-fade-in z-50 text-foreground ring-1 ring-black/[0.03] backdrop-blur-md">
             {/* Live Filter Suggestions */}
             {service.trim() && filteredServices.length > 0 && (
               <div className="mb-4">
@@ -174,11 +196,15 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
                         type="button"
                         onClick={() => selectSearchTerm(term)}
                         className={`text-left w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center justify-between ${
-                          isActive ? "bg-primary-soft text-primary" : "hover:bg-primary-soft hover:text-primary"
+                          isActive
+                            ? "bg-primary-soft text-primary"
+                            : "hover:bg-primary-soft hover:text-primary"
                         }`}
                       >
                         <span>{term}</span>
-                        <span className="text-[9px] font-extrabold text-primary uppercase opacity-0 group-hover:opacity-100">Select</span>
+                        <span className="text-[9px] font-extrabold text-primary uppercase opacity-0 group-hover:opacity-100">
+                          Select
+                        </span>
                       </button>
                     );
                   })}
@@ -231,7 +257,8 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {popularSearches.map((term, index) => {
-                  const isActive = activeIdx === filteredServices.length + recentSearches.length + index;
+                  const isActive =
+                    activeIdx === filteredServices.length + recentSearches.length + index;
                   return (
                     <button
                       key={term}
@@ -293,7 +320,11 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
 
       {/* Search Submit Button */}
       <div className="flex items-center justify-end p-2 md:pl-4">
-        <Button type="submit" size="lg" className="h-12 w-full gap-2 rounded-xl md:w-auto md:px-6 btn-interactive bg-primary-gradient cursor-pointer text-primary-foreground font-bold text-sm shadow-soft">
+        <Button
+          type="submit"
+          size="lg"
+          className="h-12 w-full gap-2 rounded-xl md:w-auto md:px-6 btn-interactive bg-primary-gradient cursor-pointer text-primary-foreground font-bold text-sm shadow-soft"
+        >
           <Search className="h-4 w-4" />
           Search
         </Button>

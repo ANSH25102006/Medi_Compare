@@ -927,9 +927,12 @@ function Dashboard() {
                         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground/80 mb-3 border border-border/40">
                           <CalendarCheck className="h-5 w-5" />
                         </span>
-                        <p className="font-bold text-foreground text-sm">No bookings recorded yet</p>
+                        <p className="font-bold text-foreground text-sm">
+                          No bookings recorded yet
+                        </p>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                          We couldn't find any bookings matching your account. Find a procedure in search to book an appointment.
+                          We couldn't find any bookings matching your account. Find a procedure in
+                          search to book an appointment.
                         </p>
                       </div>
                     </TableCell>

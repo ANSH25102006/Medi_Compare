@@ -110,6 +110,9 @@ export interface Database {
           phone: string | null;
           hospital_id: string | null;
           created_at: string;
+          email: string | null;
+          avatar_url: string | null;
+          auth_provider: string | null;
         };
         Insert: {
           id: string;
@@ -118,6 +121,9 @@ export interface Database {
           phone?: string | null;
           hospital_id?: string | null;
           created_at?: string;
+          email?: string | null;
+          avatar_url?: string | null;
+          auth_provider?: string | null;
         };
         Update: {
           id?: string;
@@ -126,6 +132,9 @@ export interface Database {
           phone?: string | null;
           hospital_id?: string | null;
           created_at?: string;
+          email?: string | null;
+          avatar_url?: string | null;
+          auth_provider?: string | null;
         };
       };
       bookings: {

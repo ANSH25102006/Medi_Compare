@@ -648,22 +648,30 @@ function ComparePage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-muted-foreground font-semibold">{serviceName}</span>
-                        
+                        <span className="text-[10px] text-muted-foreground font-semibold">
+                          {serviceName}
+                        </span>
+
                         {/* Elegant Progress Bar Visualization */}
                         {avgPrice > 0 && (
                           <div className="mt-3.5 space-y-1.5">
                             <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden dark:bg-secondary/40">
                               <div
                                 className={`h-full rounded-full transition-all duration-500 ${
-                                  price < avgPrice ? "bg-success" : price === avgPrice ? "bg-primary" : "bg-destructive/80"
+                                  price < avgPrice
+                                    ? "bg-success"
+                                    : price === avgPrice
+                                      ? "bg-primary"
+                                      : "bg-destructive/80"
                                 }`}
                                 style={{ width: `${Math.min(100, (price / avgPrice) * 100)}%` }}
                               />
                             </div>
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
                               <span>₹{price.toLocaleString()}</span>
-                              <span className="text-[9px] uppercase tracking-wider">Avg: ₹{avgPrice.toLocaleString()}</span>
+                              <span className="text-[9px] uppercase tracking-wider">
+                                Avg: ₹{avgPrice.toLocaleString()}
+                              </span>
                             </div>
                           </div>
                         )}

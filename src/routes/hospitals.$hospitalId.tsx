@@ -837,8 +837,15 @@ function HospitalDetails() {
               {/* Reviews list */}
               <div className="space-y-4">
                 {reviewsList.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-border p-6 text-center text-muted-foreground bg-secondary/10 font-medium">
-                    Be the first to review.
+                  <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground bg-secondary/10 flex flex-col items-center max-w-sm mx-auto">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary border border-border text-muted-foreground mb-3">
+                      <Star className="h-4.5 w-4.5" />
+                    </span>
+                    <p className="font-bold text-foreground text-sm">No reviews yet</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      Be the first to share your healthcare experience at this facility. All reviews
+                      are securely verified.
+                    </p>
                   </div>
                 ) : (
                   reviewsList.map((r) => {
@@ -1021,7 +1028,9 @@ function HospitalDetails() {
                   <div>
                     <p className="font-bold text-foreground leading-tight">{d.name}</p>
                     <p className="text-sm font-semibold text-primary mt-1">{d.specialty}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 font-medium">{d.experience} yrs experience</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                      {d.experience} yrs experience
+                    </p>
                   </div>
                 </div>
               ))}

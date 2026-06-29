@@ -242,7 +242,10 @@ function AdminPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
-          <div key={m.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift">
+          <div
+            key={m.label}
+            className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift"
+          >
             <div className="flex items-center justify-between">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                 <m.icon className="h-5 w-5" />

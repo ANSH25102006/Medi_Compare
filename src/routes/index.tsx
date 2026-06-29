@@ -533,7 +533,9 @@ function Landing() {
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">FAQ</p>
-          <h2 className="mt-3 text-3.5xl font-extrabold md:text-4xl text-balance tracking-tight">Questions, answered</h2>
+          <h2 className="mt-3 text-3.5xl font-extrabold md:text-4xl text-balance tracking-tight">
+            Questions, answered
+          </h2>
         </div>
         <Accordion type="single" collapsible className="mt-10 space-y-3">
           {faqs.map((f, i) => (
@@ -568,7 +570,12 @@ function Landing() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3 md:justify-end">
-              <Button asChild size="lg" variant="secondary" className="rounded-full btn-interactive shadow-md">
+              <Button
+                asChild
+                size="lg"
+                variant="secondary"
+                className="rounded-full btn-interactive shadow-md"
+              >
                 <Link to="/signup">Create free account</Link>
               </Button>
               <Button
