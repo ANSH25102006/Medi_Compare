@@ -78,6 +78,8 @@ const mapUser = (supabaseUser: any): AuthUser | null => {
     subscription_end: null,
     razorpay_payment_id: null,
     razorpay_order_id: null,
+    ai_messages_today: 0,
+    last_ai_reset: null,
   };
 };
 
@@ -152,6 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             subscription_end: null,
             razorpay_payment_id: null,
             razorpay_order_id: null,
+            ai_messages_today: 0,
+            last_ai_reset: null,
           });
         }
       } else {
@@ -196,6 +200,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           subscription_end: profile.subscription_end || null,
           razorpay_payment_id: profile.razorpay_payment_id || null,
           razorpay_order_id: profile.razorpay_order_id || null,
+          ai_messages_today: profile.ai_messages_today ?? 0,
+          last_ai_reset: profile.last_ai_reset || null,
         });
       }
     } catch (err) {
