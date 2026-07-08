@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
@@ -12,6 +13,27 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { services, cities } from "@/lib/mock-data";
+import { motion, AnimatePresence } from "framer-motion";
+
+const highlightMatch = (text: string, query: string) => {
+  if (!query.trim()) return <span>{text}</span>;
+  const parts = text.split(
+    new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")})`, "gi"),
+  );
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase() ? (
+          <mark key={i} className="bg-primary/20 text-primary font-bold rounded-sm px-0.5">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+};
 
 export function FloatingSearch({ className = "" }: { className?: string }) {
   const navigate = useNavigate();
@@ -150,17 +172,17 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
   return (
     <form
       onSubmit={handleSearchSubmit}
-      className={`grid grid-cols-1 items-stretch overflow-visible rounded-2xl border border-border bg-background/95 shadow-elevated backdrop-blur md:grid-cols-[1.3fr_1fr_1fr_auto] ${className} relative z-40`}
+      className={`grid grid-cols-1 items-stretch overflow-visible rounded-2xl border border-border/50 bg-card/80 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.05),0_4px_12px_-2px_rgba(0,0,0,0.02)] backdrop-blur-md md:grid-cols-[1.3fr_1fr_1fr_auto] ${className} relative z-40`}
     >
       {/* Medical Service Selector */}
       <div
         ref={containerRef}
-        className="relative group flex flex-col border-b border-border md:border-b-0 md:border-r"
+        className="relative group flex flex-col border-b border-border/45 md:border-b-0 md:border-r md:border-border/45"
       >
-        <label className="flex items-center gap-3 px-5 py-3 h-full cursor-pointer">
-          <Stethoscope className="h-4 w-4 text-primary shrink-0" />
+        <label className="flex items-center gap-3 px-5 py-3 h-full cursor-pointer hover:bg-secondary/20 transition-all duration-200 rounded-t-2xl md:rounded-tr-none md:rounded-l-2xl">
+          <Stethoscope className="h-4 w-4 text-primary shrink-0 opacity-80" />
           <div className="flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/90">
               Medical service
             </p>
             <input
@@ -173,118 +195,126 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
                 setShowSuggestions(true);
               }}
               placeholder="MRI, Blood test, Consult…"
-              className="mt-0.5 w-full bg-transparent text-sm font-semibold outline-none placeholder:text-muted-foreground/60 text-foreground"
+              className="mt-0.5 w-full bg-transparent text-xs font-semibold outline-none placeholder:text-muted-foreground/50 text-foreground"
             />
           </div>
         </label>
 
         {/* Suggestion Dropdown */}
-        {showSuggestions && (
-          <div className="absolute top-full left-0 w-full md:w-[420px] mt-2.5 rounded-2xl border border-border bg-card/98 p-4 shadow-elevated animate-fade-in z-50 text-foreground ring-1 ring-black/[0.03] backdrop-blur-md">
-            {/* Live Filter Suggestions */}
-            {service.trim() && filteredServices.length > 0 && (
-              <div className="mb-4">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 text-primary animate-pulse" /> Matching services
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute top-full left-0 w-full md:w-[420px] mt-2.5 rounded-xl border border-border bg-card/95 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.08)] z-50 text-foreground ring-1 ring-black/[0.03] backdrop-blur-md"
+            >
+              {/* Live Filter Suggestions */}
+              {service.trim() && filteredServices.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" /> Matching services
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {filteredServices.map((term, index) => {
+                      const isActive = activeIdx === index;
+                      return (
+                        <button
+                          key={term}
+                          type="button"
+                          onClick={() => selectSearchTerm(term)}
+                          className={`text-left w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center justify-between ${
+                            isActive
+                              ? "bg-primary-soft text-primary"
+                              : "hover:bg-primary-soft hover:text-primary"
+                          }`}
+                        >
+                          <span>{highlightMatch(term, service)}</span>
+                          <span className="text-[9px] font-extrabold text-primary uppercase opacity-0 group-hover:opacity-100">
+                            Select
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Searches */}
+              {recentSearches.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <History className="h-3 w-3" /> Recent Searches
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {recentSearches.map((term, index) => {
+                      const isActive = activeIdx === filteredServices.length + index;
+                      return (
+                        <div
+                          key={term}
+                          className={`group/item flex items-center justify-between w-full rounded-lg transition-all duration-150 ${
+                            isActive ? "bg-secondary text-foreground" : "hover:bg-secondary/60"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => selectSearchTerm(term)}
+                            className="text-left flex-1 px-2.5 py-1.5 text-xs font-semibold text-foreground/80 hover:text-foreground cursor-pointer"
+                          >
+                            {term}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => removeRecentSearch(e, term)}
+                            className="p-1 mr-1.5 rounded-md text-muted-foreground/45 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                            title="Remove"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Popular Services */}
+              <div>
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <TrendingUp className="h-3 w-3 text-success" /> Popular Scans & Tests
                 </p>
-                <div className="flex flex-col gap-0.5">
-                  {filteredServices.map((term, index) => {
-                    const isActive = activeIdx === index;
+                <div className="flex flex-wrap gap-1.5">
+                  {popularSearches.map((term, index) => {
+                    const isActive =
+                      activeIdx === filteredServices.length + recentSearches.length + index;
                     return (
                       <button
                         key={term}
                         type="button"
                         onClick={() => selectSearchTerm(term)}
-                        className={`text-left w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center justify-between ${
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer btn-interactive active:scale-95 ${
                           isActive
-                            ? "bg-primary-soft text-primary"
-                            : "hover:bg-primary-soft hover:text-primary"
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-secondary/50 border-border text-foreground hover:bg-primary-soft hover:text-primary hover:border-primary/20"
                         }`}
                       >
-                        <span>{term}</span>
-                        <span className="text-[9px] font-extrabold text-primary uppercase opacity-0 group-hover:opacity-100">
-                          Select
-                        </span>
+                        {term}
                       </button>
                     );
                   })}
                 </div>
               </div>
-            )}
-
-            {/* Recent Searches */}
-            {recentSearches.length > 0 && (
-              <div className="mb-4">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                  <History className="h-3 w-3" /> Recent Searches
-                </p>
-                <div className="flex flex-col gap-0.5">
-                  {recentSearches.map((term, index) => {
-                    const isActive = activeIdx === filteredServices.length + index;
-                    return (
-                      <div
-                        key={term}
-                        className={`group/item flex items-center justify-between w-full rounded-lg transition-all duration-150 ${
-                          isActive ? "bg-secondary text-foreground" : "hover:bg-secondary/60"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => selectSearchTerm(term)}
-                          className="text-left flex-1 px-2.5 py-1.5 text-xs font-semibold text-foreground/80 hover:text-foreground cursor-pointer"
-                        >
-                          {term}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => removeRecentSearch(e, term)}
-                          className="p-1 mr-1.5 rounded-md text-muted-foreground/45 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                          title="Remove"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Popular Services */}
-            <div>
-              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-success" /> Popular Scans & Tests
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {popularSearches.map((term, index) => {
-                  const isActive =
-                    activeIdx === filteredServices.length + recentSearches.length + index;
-                  return (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => selectSearchTerm(term)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer btn-interactive active:scale-95 ${
-                        isActive
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "bg-secondary/30 border-border text-foreground hover:bg-primary-soft hover:text-primary hover:border-primary/20"
-                      }`}
-                    >
-                      {term}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Location Selector */}
-      <label className="group flex items-center gap-3 border-b border-border px-5 py-3 md:border-b-0 md:border-r cursor-pointer">
-        <MapPin className="h-4 w-4 text-primary shrink-0" />
+      <label className="group flex items-center gap-3 border-b border-border/45 px-5 py-3 md:border-b-0 md:border-r md:border-border/45 cursor-pointer hover:bg-secondary/20 transition-all duration-200">
+        <MapPin className="h-4 w-4 text-primary shrink-0 opacity-80" />
         <div className="flex-1">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/90">
             Location
           </p>
           <input
@@ -292,7 +322,7 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="City or area"
-            className="mt-0.5 w-full bg-transparent text-sm font-semibold outline-none placeholder:text-muted-foreground/60 text-foreground"
+            className="mt-0.5 w-full bg-transparent text-xs font-semibold outline-none placeholder:text-muted-foreground/50 text-foreground"
           />
           <datalist id="fs-cities">
             {cities.map((c) => (
@@ -303,17 +333,17 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
       </label>
 
       {/* Date Selector */}
-      <label className="group flex items-center gap-3 border-b border-border px-5 py-3 md:border-b-0 md:border-r cursor-pointer">
-        <CalendarDays className="h-4 w-4 text-primary shrink-0" />
+      <label className="group flex items-center gap-3 border-b border-border/45 px-5 py-3 md:border-b-0 md:border-r md:border-border/45 cursor-pointer hover:bg-secondary/20 transition-all duration-200">
+        <CalendarDays className="h-4 w-4 text-primary shrink-0 opacity-80" />
         <div className="flex-1">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/90">
             Date
           </p>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-0.5 w-full bg-transparent text-sm font-semibold outline-none text-foreground"
+            className="mt-0.5 w-full bg-transparent text-xs font-semibold outline-none text-foreground"
           />
         </div>
       </label>
@@ -323,7 +353,7 @@ export function FloatingSearch({ className = "" }: { className?: string }) {
         <Button
           type="submit"
           size="lg"
-          className="h-12 w-full gap-2 rounded-xl md:w-auto md:px-6 btn-interactive bg-primary-gradient cursor-pointer text-primary-foreground font-bold text-sm shadow-soft"
+          className="h-10 w-full gap-2 rounded-xl md:w-auto md:px-5 btn-interactive bg-primary hover:shadow-[0_4px_12px_rgba(var(--ring),0.2)] cursor-pointer text-primary-foreground font-bold text-xs shadow-sm transition-all"
         >
           <Search className="h-4 w-4" />
           Search

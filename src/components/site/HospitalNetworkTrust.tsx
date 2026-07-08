@@ -21,24 +21,16 @@ export function HospitalNetworkTrust() {
       desc: "Clinical doctors and staff satisfy rigorous national safety and hygiene guidelines.",
       hospitals: "Manipal, Kokilaben Hospital",
       icon: CheckCircle,
-      color: "text-amber-500 bg-amber-500/10",
+      color: "text-primary bg-primary-soft",
     },
   ];
 
-  const partners = [
-    "Apollo",
-    "Fortis",
-    "Max Healthcare",
-    "Manipal",
-    "Medanta",
-    "Kokilaben",
-    "Narayana",
-  ];
+
 
   return (
-    <section
+    <div
       aria-labelledby="credibility-strip-title"
-      className="border-y border-border bg-secondary/15 py-12 dark:bg-secondary/5"
+      className="py-12 mt-12 border-t border-border/60"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-8">
@@ -61,7 +53,7 @@ export function HospitalNetworkTrust() {
             return (
               <div
                 key={acc.title}
-                className="group flex gap-4 rounded-2xl border border-border/60 bg-card p-5 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-primary/20 dark:border-border"
+                className="group flex gap-4 rounded-3xl border border-border bg-card p-5 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-elevated hover:border-primary/20"
               >
                 <span
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${acc.color} transition-transform duration-300 group-hover:scale-110`}
@@ -80,24 +72,8 @@ export function HospitalNetworkTrust() {
           })}
         </div>
 
-        {/* Compact Partner Logo Ribbon */}
-        <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t border-border/50 pt-8">
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
-            Trusted by Leading Healthcare Networks
-          </span>
-          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mt-1">
-            {partners.map((name) => (
-              <div
-                key={name}
-                className="flex items-center gap-2 rounded-xl border border-border bg-card/20 px-4 py-2.5 text-xs font-bold text-muted-foreground/40 transition-all duration-[300ms] hover:text-primary hover:border-primary/30 hover:bg-primary/5 hover:scale-[1.05] cursor-default opacity-80 hover:opacity-100 shadow-sm"
-              >
-                <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/35 transition-colors duration-300 group-hover:bg-primary" />
-                {name}
-              </div>
-            ))}
-          </div>
-        </div>
+
       </div>
-    </section>
+    </div>
   );
 }

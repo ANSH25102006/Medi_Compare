@@ -5,6 +5,7 @@ import {
   Star,
   Bookmark,
   Settings as SettingsIcon,
+  CreditCard,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   { title: "Reviews", url: "/dashboard/reviews", icon: Star },
   { title: "Saved Hospitals", url: "/dashboard/saved", icon: Bookmark },
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
+  { title: "Billing & Subscription", url: "/billing", icon: CreditCard },
 ];
 
 const statusVariant: Record<string, string> = {
@@ -44,6 +46,9 @@ const statusVariant: Record<string, string> = {
   Completed: "bg-secondary text-foreground",
   Cancelled: "bg-destructive/10 text-destructive",
 };
+
+import { DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 type Appointment = {
   id: string;
@@ -144,7 +149,7 @@ function AppointmentsPage() {
   };
 
   if (loading) {
-    return null;
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || user?.role !== "Patient") {
@@ -185,36 +190,52 @@ function AppointmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {appointments.map((a) => (
-                <TableRow key={a.id}>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{a.id}</TableCell>
-                  <TableCell>{a.date}</TableCell>
-                  <TableCell className="font-medium">{a.hospital}</TableCell>
-                  <TableCell className="text-muted-foreground">{a.service}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusVariant[a.status]}`}
-                    >
-                      {a.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {a.status === "Upcoming" || a.status === "Confirmed" ? (
-                      <Badge
-                        variant="outline"
-                        className="cursor-pointer rounded-full text-destructive hover:bg-destructive/10 border-destructive/30"
-                        onClick={() => cancelAppointment(a.id)}
-                      >
-                        Cancel
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="rounded-full">
-                        View
-                      </Badge>
-                    )}
+              {appointments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center p-6">
+                    <EmptyState
+                      icon={CalendarCheck}
+                      title="No appointments booked yet"
+                      description="You don't have any medical appointments scheduled. Use search to find a procedure and book."
+                      actionText="Find and book"
+                      onActionClick={() => navigate({ to: "/compare" })}
+                    />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                appointments.map((a) => (
+                  <TableRow key={a.id}>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {a.id}
+                    </TableCell>
+                    <TableCell>{a.date}</TableCell>
+                    <TableCell className="font-medium">{a.hospital}</TableCell>
+                    <TableCell className="text-muted-foreground">{a.service}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusVariant[a.status]}`}
+                      >
+                        {a.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {a.status === "Upcoming" || a.status === "Confirmed" ? (
+                        <Badge
+                          variant="outline"
+                          className="cursor-pointer rounded-full text-destructive hover:bg-destructive/10 border-destructive/30"
+                          onClick={() => cancelAppointment(a.id)}
+                        >
+                          Cancel
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="rounded-full">
+                          View
+                        </Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

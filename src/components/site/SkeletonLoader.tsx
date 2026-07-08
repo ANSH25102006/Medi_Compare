@@ -135,3 +135,54 @@ export function DetailSkeleton() {
     </div>
   );
 }
+
+export function DashboardLayoutSkeleton() {
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Sidebar skeleton */}
+      <div className="hidden border-r border-border bg-card w-64 p-5 space-y-6 lg:block shrink-0">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-8 rounded-xl" />
+          <Skeleton className="h-6 w-24 rounded-md" />
+        </div>
+        <div className="space-y-3 pt-4">
+          <Skeleton className="h-9 w-full rounded-full" />
+          <Skeleton className="h-9 w-full rounded-full" />
+          <Skeleton className="h-9 w-full rounded-full" />
+          <Skeleton className="h-9 w-full rounded-full" />
+        </div>
+      </div>
+      {/* Main content skeleton */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header skeleton */}
+        <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
+          <Skeleton className="h-6 w-36 rounded-md" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-md" />
+          </div>
+        </header>
+        {/* Content body skeleton */}
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="space-y-1">
+              <Skeleton className="h-8 w-48 rounded-md" />
+              <Skeleton className="h-4 w-64 rounded-md" />
+            </div>
+            <Skeleton className="h-9 w-28 rounded-full" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
+            <Skeleton className="h-80 rounded-2xl" />
+            <Skeleton className="h-80 rounded-2xl" />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

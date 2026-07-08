@@ -100,7 +100,7 @@ export function ComparisonDemo() {
   return (
     <section
       ref={elementRef}
-      className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 border-t border-border"
+      className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-3xl text-center">
         <p className="text-sm font-bold uppercase tracking-wide text-primary">
@@ -118,7 +118,7 @@ export function ComparisonDemo() {
       <div className="mt-12 grid gap-8 lg:grid-cols-12 items-center">
         {/* Left Side: Detail Package Overview */}
         <div className="lg:col-span-4 space-y-5">
-          <div className="rounded-3xl border border-primary/15 bg-primary-soft/50 p-6 shadow-soft dark:bg-primary-soft/5 relative overflow-hidden group hover:shadow-[0_15px_30px_rgba(0,72,206,0.08)] transition-all duration-300">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft relative overflow-hidden group transition-all duration-300 hover:shadow-elevated">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none" />
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
               <TrendingDown className="h-3.5 w-3.5" /> Average Savings: 34%
@@ -223,11 +223,7 @@ export function ComparisonDemo() {
 
               <Button
                 asChild
-                className={`w-full rounded-full border-0 shadow-soft transition-colors duration-300 ${
-                  cityPrice === 6200
-                    ? "bg-success hover:bg-success/90"
-                    : "bg-primary hover:bg-primary/90"
-                }`}
+                className="w-full rounded-full bg-primary hover:opacity-90 shadow-soft transition-all duration-300 text-white"
               >
                 <Link to="/book" search={{ hospital: "apollo-central", service: "MRI Scan" }}>
                   Book Instantly

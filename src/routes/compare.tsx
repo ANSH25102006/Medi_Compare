@@ -47,7 +47,7 @@ import {
 } from "@/lib/mock-data";
 import { useHospitals, useProcedures } from "@/hooks/use-hospitals";
 import { useAuth } from "@/lib/auth";
-import { CardSkeleton, TableSkeleton } from "@/components/site/SkeletonLoader";
+import { CardSkeleton, TableSkeleton, Skeleton } from "@/components/site/SkeletonLoader";
 import { toast } from "sonner";
 
 type SearchParams = {
@@ -465,9 +465,29 @@ function ComparePage() {
   if (loading) {
     return (
       <SiteShell>
-        <div className="mx-auto max-w-7xl px-4 py-20 text-center">
-          <p className="text-muted-foreground">Loading comparison page...</p>
-        </div>
+        <section className="border-b border-border bg-hero-gradient py-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
+            <Skeleton className="h-8 w-1/3 rounded-xl animate-pulse" />
+            <Skeleton className="h-4 w-1/4 rounded-md animate-pulse" />
+          </div>
+        </section>
+        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+            {/* Sidebar filter skeleton */}
+            <div className="space-y-6">
+              <Skeleton className="h-48 w-full rounded-2xl animate-pulse" />
+              <Skeleton className="h-72 w-full rounded-2xl animate-pulse" />
+            </div>
+            {/* Main content skeleton */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-8 w-48 rounded-lg animate-pulse" />
+                <Skeleton className="h-8 w-24 rounded-lg animate-pulse" />
+              </div>
+              <TableSkeleton />
+            </div>
+          </div>
+        </section>
       </SiteShell>
     );
   }
@@ -480,7 +500,7 @@ function ComparePage() {
     <SiteShell>
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border bg-hero-gradient">
-        <div className="absolute inset-0 -z-0 opacity-30 [background:radial-gradient(50%_40%_at_70%_30%,oklch(0.80_0.10_250/.5),transparent)]" />
+        <div className="absolute inset-0 z-0 opacity-[0.02] bg-[linear-gradient(to_right,oklch(0.55_0.22_260)_1px,transparent_1px),linear-gradient(to_bottom,oklch(0.55_0.22_260)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold md:text-4xl">Compare Healthcare Prices</h1>
@@ -576,38 +596,38 @@ function ComparePage() {
                 }) => (
                   <div
                     key={h.id}
-                    className="rounded-3xl border border-border bg-card p-6 shadow-elevated relative flex flex-col justify-between"
+                    className="rounded-2xl border border-border/40 bg-card/65 p-6 shadow-sm backdrop-blur-md relative flex flex-col justify-between hover:border-primary/20 transition-all duration-300 max-h-[900px] overflow-y-auto scrollbar-thin"
                   >
-                    <button
-                      onClick={() => removeComparedId(h.id)}
-                      className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="sticky top-0 bg-card/90 backdrop-blur-md z-30 pb-4 border-b border-border/40 -mx-6 px-6 -mt-6 pt-6">
+                      <button
+                        onClick={() => removeComparedId(h.id)}
+                        className="absolute top-6 right-6 flex h-7 w-7 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer border border-border/35 z-40"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
 
-                    <div className="pb-4 border-b border-border">
                       <img
                         src={h.image}
                         alt={h.name}
-                        className="h-28 w-full rounded-2xl object-cover mb-4"
+                        className="h-28 w-full rounded-xl object-cover mb-4 ring-1 ring-border/50 shadow-sm"
                       />
-                      <h3 className="font-bold text-foreground truncate">{h.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{h.type}</p>
+                      <h3 className="font-bold text-sm text-foreground truncate pr-8">{h.name}</h3>
+                      <p className="text-[11px] text-muted-foreground/80 font-medium mt-0.5">{h.type}</p>
 
                       <div className="mt-3 flex flex-wrap gap-1.5 h-6">
                         {isBestValue && (
-                          <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-[9px] font-extrabold text-primary uppercase tracking-wide">
+                          <span className="inline-flex items-center rounded-full bg-primary/8 border border-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wide">
                             Best Value
                           </span>
                         )}
                         {isCheapest && (
-                          <span className="inline-flex items-center rounded-full bg-success/10 border border-success/20 px-2.5 py-0.5 text-[9px] font-extrabold text-success uppercase tracking-wide">
+                          <span className="inline-flex items-center rounded-full bg-success/8 border border-success/15 px-2 py-0.5 text-[9px] font-bold text-success uppercase tracking-wide">
                             Cheapest
                           </span>
                         )}
                         {isHighestRated && (
-                          <span className="inline-flex items-center rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[9px] font-extrabold text-amber-700 dark:text-amber-500 uppercase tracking-wide">
-                            Highest Rated
+                          <span className="inline-flex items-center rounded-full bg-amber-500/8 border border-amber-500/15 px-2 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wide">
+                            Top Rated
                           </span>
                         )}
                       </div>
@@ -624,9 +644,9 @@ function ComparePage() {
                           <span className="text-2xl font-black text-foreground">
                             {overallScore}%
                           </span>
-                          <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
                             <div
-                              className="h-full bg-primary-gradient rounded-full"
+                              className="h-full bg-primary rounded-full"
                               style={{ width: `${overallScore}%` }}
                             />
                           </div>
@@ -745,7 +765,7 @@ function ComparePage() {
                     </div>
 
                     <div className="pt-4 border-t border-border mt-auto">
-                      <Button asChild className="w-full rounded-full bg-primary-gradient">
+                      <Button asChild className="w-full rounded-full bg-primary">
                         <Link to="/book" search={{ hospital: h.id, service: serviceName }}>
                           Book Appointment
                         </Link>
@@ -763,7 +783,7 @@ function ComparePage() {
           {/* Filters sidebar */}
           <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-soft lg:sticky lg:top-20">
             <div className="flex items-center gap-2 pb-5 border-b border-border">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <SlidersHorizontal className="h-4 w-4" />
               </span>
               <h2 className="text-sm font-bold uppercase tracking-wide">Filters</h2>
@@ -784,7 +804,7 @@ function ComparePage() {
                       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border transition-all cursor-pointer ${
                         service === tag
                           ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "bg-secondary text-muted-foreground border-transparent hover:bg-primary-soft hover:text-primary hover:border-primary/20"
+                          : "bg-secondary text-muted-foreground border-transparent hover:bg-primary/10 hover:text-primary hover:border-primary/20"
                       }`}
                     >
                       {tag}
@@ -1117,7 +1137,7 @@ function ComparePage() {
                       className={`rounded-full px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
                         sort === p.key
                           ? "bg-primary text-primary-foreground shadow-soft"
-                          : "bg-secondary text-muted-foreground hover:bg-primary-soft hover:text-primary"
+                          : "bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary"
                       }`}
                     >
                       {p.label}
@@ -1149,7 +1169,7 @@ function ComparePage() {
 
             {tableRows.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center max-w-lg mx-auto shadow-soft mt-6">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary dark:bg-primary-soft/10">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-primary/10">
                   <Search className="h-6 w-6" />
                 </div>
                 <h3 className="mt-5 text-lg font-bold text-foreground">No matches found</h3>
@@ -1235,7 +1255,7 @@ function ComparePage() {
         <div className="fixed bottom-6 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2 px-4 animate-slide-up">
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-background/95 p-4 shadow-elevated backdrop-blur md:flex-nowrap">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary font-bold text-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-sm">
                 {comparedIds.length}
               </span>
               <div>
@@ -1256,7 +1276,7 @@ function ComparePage() {
               </Button>
               <Button
                 size="sm"
-                className="rounded-full bg-primary-gradient text-xs font-semibold px-5"
+                className="rounded-full bg-primary text-xs font-semibold px-5"
                 disabled={comparedIds.length < 2}
                 onClick={() => setShowCompareView(true)}
               >

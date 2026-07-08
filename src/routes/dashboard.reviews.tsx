@@ -7,6 +7,7 @@ import {
   Settings as SettingsIcon,
   Edit2,
   Trash2,
+  CreditCard,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
   { title: "Reviews", url: "/dashboard/reviews", icon: StarIcon },
   { title: "Saved Hospitals", url: "/dashboard/saved", icon: Bookmark },
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
+  { title: "Billing & Subscription", url: "/billing", icon: CreditCard },
 ];
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {

@@ -133,26 +133,26 @@ export function ComparisonTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-sm">
-          <thead className="bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="w-16 px-5 py-4 text-center font-semibold">Compare</th>
-              <th className="px-5 py-4 text-left font-semibold">Hospital</th>
-              <th className="px-4 py-4 text-left font-semibold">Service</th>
-              <th className="px-4 py-4 text-right font-semibold">Price</th>
-              <th className="px-4 py-4 text-left font-semibold">Rating</th>
-              <th className="px-4 py-4 text-left font-semibold">Distance</th>
-              <th className="px-4 py-4 text-left font-semibold">Slots</th>
-              <th className="px-4 py-4 text-right font-semibold">Book</th>
+    <div className="overflow-hidden rounded-xl border border-border/40 bg-card/65 shadow-sm backdrop-blur-md">
+      <div className="overflow-x-auto scrollbar-thin">
+        <table className="w-full min-w-[960px] text-[13px]">
+          <thead className="bg-muted text-[10px] uppercase tracking-wider text-[#1E3A5F]">
+            <tr className="border-b border-border/45">
+              <th className="w-16 px-5 py-4 text-center font-bold">Compare</th>
+              <th className="px-5 py-4 text-left font-bold">Hospital</th>
+              <th className="px-4 py-4 text-left font-bold">Service</th>
+              <th className="px-4 py-4 text-right font-bold">Price</th>
+              <th className="px-4 py-4 text-left font-bold">Rating</th>
+              <th className="px-4 py-4 text-left font-bold">Distance</th>
+              <th className="px-4 py-4 text-left font-bold">Slots</th>
+              <th className="px-4 py-4 text-right font-bold">Action</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr
                 key={r.hospitalId + r.service}
-                className="border-t border-border align-middle transition-colors hover:bg-secondary/30"
+                className="border-t border-border/40 align-middle transition-all duration-200 odd:bg-[#FFFFFF] even:bg-[#F8FAFC] hover:bg-[#F1F5F9]"
               >
                 <td className="px-5 py-4 text-center">
                   <Checkbox
@@ -160,65 +160,65 @@ export function ComparisonTable({
                     onCheckedChange={(checked) =>
                       handleCompareChange(r.hospitalId, !!checked, r.hospitalName)
                     }
+                    className="border-border/60 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                 </td>
                 <td className="px-5 py-4">
                   <Link
                     to="/hospitals/$hospitalId"
                     params={{ hospitalId: r.hospitalId }}
-                    className="flex items-center gap-3 group"
+                    className="flex items-center gap-3.5 group"
                   >
-                    <img src={r.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                    <img src={r.image} alt="" className="h-10 w-10 rounded-lg object-cover ring-1 ring-border/50 shadow-sm" />
                     <div className="min-w-0">
-                      <p className="flex items-center gap-1.5 truncate font-semibold group-hover:text-primary">
+                      <p className="flex items-center gap-1.5 truncate font-bold text-foreground group-hover:text-primary transition-all">
                         {r.hospitalName}
                         {r.isCheapest && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success">
-                            <BadgeCheck className="h-3 w-3" /> Best price
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-success/8 border border-success/15 px-2 py-0.5 text-[9px] font-bold text-success">
+                            <BadgeCheck className="h-3 w-3" /> Best Value
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">{r.city}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">{r.city}</p>
                     </div>
                   </Link>
                 </td>
-                <td className="px-4 py-4 text-muted-foreground">{r.service}</td>
+                <td className="px-4 py-4 text-muted-foreground font-medium">{r.service}</td>
                 <td className="px-4 py-4 text-right">
-                  <p className="text-lg font-bold text-primary">₹{r.price.toLocaleString()}</p>
+                  <p className="text-[15px] font-bold text-primary">₹{r.price.toLocaleString()}</p>
                   {r.savings > 0 ? (
-                    <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-success">
-                      <TrendingDown className="h-3 w-3" /> ₹{r.savings.toLocaleString()} cheaper
-                      than avg
+                    <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-success uppercase tracking-wider">
+                      <TrendingDown className="h-3 w-3" /> Save ₹{r.savings.toLocaleString()}
                     </p>
                   ) : (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">At market average</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Average price</p>
                   )}
                 </td>
                 <td className="px-4 py-4">
-                  <span className="inline-flex items-center gap-1 font-semibold">
+                  <span className="inline-flex items-center gap-1 font-bold text-foreground">
                     <Star className="h-3.5 w-3.5 fill-warning text-warning" /> {r.rating}
                   </span>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground mt-0.5 font-semibold uppercase tracking-wider">
                     {r.reviews.toLocaleString()} reviews
                   </p>
                 </td>
                 <td className="px-4 py-4">
-                  <span className="inline-flex items-center gap-1 text-sm">
-                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="inline-flex items-center gap-1 text-[13px] text-foreground font-semibold">
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground opacity-80" />
                     {r.distance} km
                   </span>
                 </td>
                 <td className="px-4 py-4">
-                  <span className="inline-flex items-center gap-1 text-sm font-medium">
-                    <Clock className="h-3.5 w-3.5 text-primary" />
+                  <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-foreground">
+                    <Clock className="h-3.5 w-3.5 text-primary opacity-80" />
                     {r.earliest}
                   </span>
-                  <p className="text-[11px] text-muted-foreground">{r.slots.length} slots today</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 font-semibold uppercase tracking-wider">{r.slots.length} slots today</p>
                 </td>
                 <td className="px-4 py-4 text-right">
-                  <Button asChild size="sm" className="rounded-full">
+                  <Button asChild size="sm" className="rounded-lg bg-primary hover:shadow-[0_4px_12px_rgba(var(--ring),0.2)] text-xs font-bold tracking-wide">
                     <Link to="/book" search={{ hospital: r.hospitalId, service: r.service }}>
-                      Book <ArrowRight className="ml-1 h-3 w-3" />
+                      Book <ArrowRight className="ml-1 h-3.5 w-3.5" />
                     </Link>
                   </Button>
                 </td>

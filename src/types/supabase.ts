@@ -113,6 +113,14 @@ export interface Database {
           email: string | null;
           avatar_url: string | null;
           auth_provider: string | null;
+          plan: string | null;
+          subscription_status: string | null;
+          subscription_start: string | null;
+          subscription_end: string | null;
+          razorpay_payment_id: string | null;
+          razorpay_order_id: string | null;
+          ai_messages_today: number | null;
+          last_ai_reset: string | null;
         };
         Insert: {
           id: string;
@@ -124,6 +132,14 @@ export interface Database {
           email?: string | null;
           avatar_url?: string | null;
           auth_provider?: string | null;
+          plan?: string | null;
+          subscription_status?: string | null;
+          subscription_start?: string | null;
+          subscription_end?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_order_id?: string | null;
+          ai_messages_today?: number | null;
+          last_ai_reset?: string | null;
         };
         Update: {
           id?: string;
@@ -135,6 +151,14 @@ export interface Database {
           email?: string | null;
           avatar_url?: string | null;
           auth_provider?: string | null;
+          plan?: string | null;
+          subscription_status?: string | null;
+          subscription_start?: string | null;
+          subscription_end?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_order_id?: string | null;
+          ai_messages_today?: number | null;
+          last_ai_reset?: string | null;
         };
       };
       bookings: {

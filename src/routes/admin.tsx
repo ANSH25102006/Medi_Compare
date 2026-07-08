@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
 import {
   LayoutDashboard,
   Briefcase,
@@ -202,7 +203,7 @@ function AdminPage() {
   );
 
   if (loading) {
-    return null;
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || authUser?.role !== "Admin") {

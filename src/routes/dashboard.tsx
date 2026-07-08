@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
@@ -47,6 +48,8 @@ import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
+import { EmptyState } from "@/components/site/EmptyState";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -68,6 +71,7 @@ const navItems: NavItem[] = [
   { title: "Reviews", url: "/dashboard/reviews", icon: Star },
   { title: "Saved Hospitals", url: "/dashboard/saved", icon: Bookmark },
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
+  { title: "Billing & Subscription", url: "/billing", icon: CreditCard },
 ];
 
 function getWeekNumber(d: Date) {
@@ -173,7 +177,7 @@ function Dashboard() {
   }, [isLoggedIn, user?.role]);
 
   if (loading) {
-    return null;
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || user?.role !== "Patient") {
@@ -617,13 +621,13 @@ function Dashboard() {
         {/* SECTION 2 — KPI GRID */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 order-2">
           {/* Card 1: Total Bookings */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
+          <div className="rounded-xl border border-border/40 bg-card/65 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between h-[130px] hover:border-primary/20 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <span className="text-[10px] font-bold tracking-wider text-muted-foreground/90 uppercase">
                 Total Bookings
               </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary">
-                <CalendarCheck className="h-4.5 w-4.5" />
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/8 text-primary border border-primary/10">
+                <CalendarCheck className="h-4 w-4" />
               </span>
             </div>
             <div>
@@ -634,21 +638,21 @@ function Dashboard() {
                   totalBookingsCount.toLocaleString()
                 )}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+              <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-success uppercase tracking-wider">
                 <TrendingUp className="h-3 w-3" />
-                <span>Live Supabase records</span>
+                <span>Live records</span>
               </div>
             </div>
           </div>
 
           {/* Card 2: Revenue Generated */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
+          <div className="rounded-xl border border-border/40 bg-card/65 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between h-[130px] hover:border-primary/20 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <span className="text-[10px] font-bold tracking-wider text-muted-foreground/90 uppercase">
                 Revenue Generated
               </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/5 text-success">
-                <Wallet className="h-4.5 w-4.5" />
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/8 text-success border border-success/10">
+                <Wallet className="h-4 w-4" />
               </span>
             </div>
             <div>
@@ -659,21 +663,21 @@ function Dashboard() {
                   `₹${totalRevenue.toLocaleString()}`
                 )}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+              <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-success uppercase tracking-wider">
                 <TrendingUp className="h-3 w-3" />
-                <span>Live Supabase amounts</span>
+                <span>Verified payments</span>
               </div>
             </div>
           </div>
 
           {/* Card 3: Hospitals Listed */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
+          <div className="rounded-xl border border-border/40 bg-card/65 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between h-[130px] hover:border-primary/20 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <span className="text-[10px] font-bold tracking-wider text-muted-foreground/90 uppercase">
                 Hospitals Listed
               </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-                <Building className="h-4.5 w-4.5" />
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary text-foreground border border-border/10">
+                <Building className="h-4 w-4" />
               </span>
             </div>
             <div>
@@ -684,21 +688,21 @@ function Dashboard() {
                   activeHospitalsCount
                 )}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 <span className="h-1.5 w-1.5 rounded-full bg-success inline-block"></span>
-                <span>Active & Verified</span>
+                <span>Active partners</span>
               </div>
             </div>
           </div>
 
           {/* Card 4: Conversion Rate */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft hover-card-lift flex flex-col justify-between h-[135px]">
+          <div className="rounded-xl border border-border/40 bg-card/65 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between h-[130px] hover:border-primary/20 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <span className="text-[10px] font-bold tracking-wider text-muted-foreground/90 uppercase">
                 Conversion Rate
               </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary">
-                <Activity className="h-4.5 w-4.5" />
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/8 text-primary border border-primary/10">
+                <Activity className="h-4 w-4" />
               </span>
             </div>
             <div>
@@ -709,7 +713,7 @@ function Dashboard() {
                   conversionRateLabel
                 )}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] text-success">
+              <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold text-success uppercase tracking-wider">
                 <TrendingUp className="h-3 w-3" />
                 <span>Computed live</span>
               </div>
@@ -919,22 +923,14 @@ function Dashboard() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-xs text-muted-foreground py-12"
-                    >
-                      <div className="flex flex-col items-center p-6 text-center max-w-sm mx-auto">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground/80 mb-3 border border-border/40">
-                          <CalendarCheck className="h-5 w-5" />
-                        </span>
-                        <p className="font-bold text-foreground text-sm">
-                          No bookings recorded yet
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                          We couldn't find any bookings matching your account. Find a procedure in
-                          search to book an appointment.
-                        </p>
-                      </div>
+                    <TableCell colSpan={5} className="text-center p-0">
+                      <EmptyState
+                        icon={CalendarCheck}
+                        title="No bookings recorded yet"
+                        description="We couldn't find any bookings matching your account. Find a procedure in search to book an appointment."
+                        actionText="Book an appointment"
+                        onActionClick={() => navigate({ to: "/compare" })}
+                      />
                     </TableCell>
                   </TableRow>
                 )}

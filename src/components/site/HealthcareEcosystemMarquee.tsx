@@ -97,10 +97,7 @@ function EcosystemCardItem({ card, index }: { card: EcosystemCard; index: number
       aria-label={`${card.title}: ${card.description}`}
     >
       <div
-        className={cn(
-          "absolute inset-0 -z-0 rounded-[18px] bg-gradient-to-br opacity-60 transition-opacity duration-300 group-hover:opacity-100",
-          card.tint,
-        )}
+        className="absolute inset-0 -z-0 rounded-[18px] bg-primary-soft opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
       <div className="relative">
         <span className="ecosystem-card-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-background/80 text-primary shadow-soft ring-1 ring-border/60 transition-transform duration-300 group-hover:scale-110 dark:bg-background/40">
@@ -121,7 +118,7 @@ export function HealthcareEcosystemMarquee() {
       ref={ref}
       aria-labelledby="ecosystem-heading"
       className={cn(
-        "relative overflow-hidden border-b border-border bg-secondary/40 py-16 sm:py-20 dark:bg-secondary/20",
+        "relative overflow-hidden border-b border-border py-16 sm:py-20",
         inView && "fade-up-visible",
         !inView && "fade-up-hidden",
       )}
@@ -143,11 +140,11 @@ export function HealthcareEcosystemMarquee() {
 
       <div className="marquee-container relative mt-12" aria-label="Healthcare ecosystem partners">
         <div
-          className="marquee-fade-secondary-left pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24"
+          className="marquee-fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24"
           aria-hidden="true"
         />
         <div
-          className="marquee-fade-secondary-right pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24"
+          className="marquee-fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24"
           aria-hidden="true"
         />
 

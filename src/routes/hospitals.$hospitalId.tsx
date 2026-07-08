@@ -572,27 +572,27 @@ function HospitalDetails() {
   return (
     <SiteShell>
       {/* Hero */}
-      <section className="relative h-80 w-full overflow-hidden md:h-96">
-        <img src={hospital.image} alt={hospital.name} className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+      <section className="relative h-64 w-full overflow-hidden md:h-80 border-b border-border/40">
+        <img src={hospital.image} alt={hospital.name} className="h-full w-full object-cover filter brightness-[0.9]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
       </section>
 
-      <section className="mx-auto -mt-32 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-border bg-card p-7 shadow-elevated">
-          <div className="flex flex-wrap items-start gap-6">
+      <section className="mx-auto -mt-20 max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="rounded-2xl border border-border/40 bg-card/75 p-6 md:p-8 shadow-sm backdrop-blur-md">
+          <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex-1 min-w-[260px]">
               <div className="flex flex-wrap gap-1.5">
                 {hospital.specialties.map((s) => (
-                  <Badge key={s} variant="secondary" className="rounded-full font-normal">
+                  <Badge key={s} variant="secondary" className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold bg-secondary/50 text-foreground border border-border/20">
                     {s}
                   </Badge>
                 ))}
               </div>
-              <h1 className="mt-3 text-3xl font-bold md:text-4xl">{hospital.name}</h1>
-              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground md:text-3.5xl">{hospital.name}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Star className="h-4 w-4 fill-warning text-warning" />{" "}
-                  <strong className="text-foreground">{rating.toFixed(1)}</strong> ({reviewsCount}{" "}
+                  <strong className="text-foreground font-bold">{rating.toFixed(1)}</strong> ({reviewsCount}{" "}
                   reviews)
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -603,52 +603,52 @@ function HospitalDetails() {
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 font-medium">
+            <div className="flex flex-wrap gap-2.5 items-center">
               <Button
                 variant={isCompared ? "secondary" : "outline"}
-                className={`rounded-full gap-1.5 transition-all ${
+                className={`rounded-lg h-9 px-4 text-xs font-bold gap-1.5 transition-all cursor-pointer ${
                   isCompared
-                    ? "border-primary text-primary bg-primary-soft/50 hover:bg-primary-soft/60"
-                    : ""
+                    ? "border-primary/30 text-primary bg-primary-soft/40 hover:bg-primary-soft/50"
+                    : "border-border/80 hover:bg-secondary"
                 }`}
                 onClick={toggleCompare}
               >
-                <Scale className="h-4 w-4" />
+                <Scale className="h-3.5 w-3.5" />
                 {isCompared ? "Comparing" : "Compare"}
               </Button>
               <Button
                 variant={isSaved ? "default" : "outline"}
-                className="rounded-full gap-1.5"
+                className="rounded-lg h-9 px-4 text-xs font-bold gap-1.5 cursor-pointer border-border/80 hover:bg-secondary"
                 onClick={toggleSave}
               >
-                <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                <Heart className={`h-3.5 w-3.5 ${isSaved ? "fill-current" : ""}`} />
                 {isSaved ? "Saved" : "Save"}
               </Button>
-              <Button asChild className="rounded-full">
+              <Button asChild className="rounded-lg h-9 px-5 text-xs font-bold bg-primary hover:shadow-[0_4px_12px_rgba(var(--ring),0.2)] transition-all cursor-pointer">
                 <Link
                   to="/book"
                   search={{ hospital: hospital.id, service: hospital.services[0].name }}
                 >
-                  Book Appointment
+                  Book Slot
                 </Link>
               </Button>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 border-t border-border pt-6 sm:grid-cols-3">
+          <div className="mt-8 grid gap-4 border-t border-border/40 pt-6 sm:grid-cols-3">
             {[
-              { icon: ShieldCheck, label: "NABH Accredited" },
-              { icon: Award, label: "Top 1% network rating" },
-              { icon: Calendar, label: "Avg. wait under 15 min" },
+              { icon: ShieldCheck, label: "NABH Accredited Clinic" },
+              { icon: Award, label: "Top 1% Network Rating" },
+              { icon: Calendar, label: "Average wait time < 15 mins" },
             ].map((b) => (
               <div
                 key={b.label}
-                className="flex items-center gap-3 rounded-xl bg-primary-soft/50 p-3"
+                className="flex items-center gap-3 rounded-xl border border-border/30 bg-secondary/20 px-4 py-3"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-background text-primary">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border/40 text-primary shadow-sm">
                   <b.icon className="h-4 w-4" />
                 </span>
-                <span className="text-sm font-medium">{b.label}</span>
+                <span className="text-xs font-bold text-foreground/80">{b.label}</span>
               </div>
             ))}
           </div>
@@ -1039,37 +1039,37 @@ function HospitalDetails() {
         </div>
 
         {/* Booking sidebar */}
-        <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-soft lg:sticky lg:top-20">
+        <aside className="h-fit rounded-xl border border-border/40 bg-card/65 p-6 shadow-sm backdrop-blur-md lg:sticky lg:top-20">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wide text-primary">Book quickly</p>
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/15 px-2 py-0.5 text-[9px] font-extrabold text-success border border-success/20">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Quick Reserve</p>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/8 border border-success/15 px-2 py-0.5 text-[9px] font-bold text-success">
               🔒 SECURE CHECKOUT
             </span>
           </div>
-          <h3 className="mt-2 text-xl font-bold text-foreground">Reserve a slot</h3>
+          <h3 className="mt-2.5 text-lg font-bold text-foreground">Book Appointment</h3>
 
-          <label className="mt-5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Date
+          <label className="mt-6 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Select Date
           </label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-border/70 bg-background/50 px-3.5 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary text-foreground"
           />
 
-          <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Time slot
+          <p className="mt-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Available Slots
           </p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-2.5 grid grid-cols-3 gap-2">
             {hospital.slots.map((s) => (
               <button
                 key={s}
                 onClick={() => setSlot(s)}
-                className={`rounded-xl border px-2 py-2 text-sm transition-all btn-interactive cursor-pointer ${
+                className={`rounded-lg border px-2.5 py-2 text-xs transition-all btn-interactive cursor-pointer ${
                   slot === s
-                    ? "border-primary bg-primary text-primary-foreground shadow-soft font-bold"
-                    : "border-border bg-background hover:border-primary/40 text-muted-foreground font-semibold"
+                    ? "border-primary bg-primary text-primary-foreground font-bold shadow-sm"
+                    : "border-border/70 bg-background/40 hover:border-primary/45 text-muted-foreground/90 font-semibold"
                 }`}
               >
                 {s}
@@ -1078,7 +1078,7 @@ function HospitalDetails() {
           </div>
 
           <Button
-            className="mt-6 w-full rounded-full bg-primary-gradient text-primary-foreground font-bold btn-interactive shadow-soft"
+            className="mt-6 w-full rounded-lg h-10 bg-primary text-primary-foreground font-bold text-xs shadow-sm transition-all btn-interactive"
             disabled={!slot}
             onClick={() => {
               navigate({
@@ -1092,15 +1092,15 @@ function HospitalDetails() {
               });
             }}
           >
-            Book Appointment
+            Confirm Reservation
           </Button>
-          <p className="mt-3 text-center text-xs font-semibold text-muted-foreground">
+          <p className="mt-3 text-center text-[10px] font-semibold text-muted-foreground/80">
             Free cancellation up to 4 hrs before
           </p>
-          <div className="mt-4 border-t border-border/60 pt-4 flex items-center justify-center gap-1.5 text-[10px] font-extrabold tracking-wider text-muted-foreground/80 uppercase">
-            <span>🛡️ HIPAA Compliant</span>
+          <div className="mt-5 border-t border-border/40 pt-4 flex items-center justify-center gap-1.5 text-[9px] font-bold tracking-widest text-muted-foreground/75 uppercase">
+            <span>🛡️ HIPAA COMPLIANT</span>
             <span>•</span>
-            <span>🔒 SSL Encrypted</span>
+            <span>🔒 SSL SECURED</span>
           </div>
         </aside>
       </section>

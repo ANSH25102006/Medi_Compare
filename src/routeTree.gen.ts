@@ -12,12 +12,17 @@ import { Route as rootRouteImport } from './routes/__root';
 import { Route as SignupRouteImport } from './routes/signup';
 import { Route as ReviewsRouteImport } from './routes/reviews';
 import { Route as LoginRouteImport } from './routes/login';
+import { Route as HowItWorksRouteImport } from './routes/how-it-works';
+import { Route as FeaturesRouteImport } from './routes/features';
 import { Route as DoctorRouteImport } from './routes/doctor';
 import { Route as DashboardRouteImport } from './routes/dashboard';
 import { Route as ContactRouteImport } from './routes/contact';
 import { Route as CompareRouteImport } from './routes/compare';
 import { Route as BookRouteImport } from './routes/book';
+import { Route as BillingRouteImport } from './routes/billing';
+import { Route as AiAssistantRouteImport } from './routes/ai-assistant';
 import { Route as AdminRouteImport } from './routes/admin';
+import { Route as AboutRouteImport } from './routes/about';
 import { Route as IndexRouteImport } from './routes/index';
 import { Route as HospitalsIndexRouteImport } from './routes/hospitals.index';
 import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId';
@@ -40,6 +45,16 @@ const ReviewsRoute = ReviewsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any);
 const DoctorRoute = DoctorRouteImport.update({
@@ -67,9 +82,24 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any);
+const BillingRoute = BillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AiAssistantRoute = AiAssistantRouteImport.update({
+  id: '/ai-assistant',
+  path: '/ai-assistant',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any);
 const IndexRoute = IndexRouteImport.update({
@@ -115,12 +145,17 @@ const DashboardAdminPricingRoute = DashboardAdminPricingRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
   '/admin': typeof AdminRoute;
+  '/ai-assistant': typeof AiAssistantRoute;
+  '/billing': typeof BillingRoute;
   '/book': typeof BookRoute;
   '/compare': typeof CompareRoute;
   '/contact': typeof ContactRoute;
   '/dashboard': typeof DashboardRouteWithChildren;
   '/doctor': typeof DoctorRoute;
+  '/features': typeof FeaturesRoute;
+  '/how-it-works': typeof HowItWorksRoute;
   '/login': typeof LoginRoute;
   '/reviews': typeof ReviewsRoute;
   '/signup': typeof SignupRoute;
@@ -134,12 +169,17 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
   '/admin': typeof AdminRoute;
+  '/ai-assistant': typeof AiAssistantRoute;
+  '/billing': typeof BillingRoute;
   '/book': typeof BookRoute;
   '/compare': typeof CompareRoute;
   '/contact': typeof ContactRoute;
   '/dashboard': typeof DashboardRouteWithChildren;
   '/doctor': typeof DoctorRoute;
+  '/features': typeof FeaturesRoute;
+  '/how-it-works': typeof HowItWorksRoute;
   '/login': typeof LoginRoute;
   '/reviews': typeof ReviewsRoute;
   '/signup': typeof SignupRoute;
@@ -154,12 +194,17 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   '/': typeof IndexRoute;
+  '/about': typeof AboutRoute;
   '/admin': typeof AdminRoute;
+  '/ai-assistant': typeof AiAssistantRoute;
+  '/billing': typeof BillingRoute;
   '/book': typeof BookRoute;
   '/compare': typeof CompareRoute;
   '/contact': typeof ContactRoute;
   '/dashboard': typeof DashboardRouteWithChildren;
   '/doctor': typeof DoctorRoute;
+  '/features': typeof FeaturesRoute;
+  '/how-it-works': typeof HowItWorksRoute;
   '/login': typeof LoginRoute;
   '/reviews': typeof ReviewsRoute;
   '/signup': typeof SignupRoute;
@@ -175,12 +220,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
+    | '/ai-assistant'
+    | '/billing'
     | '/book'
     | '/compare'
     | '/contact'
     | '/dashboard'
     | '/doctor'
+    | '/features'
+    | '/how-it-works'
     | '/login'
     | '/reviews'
     | '/signup'
@@ -194,12 +244,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
+    | '/about'
     | '/admin'
+    | '/ai-assistant'
+    | '/billing'
     | '/book'
     | '/compare'
     | '/contact'
     | '/dashboard'
     | '/doctor'
+    | '/features'
+    | '/how-it-works'
     | '/login'
     | '/reviews'
     | '/signup'
@@ -213,12 +268,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
+    | '/ai-assistant'
+    | '/billing'
     | '/book'
     | '/compare'
     | '/contact'
     | '/dashboard'
     | '/doctor'
+    | '/features'
+    | '/how-it-works'
     | '/login'
     | '/reviews'
     | '/signup'
@@ -233,12 +293,17 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  AboutRoute: typeof AboutRoute;
   AdminRoute: typeof AdminRoute;
+  AiAssistantRoute: typeof AiAssistantRoute;
+  BillingRoute: typeof BillingRoute;
   BookRoute: typeof BookRoute;
   CompareRoute: typeof CompareRoute;
   ContactRoute: typeof ContactRoute;
   DashboardRoute: typeof DashboardRouteWithChildren;
   DoctorRoute: typeof DoctorRoute;
+  FeaturesRoute: typeof FeaturesRoute;
+  HowItWorksRoute: typeof HowItWorksRoute;
   LoginRoute: typeof LoginRoute;
   ReviewsRoute: typeof ReviewsRoute;
   SignupRoute: typeof SignupRoute;
@@ -267,6 +332,20 @@ declare module '@tanstack/react-router' {
       path: '/login';
       fullPath: '/login';
       preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/how-it-works': {
+      id: '/how-it-works';
+      path: '/how-it-works';
+      fullPath: '/how-it-works';
+      preLoaderRoute: typeof HowItWorksRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/features': {
+      id: '/features';
+      path: '/features';
+      fullPath: '/features';
+      preLoaderRoute: typeof FeaturesRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/doctor': {
@@ -304,11 +383,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/billing': {
+      id: '/billing';
+      path: '/billing';
+      fullPath: '/billing';
+      preLoaderRoute: typeof BillingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/ai-assistant': {
+      id: '/ai-assistant';
+      path: '/ai-assistant';
+      fullPath: '/ai-assistant';
+      preLoaderRoute: typeof AiAssistantRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/admin': {
       id: '/admin';
       path: '/admin';
       fullPath: '/admin';
       preLoaderRoute: typeof AdminRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/about': {
+      id: '/about';
+      path: '/about';
+      fullPath: '/about';
+      preLoaderRoute: typeof AboutRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/': {
@@ -392,12 +492,17 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  AiAssistantRoute: AiAssistantRoute,
+  BillingRoute: BillingRoute,
   BookRoute: BookRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
   DoctorRoute: DoctorRoute,
+  FeaturesRoute: FeaturesRoute,
+  HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   ReviewsRoute: ReviewsRoute,
   SignupRoute: SignupRoute,

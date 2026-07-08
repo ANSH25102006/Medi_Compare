@@ -335,7 +335,7 @@ export function HealthChatbot() {
         <button
           id="chat-open-btn"
           onClick={handleOpen}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-gradient shadow-elevated transition-all duration-300 hover:scale-110 hover:shadow-[0_8px_32px_oklch(0.56_0.17_250_/_0.35)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-elevated transition-all duration-300 hover:scale-110 hover:shadow-[0_8px_32px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           aria-label="Open chat"
         >
           <MessageCircle className="h-6 w-6 text-white" />
@@ -358,7 +358,7 @@ export function HealthChatbot() {
           }}
         >
           {/* Header */}
-          <div className="flex h-14 shrink-0 items-center justify-between bg-primary-gradient px-4">
+          <div className="flex h-14 shrink-0 items-center justify-between bg-primary px-4">
             <div className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white">
                 <Bot className="h-4 w-4" />
@@ -410,7 +410,7 @@ export function HealthChatbot() {
                         className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
                           msg.role === "user"
                             ? "bg-primary text-primary-foreground rounded-tr-sm"
-                            : "bg-secondary text-foreground rounded-tl-sm"
+                            : "bg-muted text-foreground rounded-tl-sm"
                         }`}
                       >
                         {msg.text}
@@ -444,7 +444,7 @@ export function HealthChatbot() {
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary text-xs">
                       <Sparkles className="h-3.5 w-3.5" />
                     </span>
-                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-3">
+                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-muted px-3.5 py-3">
                       <span className="chat-dot" />
                       <span className="chat-dot" style={{ animationDelay: "0.15s" }} />
                       <span className="chat-dot" style={{ animationDelay: "0.3s" }} />

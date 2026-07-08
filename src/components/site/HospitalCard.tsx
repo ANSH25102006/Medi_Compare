@@ -143,7 +143,7 @@ export function HospitalCard({
   };
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft hover-card-lift">
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-soft hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(37,99,235,0.12)] hover:border-primary/20 transition-all duration-300">
       <div className="relative h-44 overflow-hidden">
         <img
           src={hospital.image}
@@ -186,17 +186,16 @@ export function HospitalCard({
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {hospital.specialties.slice(0, 3).map((s) => (
-            <Badge
+            <span
               key={s}
-              variant="secondary"
-              className="rounded-full font-medium px-2.5 py-0.5 text-[11px]"
+              className="rounded-full font-semibold px-2.5 py-0.5 text-[11px] bg-primary-soft text-primary border border-primary/10"
             >
               {s}
-            </Badge>
+            </span>
           ))}
         </div>
 
-        <div className="mt-5 rounded-xl bg-primary-soft/50 border border-primary/10 p-3.5 shadow-inner dark:bg-primary-soft/5">
+        <div className="mt-5 rounded-xl bg-[#F8FAFC] border border-border p-3.5 shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               {service.name}
@@ -246,7 +245,7 @@ export function HospitalCard({
           </Button>
           <Button
             asChild
-            className="flex-1 rounded-full bg-primary-gradient hover:shadow-md btn-interactive text-primary-foreground font-semibold"
+            className="flex-1 rounded-full bg-primary hover:opacity-90 btn-interactive text-white font-semibold"
           >
             <Link to="/book" search={{ hospital: hospital.id, service: service.name }}>
               Book <ArrowRight className="ml-1 h-3.5 w-3.5" />

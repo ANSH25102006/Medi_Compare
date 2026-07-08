@@ -293,20 +293,42 @@ function ReviewsPage() {
 
   return (
     <SiteShell>
-      <section className="border-b border-border bg-hero-gradient">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold md:text-4xl">Patient reviews</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Every review on MediCompare is tied to a verified appointment booking.
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="flex items-center gap-1 text-warning">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="h-5 w-5 fill-current" />
-              ))}
+      <section className="border-b border-border/40 bg-hero-gradient">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 grid gap-8 md:grid-cols-2 items-center">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Patient reviews</h1>
+            <p className="mt-2 text-xs text-muted-foreground font-semibold max-w-md">
+              Every review on MediCompare is tied to a verified appointment booking. Double checked for clinical pricing accuracy.
+            </p>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="flex items-center gap-0.5 text-warning">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="h-5 w-5 fill-current" />
+                ))}
+              </div>
+              <span className="text-sm font-bold text-foreground">4.8 Average Score</span>
+              <span className="text-xs text-muted-foreground font-semibold">({reviews.length} verified checkout reports)</span>
             </div>
-            <span className="text-sm font-semibold">4.8 average</span>
-            <span className="text-sm text-muted-foreground">from {reviews.length} reviews</span>
+          </div>
+
+          {/* Rating distribution chart */}
+          <div className="rounded-xl border border-border/40 bg-card/65 p-5 shadow-sm backdrop-blur-md space-y-2.5 max-w-sm w-full md:justify-self-end">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rating Distribution</p>
+            {[
+              { stars: 5, pct: 78, color: "bg-success" },
+              { stars: 4, pct: 14, color: "bg-success/70" },
+              { stars: 3, pct: 6, color: "bg-muted-foreground/30" },
+              { stars: 2, pct: 1, color: "bg-muted-foreground/20" },
+              { stars: 1, pct: 1, color: "bg-muted-foreground/10" },
+            ].map((d) => (
+              <div key={d.stars} className="flex items-center gap-3 text-xs font-semibold">
+                <span className="w-12 text-[10px] font-bold text-muted-foreground uppercase text-right">{d.stars} Stars</span>
+                <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full ${d.color}`} style={{ width: `${d.pct}%` }} />
+                </div>
+                <span className="w-8 text-right text-[10px] font-bold text-muted-foreground">{d.pct}%</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -318,16 +340,18 @@ function ReviewsPage() {
             {reviews.map((t, idx) => {
               const isMyReview = isLoggedIn && user && t.userEmail === user.email;
               const isEditing = editingReviewId === t.id;
+              const cardBg = idx % 2 === 0 ? "bg-card/75 dark:bg-card/45" : "bg-card/45 dark:bg-card/25";
+              const avatarIndex = (idx % 35) + 1;
 
               return (
                 <figure
                   key={t.id || `${t.userName}-${idx}`}
-                  className="rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated relative"
+                  className={`rounded-2xl border border-border/40 p-6 shadow-sm transition-all hover:border-primary/20 hover:scale-[1.01] duration-300 relative flex flex-col justify-between ${cardBg}`}
                 >
                   {isEditing ? (
                     <form onSubmit={handleSaveEdit} className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-primary">Editing your review</p>
+                        <p className="text-xs font-bold text-primary">Editing your review</p>
                         <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
@@ -351,68 +375,74 @@ function ReviewsPage() {
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         rows={3}
-                        className="w-full rounded-xl border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                        className="w-full rounded-xl border border-border/70 bg-background/50 p-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary text-foreground resize-none"
                         placeholder="Update your review..."
                       />
                       <div className="flex justify-end gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="rounded-full"
+                          className="rounded-lg text-xs"
                           type="button"
                           onClick={() => setEditingReviewId(null)}
                         >
                           Cancel
                         </Button>
-                        <Button size="sm" className="rounded-full" type="submit">
+                        <Button size="sm" className="rounded-lg text-xs" type="submit">
                           Save
                         </Button>
                       </div>
                     </form>
                   ) : (
                     <>
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-1 text-warning">
-                          {Array.from({ length: t.rating }).map((_, i) => (
-                            <Star key={i} className="h-4 w-4 fill-current" />
-                          ))}
-                          {Array.from({ length: 5 - t.rating }).map((_, i) => (
-                            <Star key={i} className="h-4 w-4 text-muted-foreground" />
-                          ))}
-                        </div>
-                        {isMyReview && (
-                          <div className="flex items-center gap-2 text-xs">
-                            <button
-                              onClick={() => {
-                                setEditingReviewId(t.id);
-                                setEditText(t.text);
-                                setEditRating(t.rating);
-                              }}
-                              className="flex items-center gap-1 text-primary hover:underline"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" /> Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteReview(t.id)}
-                              className="flex items-center gap-1 text-destructive hover:underline"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Delete
-                            </button>
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-1 text-warning">
+                            {Array.from({ length: t.rating }).map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-current" />
+                            ))}
+                            {Array.from({ length: 5 - t.rating }).map((_, i) => (
+                              <Star key={i} className="h-4 w-4 text-muted-foreground/60" />
+                            ))}
                           </div>
-                        )}
-                      </div>
-                      <blockquote className="mt-4 text-sm leading-relaxed">"{t.text}"</blockquote>
-                      <figcaption className="mt-5 flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary text-sm font-bold">
-                          {t.userName ? t.userName[0].toUpperCase() : "A"}
+                          {isMyReview && (
+                            <div className="flex items-center gap-2 text-[10px] font-bold">
+                              <button
+                                onClick={() => {
+                                  setEditingReviewId(t.id);
+                                  setEditText(t.text);
+                                  setEditRating(t.rating);
+                                }}
+                                className="flex items-center gap-1 text-primary hover:underline"
+                              >
+                                <Edit2 className="h-3.5 w-3.5" /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteReview(t.id)}
+                                className="flex items-center gap-1 text-destructive hover:underline"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
+                        <blockquote className="mt-4 text-xs leading-relaxed text-foreground/90 font-semibold italic">"{t.text}"</blockquote>
+                      </div>
+                      <figcaption className="mt-5 flex items-center gap-3 border-t border-border/40 pt-4">
+                        <img
+                          src={`https://i.pravatar.cc/100?img=${avatarIndex}`}
+                          alt=""
+                          className="h-8 w-8 rounded-full object-cover shadow-sm ring-1 ring-border/40"
+                        />
                         <div>
-                          <p className="text-sm font-semibold">{t.userName}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs font-bold text-foreground">{t.userName}</p>
+                          <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">
                             Patient — {t.hospitalName}
                           </p>
                         </div>
-                        <CheckCircle2 className="ml-auto h-4 w-4 text-success" />
+                        <span className="ml-auto inline-flex items-center gap-0.5 rounded-full bg-success/8 border border-success/15 px-2 py-0.5 text-[8px] font-bold text-success uppercase tracking-wider">
+                          ✓ Verified
+                        </span>
                       </figcaption>
                     </>
                   )}
@@ -423,15 +453,15 @@ function ReviewsPage() {
 
           {/* Write a review */}
           <div className="lg:sticky lg:top-20 h-fit">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-elevated">
-              <h2 className="text-lg font-semibold">Write a review</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border/40 bg-card/65 p-6 shadow-sm backdrop-blur-md">
+              <h2 className="text-sm font-bold text-foreground">Write a review</h2>
+              <p className="mt-1 text-xs text-muted-foreground font-semibold">
                 Share your experience to help others.
               </p>
 
               {!isLoggedIn && (
-                <div className="mt-4 rounded-xl border border-primary/20 bg-primary-soft/50 p-3 text-sm text-muted-foreground">
-                  <a href="/login" className="font-medium text-primary hover:underline">
+                <div className="mt-4 rounded-lg border border-primary/20 bg-primary-soft/50 p-3 text-xs text-muted-foreground font-semibold">
+                  <a href="/login" className="font-bold text-primary hover:underline">
                     Sign in
                   </a>{" "}
                   to post a verified review.
@@ -440,9 +470,9 @@ function ReviewsPage() {
 
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 <div>
-                  <Label>Hospital</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Hospital</Label>
                   <Select value={hospital} onValueChange={setHospital} disabled={!isLoggedIn}>
-                    <SelectTrigger className="mt-1.5">
+                    <SelectTrigger className="mt-1.5 h-9 rounded-lg border-border/70 text-xs">
                       <SelectValue placeholder="Select hospital…" />
                     </SelectTrigger>
                     <SelectContent>
@@ -456,7 +486,7 @@ function ReviewsPage() {
                 </div>
 
                 <div>
-                  <Label>Your rating</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Your rating</Label>
                   <div className="mt-2">
                     <StarRating
                       value={rating}
@@ -467,11 +497,11 @@ function ReviewsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="review-text">Your review</Label>
+                  <Label htmlFor="review-text" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Your review</Label>
                   <Textarea
                     id="review-text"
                     rows={4}
-                    className="mt-1.5 resize-none"
+                    className="mt-1.5 rounded-lg border-border/70 bg-background/50 text-xs font-semibold focus-visible:ring-primary placeholder:text-muted-foreground/50 resize-none"
                     placeholder="Describe your experience…"
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
@@ -481,7 +511,7 @@ function ReviewsPage() {
 
                 <Button
                   type="submit"
-                  className="w-full rounded-full"
+                  className="w-full rounded-lg h-10 font-bold"
                   disabled={!isLoggedIn || submitted}
                 >
                   {submitted ? "Review submitted ✓" : "Submit review"}

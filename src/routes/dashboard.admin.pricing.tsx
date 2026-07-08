@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
+import { DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
 import { supabase } from "@/lib/supabase";
 import { useHospitals } from "@/hooks/use-hospitals";
 import {
@@ -460,14 +461,7 @@ function AdminPricingPage() {
   };
 
   if (loading || loadingData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <RefreshCw className="mx-auto h-8 w-8 animate-spin text-primary" />
-          <p className="mt-2 text-sm text-muted-foreground">Syncing database schemas...</p>
-        </div>
-      </div>
-    );
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || !isAdmin || !profile) {

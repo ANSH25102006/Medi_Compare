@@ -5,6 +5,7 @@ import {
   Star,
   Bookmark,
   Settings as SettingsIcon,
+  CreditCard,
 } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useHospitals } from "@/hooks/use-hospitals";
-import { CardSkeleton } from "@/components/site/SkeletonLoader";
+import { CardSkeleton, DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
+import { EmptyState } from "@/components/site/EmptyState";
 import { HospitalCard } from "@/components/site/HospitalCard";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +30,7 @@ const navItems: NavItem[] = [
   { title: "Reviews", url: "/dashboard/reviews", icon: Star },
   { title: "Saved Hospitals", url: "/dashboard/saved", icon: Bookmark },
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
+  { title: "Billing & Subscription", url: "/billing", icon: CreditCard },
 ];
 
 function SavedPage() {
@@ -79,7 +82,7 @@ function SavedPage() {
   const { data: hospitalsList = [], isLoading } = useHospitals();
 
   if (loading) {
-    return null;
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || user?.role !== "Patient") {
@@ -119,15 +122,14 @@ function SavedPage() {
           ))}
         </div>
       ) : saved.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-16 text-center">
-          <Bookmark className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="font-semibold">No saved hospitals yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Browse hospitals and click the bookmark icon to save them here.
-          </p>
-          <Button className="mt-5 rounded-full" onClick={() => navigate({ to: "/compare" })}>
-            Browse hospitals
-          </Button>
+        <div className="rounded-2xl border border-dashed border-border bg-card p-6 mt-2">
+          <EmptyState
+            icon={Bookmark}
+            title="No saved hospitals yet"
+            description="Browse hospitals and click the bookmark icon to save them here."
+            actionText="Browse hospitals"
+            onActionClick={() => navigate({ to: "/compare" })}
+          />
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">

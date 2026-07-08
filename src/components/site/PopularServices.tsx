@@ -67,17 +67,17 @@ export function PopularServices() {
 
           if (s.slug === "mri" || s.slug === "fullbody") {
             smartBadge = "Best Savings";
-            badgeColor = "bg-success/10 text-success border-success/20 dark:bg-success/5";
+            badgeColor = "bg-success/10 text-success border-success/20";
           } else if (s.slug === "ct") {
             smartBadge = "Most Compared";
             badgeColor =
-              "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20";
+              "bg-primary-soft text-primary border-primary/20";
           } else if (s.slug === "blood") {
             smartBadge = "Most Booked";
-            badgeColor = "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+            badgeColor = "bg-success/10 text-success border-success/20";
           } else if (s.slug === "xray") {
             smartBadge = "Fastest Availability";
-            badgeColor = "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20";
+            badgeColor = "bg-primary-soft text-primary border-primary/20";
           }
 
           return (
@@ -85,11 +85,11 @@ export function PopularServices() {
               key={s.slug}
               to="/compare"
               search={{ q: s.name, city: "" }}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all duration-350 hover:-translate-y-1.5 hover:shadow-elevated hover:border-primary/20"
+              className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-primary/10"
             >
               {/* Tint gradient */}
               <div
-                className={`absolute inset-0 -z-0 bg-gradient-to-br ${s.tint} opacity-0 transition-opacity duration-305 group-hover:opacity-100`}
+                className="absolute inset-0 -z-0 bg-primary-soft opacity-0 transition-opacity duration-350 group-hover:opacity-100"
               />
 
               <div className="relative">
@@ -144,9 +144,9 @@ export function PopularServices() {
                     <span>Demand this month</span>
                     <span className="font-semibold text-foreground">{demandPct}%</span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary-gradient transition-all duration-700 group-hover:opacity-90"
+                      className="h-full rounded-full bg-primary transition-all duration-700 group-hover:opacity-90"
                       style={{ width: `${demandPct}%` }}
                     />
                   </div>

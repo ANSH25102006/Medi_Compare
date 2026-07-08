@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import { userAppointments, getHospitalNameById } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
+import { DashboardLayoutSkeleton } from "@/components/site/SkeletonLoader";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
@@ -138,7 +139,7 @@ function DoctorDashboard() {
   };
 
   if (loading) {
-    return null;
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!isLoggedIn || user?.role !== "Doctor") {

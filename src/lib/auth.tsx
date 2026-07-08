@@ -3,10 +3,19 @@ import { supabase } from "./supabase";
 import { toast } from "sonner";
 
 export type AuthUser = {
+  id: string;
   name: string;
   email: string;
   avatar: string;
   role: "Patient" | "Doctor" | "Admin";
+  plan: string;
+  subscription_status: string;
+  subscription_start: string | null;
+  subscription_end: string | null;
+  razorpay_payment_id: string | null;
+  razorpay_order_id: string | null;
+  ai_messages_today: number;
+  last_ai_reset: string | null;
 };
 
 type AuthContextValue = {
@@ -23,6 +32,7 @@ type AuthContextValue = {
   logout: () => Promise<void>;
   updateProfile: (name: string, email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 };
 
 function generateAvatar(email: string) {
@@ -57,10 +67,17 @@ const mapUser = (supabaseUser: any): AuthUser | null => {
     generateAvatar(supabaseUser.email || "");
 
   return {
+    id: supabaseUser.id,
     name,
     email: supabaseUser.email || "",
     avatar,
     role: normalizedRole,
+    plan: "Free",
+    subscription_status: "inactive",
+    subscription_start: null,
+    subscription_end: null,
+    razorpay_payment_id: null,
+    razorpay_order_id: null,
   };
 };
 
@@ -123,6 +140,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast.error("Failed to initialize user profile. Please try logging in again.");
         } else {
           console.log("[Auth Context] Profile created successfully");
+          setUser({
+            id: sessionUser.id,
+            name: fullName,
+            email: email,
+            avatar: avatarUrl || generateAvatar(email),
+            role: rawRole.toLowerCase() === "admin" ? "Admin" : rawRole.toLowerCase() === "doctor" ? "Doctor" : "Patient",
+            plan: "Free",
+            subscription_status: "inactive",
+            subscription_start: null,
+            subscription_end: null,
+            razorpay_payment_id: null,
+            razorpay_order_id: null,
+          });
         }
       } else {
         // Sync/Update profile ONLY if fields have changed
@@ -133,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile.auth_provider !== authProvider
         ) {
           console.log("[Auth Context] Profile fields out of sync. Syncing...");
-          const { error: updateError } = await supabase
+          await supabase
             .from("profiles")
             .update({
               full_name: fullName,
@@ -142,13 +172,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               auth_provider: authProvider,
             })
             .eq("id", sessionUser.id);
-
-          if (updateError) {
-            console.error("[Auth Context] Failed to update profile record:", updateError);
-          } else {
-            console.log("[Auth Context] Profile updated/synced successfully");
-          }
         }
+
+        const rawRole = profile.role || "patient";
+        const normalizedRole =
+          rawRole.toLowerCase() === "admin" ||
+          rawRole.toLowerCase() === "hospital_admin" ||
+          rawRole.toLowerCase() === "super_admin"
+            ? "Admin"
+            : rawRole.toLowerCase() === "doctor"
+              ? "Doctor"
+              : "Patient";
+
+        setUser({
+          id: sessionUser.id,
+          name: profile.full_name || fullName,
+          email: profile.email || email,
+          avatar: profile.avatar_url || avatarUrl || generateAvatar(email),
+          role: normalizedRole,
+          plan: profile.plan || "Free",
+          subscription_status: profile.subscription_status || "inactive",
+          subscription_start: profile.subscription_start || null,
+          subscription_end: profile.subscription_end || null,
+          razorpay_payment_id: profile.razorpay_payment_id || null,
+          razorpay_order_id: profile.razorpay_order_id || null,
+        });
       }
     } catch (err) {
       console.error("[Auth Context] Error during profile check/creation:", err);
@@ -282,6 +330,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshSession = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await checkAndCreateProfile(session.user);
+    }
+  }, [checkAndCreateProfile]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -293,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         updateProfile,
         signInWithGoogle,
+        refreshSession,
       }}
     >
       {children}

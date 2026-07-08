@@ -9,15 +9,15 @@ const ALL_RECS = [aiRecommendation, ...aiAlternatives];
 
 const matchColors: Record<string, string> = {
   "Best Price": "bg-success/10 text-success border-success/20",
-  "High Rating": "bg-warning/10 text-warning border-warning/20",
-  "Available Today": "bg-primary/10 text-primary border-primary/20",
-  "Highest Rated": "bg-warning/10 text-warning border-warning/20",
-  "Insurance Covered": "bg-violet-500/10 text-violet-600 border-violet-500/20",
+  "High Rating": "bg-primary-soft text-primary border-primary/20",
+  "Available Today": "bg-primary-soft text-primary border-primary/20",
+  "Highest Rated": "bg-primary-soft text-primary border-primary/20",
+  "Insurance Covered": "bg-primary-soft text-primary border-primary/20",
   "Quick Slots": "bg-success/10 text-success border-success/20",
   "Lowest Price": "bg-success/10 text-success border-success/20",
-  "Same-day Slots": "bg-primary/10 text-primary border-primary/20",
-  "Top Hospital": "bg-warning/10 text-warning border-warning/20",
-  Nearest: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+  "Same-day Slots": "bg-primary-soft text-primary border-primary/20",
+  "Top Hospital": "bg-primary-soft text-primary border-primary/20",
+  Nearest: "bg-primary-soft text-primary border-primary/20",
 };
 
 function useTypingEffect(text: string, speed = 35) {
@@ -70,46 +70,42 @@ export function AIRecommendation() {
   // Early return if loading or hospital not resolved
   if (isLoading || !h) {
     return (
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <div className="w-full">
         <div className="animate-pulse rounded-3xl border border-primary/15 bg-card p-6 h-64 flex items-center justify-center">
           <p className="text-muted-foreground text-sm font-medium">Loading recommendations...</p>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/15 bg-card p-6 shadow-elevated md:p-10">
-        {/* Background glows */}
-        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/8 blur-3xl" />
-        <div className="absolute -bottom-24 -left-10 h-80 w-80 rounded-full bg-success/8 blur-3xl" />
+    <div className="w-full">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
 
         <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
           {/* Left: intro + query */}
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
-              <Sparkles className="h-3 w-3" /> AI-Powered Recommendation
+          <div className="space-y-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-bold text-primary dark:bg-primary/10">
+              <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" /> AI-Powered Recommendation
             </span>
-            <h2 className="mt-4 text-3xl font-bold leading-tight md:text-4xl">
+            <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-4xl">
               Smart matches, tailored to your needs.
             </h2>
-            <p className="mt-3 max-w-lg text-muted-foreground">
-              Our AI compares price, rating, distance and availability across every partner hospital
-              so you can decide in seconds.
+            <p className="text-xs md:text-sm text-muted-foreground/95 leading-relaxed font-semibold">
+              Our AI compares price averages, nurse ratings, distance, and real-time slot availability across our verified hospital network so you can make informed care choices in seconds.
             </p>
 
             {/* Query card */}
-            <div className="mt-6 rounded-2xl border border-border bg-background/70 p-4 backdrop-blur">
+            <div className="rounded-xl border border-border/40 bg-background/50 p-4 backdrop-blur-md shadow-sm">
               <div className="flex items-start gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm animate-bounce">
                   <Bot className="h-4 w-4" />
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                     Patient query
                   </p>
-                  <p className="mt-1 text-sm font-medium min-h-[1.25rem]">
+                  <p className="mt-1 text-xs font-bold text-foreground min-h-[1.25rem]">
                     {typedQuery}
                     {!queryDone && (
                       <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary align-middle" />
@@ -122,44 +118,44 @@ export function AIRecommendation() {
             {/* Rotate button */}
             <button
               onClick={handleNext}
-              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors cursor-pointer group"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Try another query
+              <RefreshCw className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-500" /> Try another query
             </button>
           </div>
 
           {/* Right: recommendation card */}
-          <div className="relative rounded-2xl border border-border bg-background p-5 shadow-elevated">
+          <div className="relative rounded-2xl border border-border/40 bg-card/65 p-6 shadow-sm backdrop-blur-md">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3.5 w-3.5" /> Recommended for you
+                <Sparkles className="h-3.5 w-3.5" /> Recommended Choice
               </div>
               {/* Confidence */}
               <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-secondary">
+                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-primary-gradient"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${rec.confidence}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-bold text-primary">{rec.confidence}% match</span>
+                <span className="text-[10px] font-bold text-primary">{rec.confidence}% match</span>
               </div>
             </div>
 
-            <div className="mt-4 flex gap-4">
+            <div className="mt-5 flex gap-4">
               <img
                 src={h.image}
                 alt={h.name}
-                className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-soft"
+                className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-border/40"
               />
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-base font-bold">{h.name}</h3>
+                <h3 className="truncate text-base font-bold text-foreground">{h.name}</h3>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
+                  <span className="flex items-center gap-1 font-semibold">
+                    <MapPin className="h-3.5 w-3.5" />
                     {h.city} · {h.distance} km
                   </span>
-                  <span className="flex items-center gap-0.5 font-semibold text-warning">
+                  <span className="flex items-center gap-0.5 font-bold text-warning">
                     <Star className="h-3.5 w-3.5 fill-current" /> {h.rating}
                   </span>
                 </p>
@@ -168,7 +164,7 @@ export function AIRecommendation() {
                   {rec.matchReasons.map((r) => (
                     <span
                       key={r}
-                      className={`inline-flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] font-bold ${matchColors[r] ?? "bg-secondary text-foreground border-border"}`}
+                      className={`inline-flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${matchColors[r] ?? "bg-secondary text-foreground border-border"}`}
                     >
                       <CheckCircle className="h-2.5 w-2.5" /> {r}
                     </span>
@@ -178,40 +174,40 @@ export function AIRecommendation() {
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-primary-soft p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-lg bg-primary/5 border border-primary/10 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/80">
                   {svc.name}
                 </p>
-                <p className="mt-1 text-xl font-bold text-primary">₹{svc.price.toLocaleString()}</p>
+                <p className="mt-1 text-lg font-bold text-primary">₹{svc.price.toLocaleString()}</p>
               </div>
-              <div className="rounded-xl bg-success/10 p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-success">
+              <div className="rounded-lg bg-success/5 border border-success/10 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-success">
                   You save
                 </p>
-                <p className="mt-1 text-xl font-bold text-success">₹{savings.toLocaleString()}</p>
+                <p className="mt-1 text-lg font-bold text-success">₹{savings.toLocaleString()}</p>
               </div>
             </div>
 
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{rec.rationale}</p>
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground font-semibold">{rec.rationale}</p>
 
-            <div className="mt-5 flex gap-2">
-              <Button asChild variant="outline" className="flex-1 rounded-full text-xs">
+            <div className="mt-6 flex gap-2.5">
+              <Button asChild variant="outline" className="flex-1 rounded-lg text-xs h-9 font-bold cursor-pointer">
                 <Link to="/hospitals/$hospitalId" params={{ hospitalId: h.id }}>
-                  View details
+                  View Profile
                 </Link>
               </Button>
               <Button
                 asChild
-                className="flex-1 rounded-full bg-primary-gradient text-xs shadow-soft hover:shadow-elevated transition-all hover:scale-[1.03]"
+                className="flex-1 rounded-lg bg-primary text-primary-foreground text-xs h-9 font-bold shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Link to="/book" search={{ hospital: h.id, service: svc.name }}>
-                  Book now <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  Book Appointment <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

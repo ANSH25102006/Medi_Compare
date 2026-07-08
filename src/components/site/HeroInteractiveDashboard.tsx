@@ -45,11 +45,11 @@ export function HeroInteractiveDashboard() {
 
   return (
     <div
-      className="relative w-full min-h-[460px] md:min-h-[500px] flex flex-col justify-between select-none p-6 rounded-[32px] border border-white/20 bg-card/30 shadow-[0_20px_50px_rgba(0,72,206,0.08)] backdrop-blur-xl dark:bg-card/20 dark:border-border/60"
+      className="relative w-full min-h-[460px] md:min-h-[500px] flex flex-col justify-between select-none p-6 rounded-3xl border border-border bg-card shadow-soft"
       aria-hidden="true"
     >
       {/* Background ambient light overlay */}
-      <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-tr from-primary/15 via-primary/5 to-success/15 blur-3xl pointer-events-none dark:from-primary/10" />
+      <div className="absolute -inset-6 rounded-[3rem] bg-[radial-gradient(circle,rgba(37,99,235,0.04)_0%,transparent_70%)] blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between border-b border-border/40 pb-4">
@@ -191,8 +191,8 @@ export function HeroInteractiveDashboard() {
                 type="button"
                 className={`w-full rounded-full py-2.5 text-xs font-extrabold shadow-soft transition-all duration-300 btn-interactive ${
                   showBookCTAActive
-                    ? "bg-success hover:bg-success/90 text-success-foreground ring-4 ring-success/20 active:scale-95 cursor-pointer"
-                    : "bg-secondary text-muted-foreground border border-border"
+                    ? "bg-primary hover:opacity-90 text-white ring-4 ring-primary/20 active:scale-95 cursor-pointer"
+                    : "bg-muted text-muted-foreground border border-border"
                 }`}
               >
                 {showBookCTAActive ? "Book Appointment Instantly ✓" : "Reviewing Slots..."}

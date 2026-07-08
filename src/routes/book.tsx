@@ -19,6 +19,7 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { getItemSafe, setItemSafe } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/site/SkeletonLoader";
 
 type SearchParams = { hospital?: string; service?: string; date?: string; slot?: string };
 
@@ -128,9 +129,37 @@ function BookPage() {
   if (loading || isLoading || !hospital) {
     return (
       <SiteShell>
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading booking details...</p>
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-2/3 rounded-xl animate-pulse" />
+            <Skeleton className="h-5 w-1/2 rounded-md animate-pulse" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="md:col-span-2 space-y-6">
+              <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+                <Skeleton className="h-6 w-1/4 rounded-md animate-pulse" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-1/3 rounded animate-pulse" />
+                    <Skeleton className="h-10 w-full rounded-xl animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-1/3 rounded animate-pulse" />
+                    <Skeleton className="h-10 w-full rounded-xl animate-pulse" />
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+                <Skeleton className="h-6 w-1/3 rounded-md animate-pulse" />
+                <Skeleton className="h-12 w-full rounded-2xl animate-pulse" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-6 space-y-4 h-fit">
+              <Skeleton className="h-6 w-1/2 rounded-md animate-pulse" />
+              <Skeleton className="h-24 w-full rounded-xl animate-pulse" />
+              <Skeleton className="h-10 w-full rounded-full animate-pulse" />
+            </div>
+          </div>
         </div>
       </SiteShell>
     );
@@ -424,51 +453,51 @@ function BookPage() {
 
   return (
     <SiteShell>
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-            Book appointment
+      <div className="mx-auto max-w-2.5xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            RESERVATION FLOW
           </p>
-          <h1 className="mt-2 text-3xl font-bold md:text-4xl">{hospital.name}</h1>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">{hospital.name}</h1>
         </div>
 
         {/* Progress */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between">
+        <div className="mb-12">
+          <div className="flex items-center justify-between gap-1">
             {steps.map((label, i) => (
               <div key={label} className="flex flex-1 flex-col items-center text-center">
                 <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition-all ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold transition-all duration-300 ${
                     i < step
-                      ? "bg-success text-success-foreground"
+                      ? "bg-success/15 border border-success/30 text-success"
                       : i === step
-                        ? "bg-primary text-primary-foreground shadow-soft"
-                        : "bg-secondary text-muted-foreground"
+                        ? "bg-primary text-primary-foreground shadow-sm scale-105"
+                        : "bg-secondary/60 border border-border/50 text-muted-foreground"
                   }`}
                 >
-                  {i < step ? <Check className="h-4 w-4" /> : i + 1}
+                  {i < step ? <Check className="h-4.5 w-4.5" /> : i + 1}
                 </div>
                 <p
-                  className={`mt-2 hidden text-xs sm:block ${i <= step ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                  className={`mt-2 hidden text-[10px] font-bold uppercase tracking-wider sm:block ${i <= step ? "text-foreground" : "text-muted-foreground/60"}`}
                 >
                   {label}
                 </p>
               </div>
             ))}
           </div>
-          <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary">
+          <div className="mt-6 h-1 rounded-full bg-secondary/50 overflow-hidden">
             <div
-              className="h-full bg-primary-gradient transition-all duration-500"
+              className="h-full bg-primary transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-card p-7 shadow-elevated sm:p-10">
+        <div className="rounded-xl border border-border/40 bg-card/65 p-6 md:p-10 shadow-sm backdrop-blur-md">
           {step === 0 && (
             <div className="animate-fade-in space-y-3">
-              <h2 className="text-xl font-semibold">Select a service</h2>
-              <p className="text-sm text-muted-foreground">Choose what you'd like to book.</p>
+              <h2 className="text-lg font-bold">Select a service</h2>
+              <p className="text-xs text-muted-foreground">Choose what you'd like to book.</p>
               <div className="mt-5 space-y-2">
                 {hospital.services.map((s) => (
                   <button
